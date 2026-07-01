@@ -10,8 +10,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-stone-200 h-16 flex items-center justify-between px-6 md:px-10">
       <Link href="/" className="flex items-center gap-2">
-        <div className="w-9 h-9 rounded-lg bg-orange-600 text-white flex items-center justify-center font-serif font-bold text-sm">N2</div>
-        <span className="font-serif font-bold text-lg">nomore<span className="text-orange-600">2%</span></span>
+        <div className="w-9 h-9 rounded-lg bg-orange-400 text-white flex items-center justify-center font-serif font-bold text-sm">N2</div>
+        <span className="font-serif font-bold text-lg">nomore<span className="text-orange-400">2%</span></span>
       </Link>
 
       <nav className="hidden md:flex items-center gap-1">
@@ -24,7 +24,7 @@ export default function Header() {
         href="https://wa.me/917013224895"
         target="_blank"
         rel="noopener noreferrer"
-        className="hidden md:inline-flex items-center px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-bold hover:bg-orange-700 transition-colors"
+        className="hidden md:inline-flex items-center px-4 py-2 rounded-lg bg-orange-400 text-white text-sm font-bold hover:bg-orange-500 transition-colors"
       >
         💬 WhatsApp Us
       </a>

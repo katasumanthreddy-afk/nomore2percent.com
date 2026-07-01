@@ -51,7 +51,7 @@ export default function PropertyDetailPage() {
     <div className="flex-1 bg-stone-50">
       <Header />
       <div className="p-10 text-center text-stone-400">
-        Property not found. <button onClick={() => router.push('/properties')} className="text-orange-600 underline">Browse all properties</button>
+        Property not found. <button onClick={() => router.push('/properties')} className="text-orange-400 underline">Browse all properties</button>
       </div>
     </div>
   );
@@ -63,12 +63,12 @@ export default function PropertyDetailPage() {
     <div className="flex-1 bg-stone-50">
       <Header />
       <div className="max-w-6xl mx-auto px-6 md:px-10 py-8">
-        <button onClick={() => router.push('/properties')} className="text-sm text-stone-500 hover:text-orange-600 mb-5 flex items-center gap-1">← Back to listings</button>
+        <button onClick={() => router.push('/properties')} className="text-sm text-stone-500 hover:text-orange-400 mb-5 flex items-center gap-1">← Back to listings</button>
 
         <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
           <div>
             <div className="flex gap-2 mb-2">
-              <span className="text-xs font-semibold bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">{property.listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span>
+              <span className="text-xs font-semibold bg-orange-100 text-orange-500 px-2.5 py-1 rounded-full">{property.listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span>
               {property.rera_number && <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">RERA ✓</span>}
             </div>
             <h1 className="font-serif text-2xl md:text-3xl font-bold">{property.title}</h1>
@@ -134,8 +134,8 @@ export default function PropertyDetailPage() {
           <div className="space-y-4">
             {saving && (
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-5">
-                <div className="text-xs font-bold uppercase tracking-wide text-orange-600 mb-1">Your Savings</div>
-                <div className="font-serif text-2xl font-bold text-orange-600">{saving}</div>
+                <div className="text-xs font-bold uppercase tracking-wide text-orange-400 mb-1">Your Savings</div>
+                <div className="font-serif text-2xl font-bold text-orange-400">{saving}</div>
                 <div className="text-xs text-stone-500 mt-1">vs 2% industry brokerage</div>
               </div>
             )}
@@ -150,7 +150,7 @@ export default function PropertyDetailPage() {
                 </div>
               </div>
               <a href={`https://wa.me/917013224895?text=${waMsg}`} target="_blank" rel="noopener noreferrer" className="block bg-[#25D366] text-white rounded-lg py-2.5 text-center text-sm font-bold mb-2 hover:opacity-90 transition-opacity">💬 WhatsApp</a>
-              <a href="tel:+917013224895" className="block bg-orange-50 text-orange-600 border border-orange-200 rounded-lg py-2.5 text-center text-sm font-bold hover:bg-orange-100 transition-colors">📞 +91 70132 24895</a>
+              <a href="tel:+917013224895" className="block bg-orange-50 text-orange-400 border border-orange-200 rounded-lg py-2.5 text-center text-sm font-bold hover:bg-orange-100 transition-colors">📞 +91 70132 24895</a>
             </div>
 
             <div className="bg-white border border-stone-200 rounded-xl p-5">

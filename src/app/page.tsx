@@ -51,7 +51,7 @@ export default function HomePage() {
               placeholder="Search by area, project name, or locality..."
               className="flex-1 px-4 py-2.5 text-sm outline-none rounded-xl"
             />
-            <button onClick={goSearch} className="bg-orange-600 text-white rounded-xl px-5 py-2.5 text-sm font-bold hover:bg-orange-700 transition-colors whitespace-nowrap">
+            <button onClick={goSearch} className="bg-orange-400 text-white rounded-xl px-5 py-2.5 text-sm font-bold hover:bg-orange-500 transition-colors whitespace-nowrap">
               🔍 Search
             </button>
           </div>
@@ -60,7 +60,7 @@ export default function HomePage() {
               <button
                 key={area}
                 onClick={() => router.push(`/properties?area=${encodeURIComponent(area)}`)}
-                className="text-xs bg-white/10 border border-white/15 text-white/75 px-3.5 py-1.5 rounded-full hover:bg-orange-600/30 hover:border-orange-400/40 hover:text-white transition-colors"
+                className="text-xs bg-white/10 border border-white/15 text-white/75 px-3.5 py-1.5 rounded-full hover:bg-orange-400/30 hover:border-orange-400/40 hover:text-white transition-colors"
               >
                 {area}
               </button>
@@ -70,7 +70,7 @@ export default function HomePage() {
       </div>
 
       {/* Savings banner */}
-      <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-6 md:px-10 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-left">
+      <div className="bg-gradient-to-r from-orange-400 to-orange-500 px-6 md:px-10 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-left">
         <p className="text-sm text-white/90">
           <strong className="text-white">You pay just 1% brokerage — always.</strong> On a ₹1.5 Cr home that's ₹1.5 Lakhs back in your pocket.
         </p>
@@ -81,7 +81,7 @@ export default function HomePage() {
       <div className="max-w-6xl mx-auto px-6 md:px-10 py-12">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-serif text-2xl font-bold">Featured Properties</h2>
-          <button onClick={() => router.push('/properties')} className="text-sm font-semibold text-orange-600 hover:text-orange-700">View all →</button>
+          <button onClick={() => router.push('/properties')} className="text-sm font-semibold text-orange-400 hover:text-orange-500">View all →</button>
         </div>
 
         {loading ? (
@@ -96,7 +96,7 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="text-center py-16 text-stone-400">
-            No featured properties yet. <button onClick={() => router.push('/admin')} className="text-orange-600 underline">Add some from the admin panel</button>.
+            No featured properties yet. <button onClick={() => router.push('/admin')} className="text-orange-400 underline">Add some from the admin panel</button>.
           </div>
         )}
       </div>

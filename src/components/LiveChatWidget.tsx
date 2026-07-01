@@ -99,7 +99,7 @@ export default function LiveChatWidget() {
       {/* Floating button */}
       <button
         onClick={toggleOpen}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-orange-400 text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
         aria-label="Open chat"
       >
         {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
@@ -139,7 +139,7 @@ export default function LiveChatWidget() {
               />
               <button
                 onClick={startConversation}
-                className="bg-orange-500 text-white rounded-lg py-2 text-sm font-semibold hover:bg-orange-600 transition-colors"
+                className="bg-orange-500 text-white rounded-lg py-2 text-sm font-semibold hover:bg-orange-400 transition-colors"
               >
                 Start Chat
               </button>
@@ -175,7 +175,7 @@ export default function LiveChatWidget() {
                 />
                 <button
                   onClick={sendMessage}
-                  className="w-9 h-9 rounded-full bg-orange-500 text-white flex items-center justify-center hover:bg-orange-600 transition-colors flex-shrink-0"
+                  className="w-9 h-9 rounded-full bg-orange-500 text-white flex items-center justify-center hover:bg-orange-400 transition-colors flex-shrink-0"
                 >
                   <Send size={16} />
                 </button>
