@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import PropertyCard from '@/components/PropertyCard';
 import { Property } from '@/types/property';
 
@@ -37,7 +36,7 @@ export default function HomePage() {
       <div className="relative bg-gradient-to-br from-stone-900 via-stone-900 to-orange-950 px-6 md:px-10 py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_50%,rgba(200,114,42,0.18),transparent_60%)]" />
         <div className="relative max-w-3xl">
-          <div className="text-xs font-semibold uppercase tracking-widest text-orange-300 mb-4">📍 Hyderabad's Fairest Real Estate Marketplace<Footer />
+          <div className="text-xs font-semibold uppercase tracking-widest text-orange-300 mb-4">📍 Hyderabad's Fairest Real Estate Marketplace
     </div>
           <h1 className="font-serif text-4xl md:text-5xl font-bold text-stone-50 leading-tight mb-4">
             Find Your <em className="text-orange-300 italic">Perfect Home</em>.<br />Pay Just 1% Brokerage.
@@ -56,7 +55,7 @@ export default function HomePage() {
             <button onClick={goSearch} className="bg-orange-400 text-white rounded-xl px-5 py-2.5 text-sm font-bold hover:bg-orange-500 transition-colors whitespace-nowrap">
               🔍 Search
             </button>
-          <Footer />
+          
     </div>
           <div className="flex gap-2 mt-5 flex-wrap">
             {areas.map((area) => (
@@ -68,11 +67,11 @@ export default function HomePage() {
                 {area}
               </button>
             ))}
-          <Footer />
+          
     </div>
-        <Footer />
+        
     </div>
-      <Footer />
+      
     </div>
 
       {/* Savings banner */}
@@ -80,9 +79,9 @@ export default function HomePage() {
         <p className="text-sm text-white/90">
           <strong className="text-white">You pay just 1% brokerage — always.</strong> On a ₹1.5 Cr home that's ₹1.5 Lakhs back in your pocket.
         </p>
-        <div className="font-serif text-2xl font-bold text-white">1% Only<Footer />
+        <div className="font-serif text-2xl font-bold text-white">1% Only
     </div>
-      <Footer />
+      
     </div>
 
       {/* Featured listings */}
@@ -90,7 +89,7 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-serif text-2xl font-bold">Featured Properties</h2>
           <button onClick={() => router.push('/properties')} className="text-sm font-semibold text-orange-400 hover:text-orange-500">View all →</button>
-        <Footer />
+        
     </div>
 
         {loading ? (
@@ -98,22 +97,22 @@ export default function HomePage() {
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-64 bg-stone-200 rounded-2xl animate-pulse" />
             ))}
-          <Footer />
+          
     </div>
         ) : featured.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {featured.map((p, i) => <PropertyCard key={p.id} property={p} index={i} />)}
-          <Footer />
+          
     </div>
         ) : (
           <div className="text-center py-16 text-stone-400">
             No featured properties yet. <button onClick={() => router.push('/admin')} className="text-orange-400 underline">Add some from the admin panel</button>.
-          <Footer />
+          
     </div>
         )}
-      <Footer />
+      
     </div>
-    <Footer />
+    
     </div>
   );
 }

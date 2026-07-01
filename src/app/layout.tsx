@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import LiveChatWidget from "@/components/LiveChatWidget";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "nomore2percent — Hyderabad Real Estate Marketplace",
@@ -16,7 +17,9 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col font-sans">
         {children}
-        {/* Mounted globally so the chat bubble follows visitors across every page */}
+        {/* Footer mounted globally so it appears on every page */}
+        <Footer />
+        {/* LiveChat mounted globally so the chat bubble follows visitors across every page */}
         <LiveChatWidget />
       </body>
     </html>

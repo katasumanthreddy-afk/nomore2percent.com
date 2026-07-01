@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import PropertyCard from '@/components/PropertyCard';
 import { Property } from '@/types/property';
 
