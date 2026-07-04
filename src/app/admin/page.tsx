@@ -20,10 +20,25 @@ interface Conversation {
 interface SurveyResponse {
   id: number; user_type: string; name: string | null; phone: string | null;
   willing_to_contact: boolean; area: string | null; locality: string | null;
-  property_type: string | null; bhk: string | null;
+  property_type: string | null; bhk: string | null; floor: string | null;
+  building_age: string | null; society_name: string | null;
+  purchase_year: string | null; purchase_price_range: string | null;
+  purchase_price_exact: number | null; purchase_price_per_sqft: number | null;
   current_value_range: string | null; current_value_exact: number | null;
+  appreciation_feel: string | null;
   rent_amount_range: string | null; rent_amount_exact: number | null;
-  best_about_area: string | null; worst_about_area: string | null;
+  deposit_range: string | null; deposit_exact: number | null;
+  rent_increase_last_year: string | null; rent_increase_amount: number | null;
+  years_renting: string | null;
+  infra_water: string | null; infra_road_width: string | null;
+  infra_road_condition: string | null; infra_power: string | null;
+  infra_drainage: string | null; infra_garbage: string | null;
+  nearby_developments: string | null; metro_connectivity: string | null;
+  new_projects_nearby: string | null; price_impact: string | null;
+  builder_name: string | null; builder_rating: string | null;
+  maintenance_charges: string | null; oc_status: string | null;
+  society_quality: string | null;
+  would_recommend: string | null; best_about_area: string | null; worst_about_area: string | null;
   created_at: string;
 }
 
@@ -300,6 +315,43 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
   );
 }
 
+function toCSV(rows: SurveyResponse[]): string {
+  if (rows.length === 0) return '';
+  const headers = Object.keys(rows[0]) as (keyof SurveyResponse)[];
+  const escape = (val: unknown) => {
+    if (val === null || val === undefined) return '';
+    const s = String(val).replace(/"/g, '""');
+    return '"' + s + '"';
+  };
+  const lines = [
+    headers.join(','),
+    ...rows.map((r) => headers.map((h) => escape(r[h])).join(',')),
+  ];
+  return lines.join('\n');
+}
+
+function downloadCSV(rows: SurveyResponse[]) {
+  const csv = toCSV(rows);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'market-survey-responses-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function DetailRow({ label, value }: { label: string; value: string | number | null | undefined }) {
+  return (
+    <div>
+      <span className="text-stone-500">{label}:</span>{' '}
+      <span className="text-stone-300">{value === null || value === undefined || value === '' ? '—' : value}</span>
+    </div>
+  );
+}
+
 function SurveyResponses({
   responses,
   typeFilter,
@@ -315,23 +367,32 @@ function SurveyResponses({
 
   return (
     <div>
-      <div className="flex gap-2 mb-4">
-        {(['all', 'owner', 'renter'] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTypeFilter(t)}
-            className={'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ' + (
-              typeFilter === t
-                ? 'bg-orange-500 text-stone-950 border-orange-500'
-                : 'border-stone-800 text-stone-400 hover:border-stone-600'
-            )}
-          >
-            {t.charAt(0).toUpperCase() + t.slice(1)}
-            <span className="ml-1.5 opacity-60">
-              ({t === 'all' ? responses.length : responses.filter((r) => r.user_type === t).length})
-            </span>
-          </button>
-        ))}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="flex gap-2">
+          {(['all', 'owner', 'renter'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTypeFilter(t)}
+              className={'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ' + (
+                typeFilter === t
+                  ? 'bg-orange-500 text-stone-950 border-orange-500'
+                  : 'border-stone-800 text-stone-400 hover:border-stone-600'
+              )}
+            >
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+              <span className="ml-1.5 opacity-60">
+                ({t === 'all' ? responses.length : responses.filter((r) => r.user_type === t).length})
+              </span>
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => downloadCSV(filtered)}
+          disabled={filtered.length === 0}
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-stone-800 text-stone-300 hover:border-orange-400 hover:text-orange-400 transition-colors disabled:opacity-40 disabled:hover:border-stone-800 disabled:hover:text-stone-300"
+        >
+          Export CSV ({filtered.length})
+        </button>
       </div>
 
       <div className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden">
@@ -389,10 +450,91 @@ function SurveyResponses({
                 </tr>
                 {expanded === r.id && (
                   <tr className="border-b border-stone-800/50 bg-stone-950/40">
-                    <td colSpan={7} className="p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-stone-400">
-                        <div><span className="text-stone-500">Best about area:</span> {r.best_about_area || '—'}</div>
-                        <div><span className="text-stone-500">Worst about area:</span> {r.worst_about_area || '—'}</div>
+                    <td colSpan={7} className="p-5">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-5 text-xs">
+
+                        <div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Contact</div>
+                          <div className="space-y-1.5">
+                            <DetailRow label="Name" value={r.name} />
+                            <DetailRow label="Phone" value={r.phone} />
+                            <DetailRow label="Willing to contact" value={r.willing_to_contact ? 'Yes' : 'No'} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Property Details</div>
+                          <div className="space-y-1.5">
+                            <DetailRow label="Floor" value={r.floor} />
+                            <DetailRow label="Building age" value={r.building_age} />
+                            <DetailRow label="Society name" value={r.society_name} />
+                          </div>
+                        </div>
+
+                        {r.user_type === 'owner' ? (
+                          <div>
+                            <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Purchase & Pricing</div>
+                            <div className="space-y-1.5">
+                              <DetailRow label="Purchase year" value={r.purchase_year} />
+                              <DetailRow label="Purchase price" value={r.purchase_price_exact ? '₹' + r.purchase_price_exact.toLocaleString('en-IN') : r.purchase_price_range} />
+                              <DetailRow label="Price per sqft" value={r.purchase_price_per_sqft} />
+                              <DetailRow label="Appreciation feel" value={r.appreciation_feel} />
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Rent & Deposit</div>
+                            <div className="space-y-1.5">
+                              <DetailRow label="Deposit" value={r.deposit_exact ? '₹' + r.deposit_exact.toLocaleString('en-IN') : r.deposit_range} />
+                              <DetailRow label="Years renting" value={r.years_renting} />
+                              <DetailRow label="Rent increased last year" value={r.rent_increase_last_year} />
+                              <DetailRow label="Increase amount" value={r.rent_increase_amount} />
+                            </div>
+                          </div>
+                        )}
+
+                        <div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Infrastructure</div>
+                          <div className="space-y-1.5">
+                            <DetailRow label="Water supply" value={r.infra_water} />
+                            <DetailRow label="Road width" value={r.infra_road_width} />
+                            <DetailRow label="Road condition" value={r.infra_road_condition} />
+                            <DetailRow label="Power cuts" value={r.infra_power} />
+                            <DetailRow label="Drainage" value={r.infra_drainage} />
+                            <DetailRow label="Garbage collection" value={r.infra_garbage} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Developments</div>
+                          <div className="space-y-1.5">
+                            <DetailRow label="Nearby developments" value={r.nearby_developments} />
+                            <DetailRow label="Metro connectivity" value={r.metro_connectivity} />
+                            <DetailRow label="New projects nearby" value={r.new_projects_nearby} />
+                            <DetailRow label="Price impact" value={r.price_impact} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Builder & Society</div>
+                          <div className="space-y-1.5">
+                            <DetailRow label="Builder name" value={r.builder_name} />
+                            <DetailRow label="Builder rating" value={r.builder_rating} />
+                            <DetailRow label="Maintenance charges" value={r.maintenance_charges} />
+                            <DetailRow label="OC status" value={r.oc_status} />
+                            <DetailRow label="Society quality" value={r.society_quality} />
+                          </div>
+                        </div>
+
+                        <div className="md:col-span-3">
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Their View</div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-1.5">
+                            <DetailRow label="Would recommend area" value={r.would_recommend} />
+                            <DetailRow label="Best about area" value={r.best_about_area} />
+                            <DetailRow label="Worst about area" value={r.worst_about_area} />
+                          </div>
+                        </div>
+
                       </div>
                     </td>
                   </tr>
