@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Fragment } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusher-client';
@@ -17,6 +17,15 @@ interface Conversation {
   id: number; visitor_name: string; visitor_phone: string | null; last_message_at: string;
   chat_messages: { count: number }[];
 }
+interface SurveyResponse {
+  id: number; user_type: string; name: string | null; phone: string | null;
+  willing_to_contact: boolean; area: string | null; locality: string | null;
+  property_type: string | null; bhk: string | null;
+  current_value_range: string | null; current_value_exact: number | null;
+  rent_amount_range: string | null; rent_amount_exact: number | null;
+  best_about_area: string | null; worst_about_area: string | null;
+  created_at: string;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'text-emerald-400 bg-emerald-950/40 border-emerald-900/40',
@@ -27,12 +36,14 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [tab, setTab] = useState<'leads' | 'properties' | 'chat'>('leads');
+  const [tab, setTab] = useState<'leads' | 'properties' | 'chat' | 'survey'>('leads');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [properties, setProperties] = useState<Prop[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
   const [newMessageAlert, setNewMessageAlert] = useState(0);
   const [propStatusFilter, setPropStatusFilter] = useState<string>('all');
+  const [surveyTypeFilter, setSurveyTypeFilter] = useState<'all' | 'owner' | 'renter'>('all');
 
   const loadLeads = useCallback(() => {
     fetch('/api/leads').then((r) => r.json()).then((d) => d.success && setLeads(d.leads));
@@ -48,11 +59,16 @@ export default function AdminDashboard() {
     fetch('/api/chat/conversations').then((r) => r.json()).then((d) => d.success && setConversations(d.conversations));
   }, []);
 
+  const loadSurveyResponses = useCallback(() => {
+    fetch('/api/market-survey').then((r) => r.json()).then((d) => d.success && setSurveyResponses(d.responses));
+  }, []);
+
   useEffect(() => {
     loadLeads();
     loadProperties();
     loadConversations();
-  }, [loadLeads, loadProperties, loadConversations]);
+    loadSurveyResponses();
+  }, [loadLeads, loadProperties, loadConversations, loadSurveyResponses]);
 
   useEffect(() => {
     const pusher = getPusherClient();
@@ -129,6 +145,7 @@ export default function AdminDashboard() {
           <TabBtn active={tab === 'chat'} onClick={() => { setTab('chat'); setNewMessageAlert(0); }}>
             Live Chat {newMessageAlert > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] rounded-full px-1.5">{newMessageAlert}</span>}
           </TabBtn>
+          <TabBtn active={tab === 'survey'} onClick={() => setTab('survey')}>Market Survey ({surveyResponses.length})</TabBtn>
         </div>
 
         {/* LEADS TAB */}
@@ -256,6 +273,11 @@ export default function AdminDashboard() {
 
         {/* CHAT TAB */}
         {tab === 'chat' && <ChatInbox conversations={conversations} onRefresh={loadConversations} />}
+
+        {/* SURVEY TAB */}
+        {tab === 'survey' && (
+          <SurveyResponses responses={surveyResponses} typeFilter={surveyTypeFilter} setTypeFilter={setSurveyTypeFilter} />
+        )}
       </div>
     </div>
   );
@@ -275,6 +297,117 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     <button onClick={onClick} className={'px-4 py-2 rounded-lg text-sm font-medium transition-colors ' + (active ? 'bg-orange-500 text-stone-950' : 'text-stone-400 hover:text-stone-100')}>
       {children}
     </button>
+  );
+}
+
+function SurveyResponses({
+  responses,
+  typeFilter,
+  setTypeFilter,
+}: {
+  responses: SurveyResponse[];
+  typeFilter: 'all' | 'owner' | 'renter';
+  setTypeFilter: (v: 'all' | 'owner' | 'renter') => void;
+}) {
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  const filtered = typeFilter === 'all' ? responses : responses.filter((r) => r.user_type === typeFilter);
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        {(['all', 'owner', 'renter'] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTypeFilter(t)}
+            className={'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ' + (
+              typeFilter === t
+                ? 'bg-orange-500 text-stone-950 border-orange-500'
+                : 'border-stone-800 text-stone-400 hover:border-stone-600'
+            )}
+          >
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+            <span className="ml-1.5 opacity-60">
+              ({t === 'all' ? responses.length : responses.filter((r) => r.user_type === t).length})
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-800 bg-stone-950/40">
+              <th className="p-3.5">Type</th>
+              <th className="p-3.5">Area / Locality</th>
+              <th className="p-3.5">Property</th>
+              <th className="p-3.5">Value / Rent</th>
+              <th className="p-3.5">Contact</th>
+              <th className="p-3.5">Date</th>
+              <th className="p-3.5"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((r) => (
+              <Fragment key={r.id}>
+                <tr className="border-b border-stone-800/50 hover:bg-stone-850/50">
+                  <td className="p-3.5">
+                    <span className={'text-[10px] px-2 py-0.5 rounded uppercase font-semibold ' + (
+                      r.user_type === 'owner' ? 'bg-blue-950/40 text-blue-400 border border-blue-900/40' : 'bg-purple-950/40 text-purple-400 border border-purple-900/40'
+                    )}>
+                      {r.user_type}
+                    </span>
+                  </td>
+                  <td className="p-3.5">
+                    <div className="font-medium">{r.area || '—'}</div>
+                    <div className="text-xs text-stone-500">{r.locality || ''}</div>
+                  </td>
+                  <td className="p-3.5 text-stone-400">{[r.property_type, r.bhk].filter(Boolean).join(' · ') || '—'}</td>
+                  <td className="p-3.5 text-orange-400">
+                    {r.user_type === 'owner'
+                      ? (r.current_value_exact ? '₹' + r.current_value_exact.toLocaleString('en-IN') : r.current_value_range || '—')
+                      : (r.rent_amount_exact ? '₹' + r.rent_amount_exact.toLocaleString('en-IN') + '/mo' : r.rent_amount_range || '—')}
+                  </td>
+                  <td className="p-3.5">
+                    {r.willing_to_contact && r.phone ? (
+                      <a href={'https://wa.me/91' + r.phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 rounded px-2 py-1">
+                        {r.name || 'WA'}
+                      </a>
+                    ) : (
+                      <span className="text-xs text-stone-600">Anonymous</span>
+                    )}
+                  </td>
+                  <td className="p-3.5 text-stone-500 text-xs">{new Date(r.created_at).toLocaleDateString('en-IN')}</td>
+                  <td className="p-3.5">
+                    <button
+                      onClick={() => setExpanded(expanded === r.id ? null : r.id)}
+                      className="text-xs text-stone-400 hover:text-orange-400"
+                    >
+                      {expanded === r.id ? 'Hide' : 'Details'}
+                    </button>
+                  </td>
+                </tr>
+                {expanded === r.id && (
+                  <tr className="border-b border-stone-800/50 bg-stone-950/40">
+                    <td colSpan={7} className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-stone-400">
+                        <div><span className="text-stone-500">Best about area:</span> {r.best_about_area || '—'}</div>
+                        <div><span className="text-stone-500">Worst about area:</span> {r.worst_about_area || '—'}</div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+        {filtered.length === 0 && (
+          <div className="p-10 text-center text-stone-500 text-sm">
+            {typeFilter === 'all' ? 'No survey responses yet.' : 'No ' + typeFilter + ' responses yet.'}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
