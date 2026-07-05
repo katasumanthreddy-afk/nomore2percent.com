@@ -53,7 +53,7 @@ export default function Footer() {
             <div className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-4">Get in Touch</div>
             <ul className="space-y-3 text-sm">
               <li>
-                <a href="https://wa.me/917013224895" target="_blank" rel="noopener noreferrer" className="hover:text-orange-400 transition-colors flex items-center gap-2">
+                <a href="tel:+917013224895" className="hover:text-orange-400 transition-colors flex items-center gap-2">
                   <span className="text-green-400">+91 70132 24895</span>
                 </a>
               </li>

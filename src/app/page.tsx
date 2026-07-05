@@ -283,14 +283,6 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-              <div className="flex gap-3 mt-7">
-                <Link href="/properties" className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-5 py-2.5 text-sm font-bold transition-colors">
-                  Browse Properties
-                </Link>
-                <a href="https://wa.me/917013224895" target="_blank" rel="noopener noreferrer" className="border border-stone-200 hover:border-orange-300 text-stone-600 hover:text-orange-600 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors">
-                  Talk to Sumanth
-                </a>
-              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
@@ -317,11 +309,8 @@ export default function HomePage() {
           <p className="text-orange-100 mb-6">Browse verified listings across the city — and save lakhs in brokerage.</p>
           <div className="flex gap-3 justify-center flex-wrap">
             <Link href="/properties" className="bg-white text-orange-600 rounded-lg px-6 py-3 text-sm font-bold hover:bg-orange-50 transition-colors">
-              Browse Properties
+              Find Your Home
             </Link>
-            <a href="https://wa.me/917013224895" target="_blank" rel="noopener noreferrer" className="bg-orange-600 text-white border border-orange-300/30 rounded-lg px-6 py-3 text-sm font-bold hover:bg-orange-700 transition-colors">
-              WhatsApp Sumanth
-            </a>
           </div>
         </div>
       </div>
