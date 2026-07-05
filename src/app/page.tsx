@@ -64,8 +64,6 @@ export default function HomePage() {
     window.location.href = '/properties?' + params.toString();
   };
 
-  const recentProperties = allProperties.slice(0, 6);
-
   return (
     <div className="flex-1 flex flex-col">
       <Header />
@@ -238,13 +236,11 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── FEATURED PROPERTIES ── */}
+      {/* ── EXPLORE PROPERTIES ── */}
       <div className="bg-stone-50 py-12">
         <div className="max-w-6xl mx-auto px-6 md:px-10">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-serif text-2xl font-bold text-stone-900">
-              {featuredProperties.length > 0 ? 'Featured Properties' : 'Latest Listings'}
-            </h2>
+            <h2 className="font-serif text-2xl font-bold text-stone-900">Explore Properties</h2>
             <Link href="/properties" className="text-sm text-orange-500 hover:text-orange-600 font-semibold">
               View all →
             </Link>
@@ -254,20 +250,8 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => <div key={i} className="h-64 bg-stone-200 rounded-2xl animate-pulse" />)}
             </div>
-          ) : recentProperties.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(featuredProperties.length > 0 ? featuredProperties : recentProperties).map((p, i) => (
-                <PropertyCard key={p.id} property={p} index={i} />
-              ))}
-            </div>
           ) : (
-            <div className="text-center py-16 text-stone-400">
-              <div className="text-5xl mb-3 opacity-20">🏠</div>
-              <p className="text-sm">No featured properties yet.</p>
-              <Link href="/admin" className="text-orange-500 text-sm hover:underline mt-1 inline-block">
-                Add some from the admin panel →
-              </Link>
-            </div>
+            <PropertyTabs allProperties={allProperties} featuredProperties={featuredProperties} />
           )}
         </div>
       </div>
@@ -352,6 +336,72 @@ function StatItem({ value, label, highlight }: { value: string; label: string; h
     <div>
       <div className={`font-serif text-3xl font-bold ${highlight ? 'text-orange-400' : 'text-white'}`}>{value}</div>
       <div className="text-stone-400 text-xs mt-1">{label}</div>
+    </div>
+  );
+}
+
+const ONE_CRORE = 10000000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+function PropertyTabs({ allProperties, featuredProperties }: { allProperties: Property[]; featuredProperties: Property[] }) {
+  type TabId = 'new' | 'trending' | 'under1cr';
+  const [tab, setTab] = useState<TabId>('new');
+
+  const newToday = allProperties.filter(
+    (p) => p.created_at && (Date.now() - new Date(p.created_at).getTime()) < ONE_DAY_MS
+  );
+  // "New Today" falls back to the most recent listings if nothing was added in the last 24h,
+  // so the tab isn't empty on a quiet day.
+  const newTodayOrRecent = newToday.length > 0 ? newToday : allProperties.slice(0, 6);
+
+  // No view/click tracking exists yet, so "Trending" uses the featured flag —
+  // the one manual signal Sumanth already sets from the admin panel.
+  const trending = featuredProperties.length > 0 ? featuredProperties : allProperties.slice(0, 6);
+
+  const under1Cr = allProperties.filter(
+    (p) => p.listing_type === 'sale' && typeof p.price_num === 'number' && p.price_num > 0 && p.price_num < ONE_CRORE
+  );
+
+  const tabs: { id: TabId; label: string; items: Property[]; emptyMsg: string }[] = [
+    { id: 'new', label: 'New Today', items: newTodayOrRecent, emptyMsg: 'No listings yet — check back soon.' },
+    { id: 'trending', label: 'Trending', items: trending, emptyMsg: 'No trending properties marked yet.' },
+    { id: 'under1cr', label: 'Under 1 Cr', items: under1Cr, emptyMsg: 'No properties under ₹1 Cr right now.' },
+  ];
+
+  const active = tabs.find((t) => t.id === tab)!;
+  const items = active.items.slice(0, 6);
+
+  return (
+    <div>
+      <div className="flex gap-1 bg-white border border-stone-200 rounded-xl p-1 w-fit mb-6">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              tab === t.id ? 'bg-orange-500 text-white' : 'text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {items.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {items.map((p, i) => (
+            <PropertyCard key={p.id} property={p} index={i} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16 text-stone-400">
+          <div className="text-5xl mb-3 opacity-20">🏠</div>
+          <p className="text-sm">{active.emptyMsg}</p>
+          <Link href="/admin" className="text-orange-500 text-sm hover:underline mt-1 inline-block">
+            Add some from the admin panel →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

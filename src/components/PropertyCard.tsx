@@ -10,6 +10,9 @@ export default function PropertyCard({ property, index = 0 }: { property: Proper
   const saving = savingsLabel(property.price_num, property.listing_type);
   const icon = ICONS[index % ICONS.length];
   const coverImage = property.images?.[0];
+  const isNew = property.created_at
+    ? (Date.now() - new Date(property.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000
+    : false;
 
   return (
     <Link
@@ -27,6 +30,9 @@ export default function PropertyCard({ property, index = 0 }: { property: Proper
           <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded ${property.listing_type === 'sale' ? 'bg-orange-500 text-white' : 'bg-blue-500 text-white'}`}>
             {property.listing_type === 'sale' ? 'For Sale' : 'For Rent'}
           </span>
+          {isNew && (
+            <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded bg-emerald-500 text-white">New</span>
+          )}
           {property.featured && (
             <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded bg-white/90 text-stone-700">★ Featured</span>
           )}
