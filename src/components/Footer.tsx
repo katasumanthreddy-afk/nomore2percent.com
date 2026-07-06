@@ -30,6 +30,7 @@ export default function Footer() {
               <li><Link href="/" className="hover:text-orange-400 transition-colors">Home</Link></li>
               <li><Link href="/properties" className="hover:text-orange-400 transition-colors">Properties</Link></li>
               <li><Link href="/area-insights" className="hover:text-orange-400 transition-colors">Area Insights</Link></li>
+              <li><Link href="/list-your-property" className="hover:text-orange-400 transition-colors">List Your Property</Link></li>
               <li><Link href="/blog" className="hover:text-orange-400 transition-colors">Blog</Link></li>
               <li><Link href="/area-guides" className="hover:text-orange-400 transition-colors">Area Guides</Link></li>
               <li><Link href="/sitemap" className="hover:text-orange-400 transition-colors">Sitemap</Link></li>

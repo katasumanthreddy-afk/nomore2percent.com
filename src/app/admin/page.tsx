@@ -43,6 +43,18 @@ interface SurveyResponse {
   created_at: string;
 }
 
+interface SubmissionImage { id: number; storage_path: string; is_primary: boolean; }
+interface PropertySubmission {
+  id: number; owner_name: string; owner_phone: string; owner_email: string | null;
+  title: string | null; description: string | null;
+  property_type: string; listing_type: string; area: string; address: string | null;
+  bedrooms: number | null; bathrooms: number | null; sqft: number | null;
+  price: string | null; floor: string | null; year_built: string | null;
+  status: 'pending' | 'approved' | 'rejected'; admin_notes: string | null;
+  created_at: string;
+  property_submission_images: SubmissionImage[];
+}
+
 const STATUS_COLORS: Record<string, string> = {
   active: 'text-emerald-400 bg-emerald-950/40 border-emerald-900/40',
   sold: 'text-blue-400 bg-blue-950/40 border-blue-900/40',
@@ -52,11 +64,12 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [tab, setTab] = useState<'leads' | 'properties' | 'chat' | 'survey'>('leads');
+  const [tab, setTab] = useState<'leads' | 'properties' | 'chat' | 'survey' | 'submissions'>('leads');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [properties, setProperties] = useState<Prop[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
+  const [submissions, setSubmissions] = useState<PropertySubmission[]>([]);
   const [newMessageAlert, setNewMessageAlert] = useState(0);
   const [propStatusFilter, setPropStatusFilter] = useState<string>('all');
   const [surveyTypeFilter, setSurveyTypeFilter] = useState<'all' | 'owner' | 'renter'>('all');
@@ -79,12 +92,17 @@ export default function AdminDashboard() {
     fetch('/api/market-survey').then((r) => r.json()).then((d) => d.success && setSurveyResponses(d.responses));
   }, []);
 
+  const loadSubmissions = useCallback(() => {
+    fetch('/api/property-submissions').then((r) => r.json()).then((d) => d.success && setSubmissions(d.submissions));
+  }, []);
+
   useEffect(() => {
     loadLeads();
     loadProperties();
     loadConversations();
     loadSurveyResponses();
-  }, [loadLeads, loadProperties, loadConversations, loadSurveyResponses]);
+    loadSubmissions();
+  }, [loadLeads, loadProperties, loadConversations, loadSurveyResponses, loadSubmissions]);
 
   useEffect(() => {
     const pusher = getPusherClient();
@@ -162,6 +180,11 @@ export default function AdminDashboard() {
             Live Chat {newMessageAlert > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] rounded-full px-1.5">{newMessageAlert}</span>}
           </TabBtn>
           <TabBtn active={tab === 'survey'} onClick={() => setTab('survey')}>Market Survey ({surveyResponses.length})</TabBtn>
+          <TabBtn active={tab === 'submissions'} onClick={() => setTab('submissions')}>
+            Submissions {submissions.filter((s) => s.status === 'pending').length > 0 && (
+              <span className="ml-1 bg-red-500 text-white text-[10px] rounded-full px-1.5">{submissions.filter((s) => s.status === 'pending').length}</span>
+            )}
+          </TabBtn>
         </div>
 
         {/* LEADS TAB */}
@@ -293,6 +316,11 @@ export default function AdminDashboard() {
         {/* SURVEY TAB */}
         {tab === 'survey' && (
           <SurveyResponses responses={surveyResponses} typeFilter={surveyTypeFilter} setTypeFilter={setSurveyTypeFilter} />
+        )}
+
+        {/* SUBMISSIONS TAB */}
+        {tab === 'submissions' && (
+          <PropertySubmissions submissions={submissions} onRefresh={loadSubmissions} />
         )}
       </div>
     </div>
@@ -547,6 +575,157 @@ function SurveyResponses({
         {filtered.length === 0 && (
           <div className="p-10 text-center text-stone-500 text-sm">
             {typeFilter === 'all' ? 'No survey responses yet.' : 'No ' + typeFilter + ' responses yet.'}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PropertySubmissions({ submissions, onRefresh }: { submissions: PropertySubmission[]; onRefresh: () => void }) {
+  const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+  const [busyId, setBusyId] = useState<number | null>(null);
+  const [rejectingId, setRejectingId] = useState<number | null>(null);
+  const [rejectNote, setRejectNote] = useState('');
+
+  const filtered = filter === 'all' ? submissions : submissions.filter((s) => s.status === filter);
+
+  const approve = async (id: number) => {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/property-submissions/${id}/approve`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (!data.success) alert(data.message || 'Failed to approve');
+      onRefresh();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const reject = async (id: number) => {
+    setBusyId(id);
+    try {
+      await fetch(`/api/property-submissions/${id}/reject`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_notes: rejectNote || null }),
+      });
+      setRejectingId(null);
+      setRejectNote('');
+      onRefresh();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        {(['pending', 'approved', 'rejected', 'all'] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ' + (
+              filter === f ? 'bg-orange-500 text-stone-950 border-orange-500' : 'border-stone-800 text-stone-400 hover:border-stone-600'
+            )}
+          >
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+            <span className="ml-1.5 opacity-60">({f === 'all' ? submissions.length : submissions.filter((s) => s.status === f).length})</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-3">
+        {filtered.map((s) => {
+          const cover = s.property_submission_images?.find((i) => i.is_primary) || s.property_submission_images?.[0];
+          return (
+            <div key={s.id} className="bg-stone-900 border border-stone-800 rounded-xl p-4 flex gap-4">
+              <div className="w-24 h-24 rounded-lg bg-stone-800 flex-shrink-0 overflow-hidden flex items-center justify-center text-3xl">
+                {cover ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={cover.storage_path} alt="" className="w-full h-full object-cover" />
+                ) : '🏠'}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-semibold text-sm">{s.title || `${s.property_type} in ${s.area}`}</div>
+                    <div className="text-xs text-stone-500 mt-0.5">
+                      {s.area} · {s.property_type} · {s.listing_type === 'sale' ? 'For Sale' : 'For Rent'}
+                      {s.price ? ` · ₹${s.price}` : ''}
+                    </div>
+                    <div className="text-xs text-stone-500 mt-0.5">
+                      {[s.bedrooms && `${s.bedrooms} BHK`, s.sqft && `${s.sqft} sqft`, s.floor].filter(Boolean).join(' · ')}
+                    </div>
+                  </div>
+                  <span className={'text-[10px] px-2 py-0.5 rounded uppercase font-semibold flex-shrink-0 ' + (
+                    s.status === 'pending' ? 'bg-amber-950/40 text-amber-400 border border-amber-900/40'
+                    : s.status === 'approved' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40'
+                    : 'bg-red-950/40 text-red-400 border border-red-900/40'
+                  )}>
+                    {s.status}
+                  </span>
+                </div>
+
+                <div className="text-xs text-stone-400 mt-2">
+                  From <span className="text-stone-200">{s.owner_name}</span> ·{' '}
+                  <a href={'https://wa.me/91' + s.owner_phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">
+                    {s.owner_phone}
+                  </a>
+                  {s.owner_email ? ` · ${s.owner_email}` : ''}
+                </div>
+
+                {s.description && <div className="text-xs text-stone-500 mt-2 line-clamp-2">{s.description}</div>}
+
+                {s.property_submission_images?.length > 1 && (
+                  <div className="flex gap-1.5 mt-2">
+                    {s.property_submission_images.slice(0, 6).map((img) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={img.id} src={img.storage_path} alt="" className="w-9 h-9 rounded object-cover border border-stone-800" />
+                    ))}
+                  </div>
+                )}
+
+                {s.status === 'pending' && (
+                  <div className="mt-3">
+                    {rejectingId === s.id ? (
+                      <div className="flex gap-2 items-center">
+                        <input
+                          value={rejectNote}
+                          onChange={(e) => setRejectNote(e.target.value)}
+                          placeholder="Reason (optional)"
+                          className="flex-1 bg-stone-950 border border-stone-800 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-orange-400"
+                        />
+                        <button onClick={() => reject(s.id)} disabled={busyId === s.id} className="text-xs bg-red-950/40 text-red-400 border border-red-900/40 rounded px-3 py-1.5 hover:bg-red-900/40 transition-colors disabled:opacity-50">
+                          Confirm Reject
+                        </button>
+                        <button onClick={() => { setRejectingId(null); setRejectNote(''); }} className="text-xs text-stone-500 hover:text-stone-300">Cancel</button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button onClick={() => approve(s.id)} disabled={busyId === s.id} className="text-xs bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 rounded px-3 py-1.5 hover:bg-emerald-900/40 transition-colors disabled:opacity-50">
+                          {busyId === s.id ? 'Publishing...' : '✓ Approve & Publish'}
+                        </button>
+                        <button onClick={() => setRejectingId(s.id)} disabled={busyId === s.id} className="text-xs bg-stone-800 text-stone-300 border border-stone-700 rounded px-3 py-1.5 hover:bg-stone-700 transition-colors disabled:opacity-50">
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {s.admin_notes && s.status === 'rejected' && (
+                  <div className="text-xs text-stone-500 mt-2 italic">Note: {s.admin_notes}</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && (
+          <div className="p-10 text-center text-stone-500 text-sm bg-stone-900 border border-stone-800 rounded-xl">
+            No {filter !== 'all' ? filter : ''} submissions.
           </div>
         )}
       </div>
