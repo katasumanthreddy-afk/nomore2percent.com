@@ -19,6 +19,7 @@ export default function Header() {
         <Link href="/properties" className="px-3.5 py-2 rounded-lg text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors">Properties</Link>
         <Link href="/area-insights" className="px-3.5 py-2 rounded-lg text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors">Area Insights</Link>
         <Link href="/market-survey" className="px-3.5 py-2 rounded-lg text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors">Market Survey</Link>
+        <Link href="/property-valuation" className="px-3.5 py-2 rounded-lg text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors">Valuation</Link>
         <Link href="/blog" className="px-3.5 py-2 rounded-lg text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors">Blog</Link>
       </nav>
 
@@ -34,6 +35,7 @@ export default function Header() {
           <Link href="/properties" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>Properties</Link>
           <Link href="/area-insights" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>Area Insights</Link>
           <Link href="/market-survey" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>Market Survey</Link>
+          <Link href="/property-valuation" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>Valuation</Link>
           <Link href="/blog" className="py-2.5 text-sm text-stone-600" onClick={() => setMenuOpen(false)}>Blog</Link>
         </div>
       )}
