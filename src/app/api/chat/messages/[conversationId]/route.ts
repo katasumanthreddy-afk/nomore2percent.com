@@ -15,7 +15,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ conv
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, messages: data });
+    const { data: convo } = await supabaseAdmin
+      .from('chat_conversations')
+      .select('mode, handoff_requested')
+      .eq('id', conversationId)
+      .single();
+
+    return NextResponse.json({ success: true, messages: data, mode: convo?.mode || 'ai', handoff_requested: convo?.handoff_requested || false });
   } catch (err: any) {
     return NextResponse.json({ success: false, message: err.message }, { status: 500 });
   }

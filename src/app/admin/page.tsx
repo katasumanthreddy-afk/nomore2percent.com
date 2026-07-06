@@ -16,6 +16,7 @@ interface Prop {
 interface Conversation {
   id: number; visitor_name: string; visitor_phone: string | null; last_message_at: string;
   chat_messages: { count: number }[];
+  mode?: 'ai' | 'human'; handoff_requested?: boolean;
 }
 interface SurveyResponse {
   id: number; user_type: string; name: string | null; phone: string | null;
@@ -583,7 +584,19 @@ function ChatInbox({ conversations, onRefresh }: { conversations: Conversation[]
       <div className="border-r border-stone-800 overflow-y-auto">
         {conversations.map((c) => (
           <button key={c.id} onClick={() => setActiveConvo(c.id)} className={'w-full text-left p-3.5 border-b border-stone-800/50 hover:bg-stone-800/50 ' + (activeConvo === c.id ? 'bg-stone-800/50' : '')}>
-            <div className="font-medium text-sm">{c.visitor_name}</div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-medium text-sm">{c.visitor_name}</div>
+              {c.handoff_requested && (
+                <span className="text-[9px] font-bold uppercase tracking-wide bg-red-950/40 text-red-400 border border-red-900/40 rounded px-1.5 py-0.5 flex-shrink-0">
+                  Needs you
+                </span>
+              )}
+              {!c.handoff_requested && c.mode === 'ai' && (
+                <span className="text-[9px] font-bold uppercase tracking-wide bg-blue-950/40 text-blue-400 border border-blue-900/40 rounded px-1.5 py-0.5 flex-shrink-0">
+                  AI
+                </span>
+              )}
+            </div>
             <div className="text-xs text-stone-500">{c.visitor_phone || 'No phone'}</div>
             <div className="text-[10px] text-stone-600 mt-1">{new Date(c.last_message_at).toLocaleString('en-IN')}</div>
           </button>
@@ -595,8 +608,11 @@ function ChatInbox({ conversations, onRefresh }: { conversations: Conversation[]
           <>
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5">
               {messages.map((m) => (
-                <div key={m.id} className={'max-w-[75%] px-3 py-2 rounded-xl text-sm ' + (m.sender === 'admin' ? 'bg-orange-500 text-stone-950 self-end' : 'bg-stone-800 self-start')}>
-                  {m.message}
+                <div key={m.id} className={'flex flex-col gap-1 max-w-[75%] ' + (m.sender === 'admin' ? 'self-end items-end' : 'self-start items-start')}>
+                  {m.sender === 'ai' && <span className="text-[9px] uppercase tracking-wide text-blue-400 font-semibold px-1">AI Assistant</span>}
+                  <div className={'px-3 py-2 rounded-xl text-sm ' + (m.sender === 'admin' ? 'bg-orange-500 text-stone-950' : m.sender === 'ai' ? 'bg-blue-950/40 border border-blue-900/40 text-stone-200' : 'bg-stone-800 text-stone-100')}>
+                    {m.message}
+                  </div>
                 </div>
               ))}
             </div>
