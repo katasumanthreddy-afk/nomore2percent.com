@@ -23,7 +23,10 @@ export default function Header() {
         <Link href="/blog" className="px-3.5 py-2 rounded-lg text-sm font-medium text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors">Blog</Link>
       </nav>
 
-      <a href="https://wa.me/917013224895" target="_blank" rel="noopener noreferrer" className="hidden md:inline-flex items-center px-4 py-2 rounded-lg bg-orange-400 text-white text-sm font-bold hover:bg-orange-500 transition-colors">WhatsApp Us</a>
+      <div className="hidden md:flex items-center gap-2">
+        <Link href="/list-your-property" className="inline-flex items-center px-4 py-2 rounded-lg border border-orange-300 text-orange-500 text-sm font-bold hover:bg-orange-50 transition-colors">List Your Property</Link>
+        <a href="https://wa.me/917013224895" target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-4 py-2 rounded-lg bg-orange-400 text-white text-sm font-bold hover:bg-orange-500 transition-colors">WhatsApp Us</a>
+      </div>
 
       <button className="md:hidden" onClick={() => setMenuOpen((v) => !v)} aria-label="Menu">
         {menuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -36,6 +39,7 @@ export default function Header() {
           <Link href="/area-insights" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>Area Insights</Link>
           <Link href="/market-survey" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>Market Survey</Link>
           <Link href="/property-valuation" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>Valuation</Link>
+          <Link href="/list-your-property" className="py-2.5 text-sm text-orange-500 font-semibold border-b border-stone-100" onClick={() => setMenuOpen(false)}>List Your Property</Link>
           <Link href="/blog" className="py-2.5 text-sm text-stone-600" onClick={() => setMenuOpen(false)}>Blog</Link>
         </div>
       )}
