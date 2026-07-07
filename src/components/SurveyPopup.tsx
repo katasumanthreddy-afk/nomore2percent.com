@@ -41,11 +41,11 @@ export default function SurveyPopup() {
         </div>
 
         <h3 className="font-serif text-lg font-bold text-white mb-1.5 pr-4">
-          Help improve Hyderabad&apos;s property data
+          See how your locality really stacks up
         </h3>
         <p className="text-stone-400 text-sm mb-4 leading-relaxed">
-          Own or rent in Hyderabad? Share a few details about your area &mdash; pricing,
-          infrastructure, and honest feedback. Takes 3 minutes, stays anonymous unless you choose otherwise.
+          Answer a few quick questions about your property and area &mdash; pricing, infrastructure,
+          growth &mdash; and get a feel for how it compares. Takes 5&ndash;7 minutes, stays anonymous unless you choose otherwise.
         </p>
 
         <div className="flex gap-2">
@@ -54,7 +54,7 @@ export default function SurveyPopup() {
             onClick={dismiss}
             className="flex-1 text-center bg-orange-400 text-stone-950 rounded-lg px-4 py-2 text-sm font-bold hover:bg-orange-300 transition-colors"
           >
-            Take the survey
+            Check My Locality
           </Link>
           <button
             onClick={dismiss}
