@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import ValuationClient from './ValuationClient';
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function PropertyValuationPage() {
-  return <ValuationClient />;
+  return (
+    <Suspense fallback={null}>
+      <ValuationClient />
+    </Suspense>
+  );
 }

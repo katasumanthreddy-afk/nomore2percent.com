@@ -163,6 +163,25 @@ export default function DetailedSurveyPage() {
     finally { setSubmitting(false); }
   };
 
+  const buildValuationUrl = () => {
+    const typeMap: Record<string, string> = {
+      'Apartment': 'apartment', 'Independent House': 'villa', 'Villa': 'villa',
+      'Plot': 'plot', 'Commercial': 'commercial', 'Agricultural Land': 'plot',
+    };
+    const params = new URLSearchParams({ source: 'survey' });
+    if (form.area) params.set('area', form.area);
+    if (form.property_type && typeMap[form.property_type]) params.set('type', typeMap[form.property_type]);
+    if (form.property_size_value) {
+      const raw = Number(form.property_size_value);
+      const sqft = form.property_size_unit === 'sqyd' ? Math.round(raw * 9) : raw;
+      if (sqft > 0) {
+        params.set('sqft', String(sqft));
+        params.set('auto', '1');
+      }
+    }
+    return '/property-valuation?' + params.toString();
+  };
+
   if (submitted) {
     return (
       <div className="flex-1 flex flex-col bg-stone-50">
@@ -171,9 +190,18 @@ export default function DetailedSurveyPage() {
           <div className="text-center max-w-md">
             <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
             <h2 className="font-serif text-2xl font-bold text-stone-900 mb-2">Thank you!</h2>
-            <p className="text-stone-500 text-sm mb-2">Your response has been recorded and will help build Hyderabad's most accurate hyperlocal property intelligence database.</p>
-            <p className="text-stone-500 text-sm mb-6">Sumanth will reach out if there's anything relevant for your situation.</p>
-            <a href="https://wa.me/917013224895" target="_blank" rel="noopener noreferrer" className="inline-block bg-green-500 text-white rounded-lg px-6 py-3 text-sm font-bold hover:bg-green-600 transition-colors mb-3">
+            <p className="text-stone-500 text-sm mb-6">Your response has been recorded and will help build Hyderabad's most accurate hyperlocal property intelligence database.</p>
+
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 mb-5 text-left">
+              <div className="text-xs font-bold uppercase tracking-wide text-orange-500 mb-1.5">🎁 Your Reward</div>
+              <p className="text-sm text-stone-700 mb-4">As a thank-you, here's a free instant valuation for your own property — pre-filled from what you just told us.</p>
+              <a href={buildValuationUrl()} className="block text-center bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-6 py-3 text-sm font-bold transition-colors">
+                Get My Free Valuation →
+              </a>
+            </div>
+
+            <p className="text-stone-500 text-sm mb-4">Sumanth will reach out if there's anything relevant for your situation.</p>
+            <a href="https://wa.me/917013224895" target="_blank" rel="noopener noreferrer" className="inline-block border border-stone-200 text-stone-600 rounded-lg px-5 py-2.5 text-sm font-semibold hover:border-stone-300 transition-colors mb-3">
               WhatsApp Sumanth
             </a>
             <div><a href="/properties" className="text-sm text-orange-500 hover:underline">Browse Properties →</a></div>

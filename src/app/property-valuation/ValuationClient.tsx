@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 
 const AREAS = [
@@ -25,10 +26,19 @@ function formatINR(amount: number): string {
 }
 
 export default function ValuationClient() {
-  const [area, setArea] = useState('Gachibowli');
-  const [customArea, setCustomArea] = useState('');
-  const [propertyType, setPropertyType] = useState<'apartment' | 'villa' | 'plot' | 'commercial'>('apartment');
-  const [sqft, setSqft] = useState('');
+  const searchParams = useSearchParams();
+  const prefillArea = searchParams.get('area') || '';
+  const prefillType = searchParams.get('type') as 'apartment' | 'villa' | 'plot' | 'commercial' | null;
+  const prefillSqft = searchParams.get('sqft') || '';
+  const autoRun = searchParams.get('auto') === '1';
+  const fromSurvey = searchParams.get('source') === 'survey';
+
+  const [area, setArea] = useState(
+    prefillArea ? (AREAS.includes(prefillArea) ? prefillArea : 'Other') : 'Gachibowli'
+  );
+  const [customArea, setCustomArea] = useState(prefillArea && !AREAS.includes(prefillArea) ? prefillArea : '');
+  const [propertyType, setPropertyType] = useState<'apartment' | 'villa' | 'plot' | 'commercial'>(prefillType || 'apartment');
+  const [sqft, setSqft] = useState(prefillSqft);
   const [ageYears, setAgeYears] = useState('5');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -79,11 +89,25 @@ export default function ValuationClient() {
     setCallbackSent(true);
   };
 
+  // Auto-run the estimate once when arriving pre-filled from the survey's thank-you screen
+  useEffect(() => {
+    if (autoRun && prefillArea && prefillSqft) {
+      getEstimate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="flex-1 bg-stone-50">
       <Header />
 
       <div className="max-w-2xl mx-auto px-6 md:px-10 py-12">
+        {fromSurvey && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl px-4 py-3 mb-6 flex items-center gap-2.5">
+            <span className="text-lg">🎁</span>
+            <span>Thanks for completing the survey! Here's your free valuation, pre-filled from your answers.</span>
+          </div>
+        )}
         <div className="text-center mb-8">
           <h1 className="font-serif text-3xl font-bold text-stone-900 mb-2">Free Property Valuation</h1>
           <p className="text-stone-500 text-sm">
