@@ -10,98 +10,98 @@ const AREAS = [
   'Uppal', 'LB Nagar', 'Dilsukhnagar', 'Secunderabad', 'Other',
 ];
 
-const INFRA_OPTIONS = ['Good', 'Average', 'Poor', 'Very Poor'];
-const PURCHASE_RANGES = [
-  'Under ₹20 Lakhs', '₹20L – ₹40L', '₹40L – ₹60L', '₹60L – ₹80L',
-  '₹80L – ₹1 Cr', '₹1 Cr – ₹1.5 Cr', '₹1.5 Cr – ₹2 Cr',
-  '₹2 Cr – ₹3 Cr', '₹3 Cr – ₹5 Cr', 'Above ₹5 Cr',
-];
-const RENT_RANGES = [
-  'Under ₹8,000/month', '₹8,000 – ₹12,000', '₹12,000 – ₹18,000',
-  '₹18,000 – ₹25,000', '₹25,000 – ₹35,000', '₹35,000 – ₹50,000',
-  '₹50,000 – ₹75,000', 'Above ₹75,000/month',
-];
-const DEPOSIT_RANGES = [
-  'Under ₹50,000', '₹50,000 – ₹1 Lakh', '₹1L – ₹2L',
-  '₹2L – ₹3L', '₹3L – ₹5L', 'Above ₹5 Lakhs',
-];
-const CURRENT_VALUE_RANGES = [
-  'Under ₹30 Lakhs', '₹30L – ₹60L', '₹60L – ₹1 Cr',
-  '₹1 Cr – ₹1.5 Cr', '₹1.5 Cr – ₹2 Cr', '₹2 Cr – ₹3 Cr',
-  '₹3 Cr – ₹5 Cr', 'Above ₹5 Cr',
-];
-
-type UserType = 'owner' | 'renter' | '';
-
-interface InfraRating {
-  water_supply: string;
-  road_width: string;
-  road_condition: string;
-  power_cuts: string;
-  drainage: string;
-  garbage_collection: string;
-}
+const DEVELOPMENTS = ['Metro', 'Flyover', 'Highway', 'IT Park', 'Mall', 'Hospital', 'School', 'ORR'];
+const ISSUES = ['Water', 'Drainage', 'Garbage', 'Traffic', 'Roads', 'Parking', 'Encroachments', 'Pollution'];
 
 interface Form {
-  user_type: UserType;
-  name: string;
-  phone: string;
-  willing_to_contact: string;
-
+  relationship: string;
+  respondent_name: string;
+  respondent_phone: string;
+  willing_to_contact: boolean;
+  years_in_locality: string;
   area: string;
-  locality: string;
+  landmark: string;
   property_type: string;
-  bhk: string;
-  floor: string;
-  building_age: string;
-  society_name: string;
+  property_size_value: string;
+  property_size_unit: string;
+  facing: string;
+  corner_plot: string;
 
   purchase_year: string;
-  purchase_price_range: string;
-  purchase_price_exact: string;
-  purchase_price_per_sqft: string;
-  current_value_range: string;
-  current_value_exact: string;
-  appreciation_feel: string;
+  purchase_price: string;
+  purchase_price_per_unit: string;
+  purchase_type: string;
+  builder_rating_construction: number;
+  builder_rating_amenities: number;
+  builder_rating_value: number;
 
-  rent_amount_range: string;
-  rent_amount_exact: string;
-  deposit_range: string;
-  deposit_exact: string;
-  rent_increase_last_year: string;
-  rent_increase_amount: string;
-  years_renting: string;
+  current_value: string;
+  price_growth_bucket: string;
+  growth_main_reason: string;
+  received_offers: string;
+  highest_offer: string;
 
-  infra: InfraRating;
+  rating_roads: number;
+  rating_water: number;
+  rating_electricity: number;
+  rating_drainage_garbage: number;
+  rating_safety: number;
+  rating_traffic_parking: number;
+  rating_public_transport: number;
+  rating_schools_hospitals: number;
+  rating_shopping: number;
+  water_source: string;
+  power_cuts: string;
 
-  nearby_developments: string;
-  metro_connectivity: string;
-  new_projects_nearby: string;
-  price_impact_of_developments: string;
+  recent_developments_list: string[];
+  biggest_issues_list: string[];
 
-  builder_name: string;
-  builder_rating: string;
-  maintenance_charges: string;
-  oc_status: string;
-  society_quality: string;
+  investment_interest: string;
+  investment_budget: string;
+  preferred_property_type: string;
+  preferred_location: string;
+  holding_period: string;
+  expected_return: string;
 
-  would_recommend_area: string;
-  best_about_area: string;
-  worst_about_area: string;
+  price_trend_1yr: string;
+  price_trend_5yr: string;
+  recommend_score: number;
+
+  planning_to_sell: string;
+  expected_sale_price: string;
+  sell_reason: string;
+  monthly_rent: string;
+  rental_demand: string;
+
+  feedback_best_thing: string;
+  feedback_govt_improvement: string;
+  feedback_invest_reason: string;
 }
 
 const initial: Form = {
-  user_type: '',
-  name: '', phone: '', willing_to_contact: 'Yes',
-  area: '', locality: '', property_type: '', bhk: '', floor: '', building_age: '', society_name: '',
-  purchase_year: '', purchase_price_range: '', purchase_price_exact: '',
-  purchase_price_per_sqft: '', current_value_range: '', current_value_exact: '', appreciation_feel: '',
-  rent_amount_range: '', rent_amount_exact: '', deposit_range: '', deposit_exact: '',
-  rent_increase_last_year: '', rent_increase_amount: '', years_renting: '',
-  infra: { water_supply: '', road_width: '', road_condition: '', power_cuts: '', drainage: '', garbage_collection: '' },
-  nearby_developments: '', metro_connectivity: '', new_projects_nearby: '', price_impact_of_developments: '',
-  builder_name: '', builder_rating: '', maintenance_charges: '', oc_status: '', society_quality: '',
-  would_recommend_area: '', best_about_area: '', worst_about_area: '',
+  relationship: '', respondent_name: '', respondent_phone: '', willing_to_contact: false,
+  years_in_locality: '', area: '', landmark: '', property_type: '',
+  property_size_value: '', property_size_unit: 'sqft', facing: '', corner_plot: '',
+
+  purchase_year: '', purchase_price: '', purchase_price_per_unit: '', purchase_type: '',
+  builder_rating_construction: 0, builder_rating_amenities: 0, builder_rating_value: 0,
+
+  current_value: '', price_growth_bucket: '', growth_main_reason: '', received_offers: '', highest_offer: '',
+
+  rating_roads: 0, rating_water: 0, rating_electricity: 0, rating_drainage_garbage: 0,
+  rating_safety: 0, rating_traffic_parking: 0, rating_public_transport: 0,
+  rating_schools_hospitals: 0, rating_shopping: 0, water_source: '', power_cuts: '',
+
+  recent_developments_list: [], biggest_issues_list: [],
+
+  investment_interest: '', investment_budget: '', preferred_property_type: '',
+  preferred_location: '', holding_period: '', expected_return: '',
+
+  price_trend_1yr: '', price_trend_5yr: '', recommend_score: 0,
+
+  planning_to_sell: '', expected_sale_price: '', sell_reason: '', monthly_rent: '', rental_demand: '',
+
+  feedback_best_thing: '', feedback_govt_improvement: '', feedback_invest_reason: '',
 };
 
 export default function DetailedSurveyPage() {
@@ -112,45 +112,53 @@ export default function DetailedSurveyPage() {
   const [error, setError] = useState('');
 
   const set = (k: keyof Form, v: any) => setForm((p) => ({ ...p, [k]: v }));
-  const setInfra = (k: keyof InfraRating, v: string) => setForm((p) => ({ ...p, infra: { ...p.infra, [k]: v } }));
+  const toggleList = (k: 'recent_developments_list' | 'biggest_issues_list', item: string) => {
+    setForm((p) => {
+      const list = p[k];
+      return { ...p, [k]: list.includes(item) ? list.filter((i) => i !== item) : [...list, item] };
+    });
+  };
+
+  const isTenant = form.relationship === 'tenant';
 
   const steps = [
-    { title: 'Who are you?', subtitle: 'Owner or renter — this shapes your questions' },
-    { title: 'Property details', subtitle: 'Tell us about the property' },
-    form.user_type === 'owner'
-      ? { title: 'Purchase & pricing', subtitle: 'What you paid and current value' }
-      : { title: 'Rent & deposit', subtitle: 'What you pay and how it has changed' },
-    { title: 'Infrastructure', subtitle: 'Water, roads, power, drainage — real ground truth' },
-    { title: 'Developments', subtitle: 'What\'s changed nearby recently' },
-    { title: 'Builder & society', subtitle: 'Quality, reputation, maintenance' },
-    { title: 'Your view', subtitle: 'What\'s great and what\'s not' },
-    { title: 'Your details', subtitle: 'So Sumanth can follow up if needed' },
+    { title: 'About You & Your Property', subtitle: 'Tell us who you are and the basics' },
+    { title: 'Purchase History', subtitle: 'This is gold — what you paid and how' },
+    { title: 'Current Value & Growth', subtitle: "What it's worth today and why" },
+    { title: 'Infrastructure', subtitle: 'Rate the real ground truth, 1-5' },
+    { title: 'Developments & Issues', subtitle: "What's improved, what still needs fixing" },
+    { title: 'Investment Interest', subtitle: 'Are you looking to invest further?' },
+    { title: 'Future Outlook', subtitle: 'Where do you see this heading?' },
+    { title: isTenant ? 'Rental Market' : 'Selling Intent', subtitle: isTenant ? 'Your rent and demand in the area' : 'Any plans to sell?' },
+    { title: 'Open Feedback', subtitle: 'In your own words' },
   ];
 
   const totalSteps = steps.length;
   const progress = Math.round(((step + 1) / totalSteps) * 100);
 
   const next = () => {
-    if (step === 0 && !form.user_type) { setError('Please select if you are an owner or renter.'); return; }
+    if (step === 0 && !form.relationship) { setError('Please select your relationship to the property.'); return; }
     setError('');
     setStep((s) => Math.min(s + 1, totalSteps - 1));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
   const back = () => { setStep((s) => Math.max(s - 1, 0)); setError(''); };
 
   const submit = async () => {
-    if (!form.name || !form.phone) { setError('Please enter your name and phone number.'); return; }
     setSubmitting(true);
     try {
       const res = await fetch('/api/market-survey', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          corner_plot: form.corner_plot === 'yes' ? true : form.corner_plot === 'no' ? false : null,
+          received_offers: form.received_offers === 'yes' ? true : form.received_offers === 'no' ? false : null,
+        }),
       });
       const result = await res.json();
-      if (result.success) { setSubmitted(true); }
-      else { setError(result.message || 'Something went wrong. Please try again.'); }
+      if (result.success) setSubmitted(true);
+      else setError(result.message || 'Something went wrong. Please try again.');
     } catch { setError('Could not submit. Please try again.'); }
     finally { setSubmitting(false); }
   };
@@ -194,386 +202,296 @@ export default function DetailedSurveyPage() {
       <div className="max-w-2xl mx-auto px-6 md:px-10 py-8 w-full">
         <div className="bg-white border border-stone-200 rounded-2xl p-6">
 
-          {/* ── STEP 0: User type ── */}
           {step === 0 && (
-            <div className="space-y-4">
-              <p className="text-sm text-stone-500">Are you a property owner or a renter in Hyderabad?</p>
-              <div className="grid grid-cols-2 gap-4">
-                {(['owner', 'renter'] as UserType[]).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => set('user_type', type)}
-                    className={`p-5 rounded-xl border-2 text-left transition-all ${
-                      form.user_type === type
-                        ? 'border-orange-500 bg-orange-50'
-                        : 'border-stone-200 hover:border-stone-300'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">{type === 'owner' ? '🏠' : '🔑'}</div>
-                    <div className="font-semibold text-stone-800 capitalize">{type}</div>
-                    <div className="text-xs text-stone-400 mt-1">
-                      {type === 'owner' ? 'I own this property' : 'I rent this property'}
-                    </div>
-                  </button>
-                ))}
+            <div className="space-y-5">
+              <div>
+                <p className="text-sm text-stone-500 mb-3">What's your relationship to this property?</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { v: 'owner', l: 'Owner', i: '🏠' }, { v: 'tenant', l: 'Tenant', i: '🔑' },
+                    { v: 'investor', l: 'Investor', i: '📈' }, { v: 'broker', l: 'Broker', i: '🤝' },
+                  ].map((r) => (
+                    <button key={r.v} onClick={() => set('relationship', r.v)} className={`p-4 rounded-xl border-2 text-left transition-all ${form.relationship === r.v ? 'border-orange-500 bg-orange-50' : 'border-stone-200 hover:border-stone-300'}`}>
+                      <div className="text-xl mb-1">{r.i}</div>
+                      <div className="font-semibold text-stone-800 text-sm">{r.l}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* ── STEP 1: Property details ── */}
-          {step === 1 && (
-            <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <F label="Your name (optional)"><input value={form.respondent_name} onChange={(e) => set('respondent_name', e.target.value)} className={ic} placeholder="Full name" /></F>
+                <F label="Mobile number (optional)"><input value={form.respondent_phone} onChange={(e) => set('respondent_phone', e.target.value)} className={ic} placeholder="+91 your number" /></F>
+                <F label="Years living in this locality"><input value={form.years_in_locality} onChange={(e) => set('years_in_locality', e.target.value)} className={ic} placeholder="e.g. 5" /></F>
                 <F label="Area / Locality *">
                   <select value={form.area} onChange={(e) => set('area', e.target.value)} className={ic}>
                     <option value="">Select area</option>
                     {AREAS.map((a) => <option key={a}>{a}</option>)}
                   </select>
                 </F>
-                <F label="Street / Colony name">
-                  <input value={form.locality} onChange={(e) => set('locality', e.target.value)} className={ic} placeholder="e.g. Prashant Hills, Phase 2" />
-                </F>
+                <F label="Nearest landmark"><input value={form.landmark} onChange={(e) => set('landmark', e.target.value)} className={ic} placeholder="e.g. near XYZ signal" /></F>
                 <F label="Property type">
                   <select value={form.property_type} onChange={(e) => set('property_type', e.target.value)} className={ic}>
                     <option value="">Select</option>
-                    <option>Apartment / Flat</option>
-                    <option>Villa / Independent House</option>
-                    <option>Plot / Open land</option>
-                    <option>Row house / Duplex</option>
-                    <option>Commercial</option>
+                    <option>Apartment</option><option>Independent House</option><option>Villa</option>
+                    <option>Plot</option><option>Commercial</option><option>Agricultural Land</option>
                   </select>
                 </F>
-                <F label="BHK configuration">
-                  <select value={form.bhk} onChange={(e) => set('bhk', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>1 BHK</option><option>2 BHK</option><option>3 BHK</option>
-                    <option>4 BHK</option><option>4+ BHK</option><option>Studio</option>
-                  </select>
-                </F>
-                <F label="Floor number">
-                  <input value={form.floor} onChange={(e) => set('floor', e.target.value)} className={ic} placeholder="e.g. Ground, 3rd, 12th" />
-                </F>
-                <F label="Age of building">
-                  <select value={form.building_age} onChange={(e) => set('building_age', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>Under construction</option>
-                    <option>0–2 years</option><option>2–5 years</option>
-                    <option>5–10 years</option><option>10–20 years</option>
-                    <option>Above 20 years</option>
-                  </select>
-                </F>
-                <F label="Society / Project name" full>
-                  <input value={form.society_name} onChange={(e) => set('society_name', e.target.value)} className={ic} placeholder="e.g. Prestige High Fields, Rainbow Vistas" />
-                </F>
-              </div>
-            </div>
-          )}
-
-          {/* ── STEP 2: Owner — Purchase & pricing ── */}
-          {step === 2 && form.user_type === 'owner' && (
-            <div className="space-y-5">
-              <ST>Purchase details</ST>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <F label="Year of purchase">
-                  <select value={form.purchase_year} onChange={(e) => set('purchase_year', e.target.value)} className={ic}>
-                    <option value="">Select year</option>
-                    {Array.from({ length: 25 }, (_, i) => 2025 - i).map((y) => <option key={y}>{y}</option>)}
-                  </select>
-                </F>
-                <F label="Purchase price range">
-                  <select value={form.purchase_price_range} onChange={(e) => set('purchase_price_range', e.target.value)} className={ic}>
-                    <option value="">Select range</option>
-                    {PURCHASE_RANGES.map((r) => <option key={r}>{r}</option>)}
-                  </select>
-                </F>
-                <F label="Exact price paid (optional)">
-                  <input value={form.purchase_price_exact} onChange={(e) => set('purchase_price_exact', e.target.value)} className={ic} placeholder="e.g. 72,50,000" />
-                </F>
-                <F label="Price per sqft at purchase (optional)">
-                  <input value={form.purchase_price_per_sqft} onChange={(e) => set('purchase_price_per_sqft', e.target.value)} className={ic} placeholder="e.g. ₹4,200/sqft" />
-                </F>
-              </div>
-              <ST>Current value</ST>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <F label="Estimated current value range">
-                  <select value={form.current_value_range} onChange={(e) => set('current_value_range', e.target.value)} className={ic}>
-                    <option value="">Select range</option>
-                    {CURRENT_VALUE_RANGES.map((r) => <option key={r}>{r}</option>)}
-                  </select>
-                </F>
-                <F label="Exact current value estimate (optional)">
-                  <input value={form.current_value_exact} onChange={(e) => set('current_value_exact', e.target.value)} className={ic} placeholder="e.g. 1,10,00,000" />
-                </F>
-                <F label="How would you describe appreciation?" full>
-                  <select value={form.appreciation_feel} onChange={(e) => set('appreciation_feel', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>Very strong — much more than expected</option>
-                    <option>Good — in line with expectations</option>
-                    <option>Moderate — slower than expected</option>
-                    <option>Flat — no real appreciation</option>
-                    <option>Negative — value has fallen</option>
-                  </select>
-                </F>
-              </div>
-            </div>
-          )}
-
-          {/* ── STEP 2: Renter — Rent & deposit ── */}
-          {step === 2 && form.user_type === 'renter' && (
-            <div className="space-y-5">
-              <ST>Current rent</ST>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <F label="Monthly rent range">
-                  <select value={form.rent_amount_range} onChange={(e) => set('rent_amount_range', e.target.value)} className={ic}>
-                    <option value="">Select range</option>
-                    {RENT_RANGES.map((r) => <option key={r}>{r}</option>)}
-                  </select>
-                </F>
-                <F label="Exact monthly rent (optional)">
-                  <input value={form.rent_amount_exact} onChange={(e) => set('rent_amount_exact', e.target.value)} className={ic} placeholder="e.g. ₹22,000/month" />
-                </F>
-                <F label="How many years have you been renting here?">
-                  <select value={form.years_renting} onChange={(e) => set('years_renting', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>Less than 1 year</option><option>1–2 years</option>
-                    <option>2–3 years</option><option>3–5 years</option>
-                    <option>More than 5 years</option>
-                  </select>
-                </F>
-              </div>
-              <ST>Security deposit</ST>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <F label="Deposit amount range">
-                  <select value={form.deposit_range} onChange={(e) => set('deposit_range', e.target.value)} className={ic}>
-                    <option value="">Select range</option>
-                    {DEPOSIT_RANGES.map((r) => <option key={r}>{r}</option>)}
-                  </select>
-                </F>
-                <F label="Exact deposit amount (optional)">
-                  <input value={form.deposit_exact} onChange={(e) => set('deposit_exact', e.target.value)} className={ic} placeholder="e.g. ₹1,50,000" />
-                </F>
-              </div>
-              <ST>Rent changes</ST>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <F label="Did your rent increase in the last 12 months?">
-                  <select value={form.rent_increase_last_year} onChange={(e) => set('rent_increase_last_year', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>Yes — significant increase (10%+)</option>
-                    <option>Yes — moderate increase (5–10%)</option>
-                    <option>Yes — small increase (under 5%)</option>
-                    <option>No — rent stayed the same</option>
-                    <option>Rent was reduced</option>
-                  </select>
-                </F>
-                <F label="Increase amount (if applicable)">
-                  <input value={form.rent_increase_amount} onChange={(e) => set('rent_increase_amount', e.target.value)} className={ic} placeholder="e.g. ₹2,000/month or 8%" />
-                </F>
-              </div>
-            </div>
-          )}
-
-          {/* ── STEP 3: Infrastructure ── */}
-          {step === 3 && (
-            <div className="space-y-5">
-              <p className="text-sm text-stone-500">Rate the infrastructure in your area honestly. This is the most valuable data for buyers considering your locality.</p>
-              {([
-                { key: 'water_supply', label: 'Water supply', hint: 'Daily supply, hours available, quality' },
-                { key: 'road_width', label: 'Road width & access', hint: 'Main road and internal roads' },
-                { key: 'road_condition', label: 'Road condition', hint: 'Potholes, repairs, drainage from roads' },
-                { key: 'power_cuts', label: 'Power supply', hint: 'Frequency of cuts, duration' },
-                { key: 'drainage', label: 'Drainage & flooding', hint: 'Monsoon flooding, stormwater drainage' },
-                { key: 'garbage_collection', label: 'Garbage collection', hint: 'Frequency, door-to-door service' },
-              ] as { key: keyof InfraRating; label: string; hint: string }[]).map((item) => (
-                <div key={item.key}>
-                  <div className="text-sm font-medium text-stone-700 mb-0.5">{item.label}</div>
-                  <div className="text-xs text-stone-400 mb-2">{item.hint}</div>
-                  <div className="flex gap-2 flex-wrap">
-                    {INFRA_OPTIONS.map((opt) => (
-                      <button
-                        key={opt}
-                        onClick={() => setInfra(item.key, opt)}
-                        className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
-                          form.infra[item.key] === opt
-                            ? opt === 'Good' ? 'bg-emerald-500 text-white border-emerald-500'
-                            : opt === 'Average' ? 'bg-orange-400 text-white border-orange-400'
-                            : opt === 'Poor' ? 'bg-red-400 text-white border-red-400'
-                            : 'bg-red-700 text-white border-red-700'
-                            : 'border-stone-200 text-stone-600 hover:border-stone-300'
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
+                <F label="Size">
+                  <div className="flex gap-2">
+                    <input value={form.property_size_value} onChange={(e) => set('property_size_value', e.target.value)} className={ic} placeholder="e.g. 1450" />
+                    <select value={form.property_size_unit} onChange={(e) => set('property_size_unit', e.target.value)} className={ic + ' w-28 flex-shrink-0'}>
+                      <option value="sqft">sq.ft</option>
+                      <option value="sqyd">sq.yd</option>
+                    </select>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* ── STEP 4: Developments ── */}
-          {step === 4 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <F label="Metro / MMTS connectivity" full>
-                  <select value={form.metro_connectivity} onChange={(e) => set('metro_connectivity', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>Metro station within 500m</option>
-                    <option>Metro station within 1–2km</option>
-                    <option>Metro planned / under construction nearby</option>
-                    <option>No metro connectivity</option>
-                    <option>MMTS station nearby</option>
-                  </select>
                 </F>
-                <F label="New residential projects nearby?" full>
-                  <select value={form.new_projects_nearby} onChange={(e) => set('new_projects_nearby', e.target.value)} className={ic}>
+                <F label="Facing">
+                  <select value={form.facing} onChange={(e) => set('facing', e.target.value)} className={ic}>
                     <option value="">Select</option>
-                    <option>Many new projects under construction</option>
-                    <option>A few new projects</option>
-                    <option>Mostly established — few new projects</option>
-                    <option>No new development activity</option>
-                  </select>
-                </F>
-                <F label="Key developments in your area recently" full>
-                  <textarea
-                    value={form.nearby_developments}
-                    onChange={(e) => set('nearby_developments', e.target.value)}
-                    className={ic + ' min-h-24'}
-                    placeholder="e.g. New ORR interchange opened, IT park under construction 2km away, new school, hospital, shopping mall etc."
-                  />
-                </F>
-                <F label="How have these developments impacted property prices?" full>
-                  <select value={form.price_impact_of_developments} onChange={(e) => set('price_impact_of_developments', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>Significant positive impact — prices jumped</option>
-                    <option>Moderate positive impact</option>
-                    <option>Little to no impact so far</option>
-                    <option>Negative impact — prices fell</option>
-                    <option>Too early to tell</option>
+                    <option>East</option><option>West</option><option>North</option><option>South</option>
                   </select>
                 </F>
               </div>
-            </div>
-          )}
 
-          {/* ── STEP 5: Builder & society ── */}
-          {step === 5 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <F label="Builder / Developer name">
-                  <input value={form.builder_name} onChange={(e) => set('builder_name', e.target.value)} className={ic} placeholder="e.g. Prestige, Aparna, My Home" />
-                </F>
-                <F label="Builder quality rating">
-                  <select value={form.builder_rating} onChange={(e) => set('builder_rating', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>Excellent — delivered on all promises</option>
-                    <option>Good — minor issues, mostly satisfied</option>
-                    <option>Average — several issues, not fully satisfied</option>
-                    <option>Poor — major issues, would not recommend</option>
-                    <option>Independent house / No builder</option>
-                  </select>
-                </F>
-                <F label="Monthly maintenance charges">
-                  <select value={form.maintenance_charges} onChange={(e) => set('maintenance_charges', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>No maintenance (independent house)</option>
-                    <option>Under ₹1,000/month</option>
-                    <option>₹1,000 – ₹2,500/month</option>
-                    <option>₹2,500 – ₹5,000/month</option>
-                    <option>₹5,000 – ₹10,000/month</option>
-                    <option>Above ₹10,000/month</option>
-                  </select>
-                </F>
-                <F label="Occupancy Certificate (OC) status">
-                  <select value={form.oc_status} onChange={(e) => set('oc_status', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>OC obtained — fully compliant</option>
-                    <option>OC pending — applied but not received</option>
-                    <option>No OC — not yet applied</option>
-                    <option>Not applicable (plot / old construction)</option>
-                    <option>Not sure</option>
-                  </select>
-                </F>
-                <F label="Overall society / building quality" full>
-                  <select value={form.society_quality} onChange={(e) => set('society_quality', e.target.value)} className={ic}>
-                    <option value="">Select</option>
-                    <option>Excellent — well maintained, good management</option>
-                    <option>Good — mostly well kept</option>
-                    <option>Average — some maintenance issues</option>
-                    <option>Poor — poorly maintained, management issues</option>
-                  </select>
-                </F>
-              </div>
-            </div>
-          )}
-
-          {/* ── STEP 6: Your view ── */}
-          {step === 6 && (
-            <div className="space-y-4">
-              <F label="Would you recommend this area to a friend or family member looking to buy/rent?" full>
-                <div className="flex gap-3 flex-wrap mt-1">
-                  {['Definitely yes', 'Probably yes', 'Not sure', 'Probably not', 'Definitely not'].map((opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => set('would_recommend_area', opt)}
-                      className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
-                        form.would_recommend_area === opt
-                          ? 'bg-orange-500 text-white border-orange-500'
-                          : 'border-stone-200 text-stone-600 hover:border-stone-300'
-                      }`}
-                    >
-                      {opt}
-                    </button>
+              <F label="Corner plot?">
+                <div className="flex gap-3">
+                  {['yes', 'no'].map((v) => (
+                    <button key={v} onClick={() => set('corner_plot', v)} className={`px-4 py-2 rounded-lg border text-sm capitalize transition-colors ${form.corner_plot === v ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>{v}</button>
                   ))}
                 </div>
               </F>
-              <F label="What's the best thing about living / owning in this area?" full>
-                <textarea
-                  value={form.best_about_area}
-                  onChange={(e) => set('best_about_area', e.target.value)}
-                  className={ic + ' min-h-24'}
-                  placeholder="e.g. Peaceful neighbourhood, close to schools, good connectivity, appreciating values..."
-                />
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="space-y-4">
+              <p className="text-sm text-stone-500">Skip anything you'd rather not share — every field here is optional.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <F label="When did you buy? (Year)"><input value={form.purchase_year} onChange={(e) => set('purchase_year', e.target.value)} className={ic} placeholder="e.g. 2018" /></F>
+                <F label="Purchase price (₹)"><input value={form.purchase_price} onChange={(e) => set('purchase_price', e.target.value)} className={ic} placeholder="e.g. 6500000" /></F>
+                <F label={`Price per ${form.property_size_unit === 'sqyd' ? 'sq.yd' : 'sq.ft'} (₹)`}><input value={form.purchase_price_per_unit} onChange={(e) => set('purchase_price_per_unit', e.target.value)} className={ic} placeholder="e.g. 4500" /></F>
+                <F label="How did you acquire it?">
+                  <select value={form.purchase_type} onChange={(e) => set('purchase_type', e.target.value)} className={ic}>
+                    <option value="">Select</option>
+                    <option value="builder">Builder Purchase</option>
+                    <option value="resale">Resale</option>
+                    <option value="owner_direct">Owner Direct</option>
+                    <option value="auction">Auction</option>
+                  </select>
+                </F>
+              </div>
+
+              {form.purchase_type === 'builder' && (
+                <div className="pt-3 border-t border-stone-100 space-y-3">
+                  <ST>Builder Satisfaction</ST>
+                  <Stars label="Construction quality" value={form.builder_rating_construction} onChange={(v) => set('builder_rating_construction', v)} />
+                  <Stars label="Amenities" value={form.builder_rating_amenities} onChange={(v) => set('builder_rating_amenities', v)} />
+                  <Stars label="Value for money" value={form.builder_rating_value} onChange={(v) => set('builder_rating_value', v)} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <F label="What's it worth today? (₹)"><input value={form.current_value} onChange={(e) => set('current_value', e.target.value)} className={ic} placeholder="e.g. 9500000" /></F>
+                <F label="Main reason for growth">
+                  <select value={form.growth_main_reason} onChange={(e) => set('growth_main_reason', e.target.value)} className={ic}>
+                    <option value="">Select</option>
+                    {['Metro', 'ORR', 'IT Parks', 'Schools', 'Hospitals', 'Highway', 'Airport', 'Commercial Development', 'Demand Increase'].map((o) => <option key={o}>{o}</option>)}
+                  </select>
+                </F>
+              </div>
+
+              <F label="How much has the value increased since purchase?">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {['Less than 25%', '25-50%', '50-100%', '100-200%', 'More than 200%'].map((o) => (
+                    <button key={o} onClick={() => set('price_growth_bucket', o)} className={`px-3 py-2 rounded-lg border text-xs transition-colors ${form.price_growth_bucket === o ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>{o}</button>
+                  ))}
+                </div>
               </F>
-              <F label="What's the biggest problem or concern in this area?" full>
-                <textarea
-                  value={form.worst_about_area}
-                  onChange={(e) => set('worst_about_area', e.target.value)}
-                  className={ic + ' min-h-24'}
-                  placeholder="e.g. Waterlogging in monsoon, traffic congestion, no metro, poor road condition..."
-                />
+
+              <F label="Received any offers recently?">
+                <div className="flex gap-3">
+                  {['yes', 'no'].map((v) => (
+                    <button key={v} onClick={() => set('received_offers', v)} className={`px-4 py-2 rounded-lg border text-sm capitalize transition-colors ${form.received_offers === v ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>{v}</button>
+                  ))}
+                </div>
+              </F>
+              {form.received_offers === 'yes' && (
+                <F label="Highest offer (₹)"><input value={form.highest_offer} onChange={(e) => set('highest_offer', e.target.value)} className={ic} placeholder="e.g. 9000000" /></F>
+              )}
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-4">
+              <p className="text-sm text-stone-500">Rate each from 1 (poor) to 5 (excellent).</p>
+              <Stars label="Roads & footpaths" value={form.rating_roads} onChange={(v) => set('rating_roads', v)} />
+              <Stars label="Water supply" value={form.rating_water} onChange={(v) => set('rating_water', v)} />
+              <Stars label="Electricity" value={form.rating_electricity} onChange={(v) => set('rating_electricity', v)} />
+              <Stars label="Drainage & garbage collection" value={form.rating_drainage_garbage} onChange={(v) => set('rating_drainage_garbage', v)} />
+              <Stars label="Safety" value={form.rating_safety} onChange={(v) => set('rating_safety', v)} />
+              <Stars label="Traffic & parking" value={form.rating_traffic_parking} onChange={(v) => set('rating_traffic_parking', v)} />
+              <Stars label="Public transport & metro" value={form.rating_public_transport} onChange={(v) => set('rating_public_transport', v)} />
+              <Stars label="Schools & hospitals nearby" value={form.rating_schools_hospitals} onChange={(v) => set('rating_schools_hospitals', v)} />
+              <Stars label="Shopping & daily needs" value={form.rating_shopping} onChange={(v) => set('rating_shopping', v)} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-stone-100">
+                <F label="Water source">
+                  <select value={form.water_source} onChange={(e) => set('water_source', e.target.value)} className={ic}>
+                    <option value="">Select</option>
+                    <option>GHMC</option><option>Borewell</option><option>Tanker</option><option>Mixed</option>
+                  </select>
+                </F>
+                <F label="Power cuts">
+                  <select value={form.power_cuts} onChange={(e) => set('power_cuts', e.target.value)} className={ic}>
+                    <option value="">Select</option>
+                    <option value="never">Never</option><option value="rarely">Rarely</option>
+                    <option value="weekly">Weekly</option><option value="daily">Daily</option>
+                  </select>
+                </F>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="space-y-5">
+              <F label="Which developments have improved your locality recently?">
+                <div className="flex flex-wrap gap-2">
+                  {DEVELOPMENTS.map((d) => (
+                    <button key={d} onClick={() => toggleList('recent_developments_list', d)} className={`px-3 py-1.5 rounded-full border text-xs transition-colors ${form.recent_developments_list.includes(d) ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>{d}</button>
+                  ))}
+                </div>
+              </F>
+              <F label="What are the biggest problems in your area?">
+                <div className="flex flex-wrap gap-2">
+                  {ISSUES.map((i) => (
+                    <button key={i} onClick={() => toggleList('biggest_issues_list', i)} className={`px-3 py-1.5 rounded-full border text-xs transition-colors ${form.biggest_issues_list.includes(i) ? 'border-red-400 bg-red-50 text-red-600' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>{i}</button>
+                  ))}
+                </div>
               </F>
             </div>
           )}
 
-          {/* ── STEP 7: Contact details ── */}
+          {step === 5 && (
+            <div className="space-y-4">
+              <F label="Are you interested in investing in real estate?">
+                <div className="flex gap-3">
+                  {['yes', 'no', 'maybe'].map((v) => (
+                    <button key={v} onClick={() => set('investment_interest', v)} className={`px-4 py-2 rounded-lg border text-sm capitalize transition-colors ${form.investment_interest === v ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>{v}</button>
+                  ))}
+                </div>
+              </F>
+
+              {form.investment_interest && form.investment_interest !== 'no' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <F label="Investment budget">
+                    <select value={form.investment_budget} onChange={(e) => set('investment_budget', e.target.value)} className={ic}>
+                      <option value="">Select</option>
+                      {['₹10L–25L', '₹25L–50L', '₹50L–1Cr', '₹1Cr–2Cr', '₹2Cr+'].map((o) => <option key={o}>{o}</option>)}
+                    </select>
+                  </F>
+                  <F label="Preferred property type">
+                    <select value={form.preferred_property_type} onChange={(e) => set('preferred_property_type', e.target.value)} className={ic}>
+                      <option value="">Select</option>
+                      {['Apartment', 'Villa', 'Independent House', 'Plot', 'Commercial', 'Warehouse', 'Agricultural Land'].map((o) => <option key={o}>{o}</option>)}
+                    </select>
+                  </F>
+                  <F label="Preferred location"><input value={form.preferred_location} onChange={(e) => set('preferred_location', e.target.value)} className={ic} placeholder="e.g. Kokapet, Financial District" /></F>
+                  <F label="Expected holding period">
+                    <select value={form.holding_period} onChange={(e) => set('holding_period', e.target.value)} className={ic}>
+                      <option value="">Select</option>
+                      {['1 Year', '3 Years', '5 Years', '10 Years'].map((o) => <option key={o}>{o}</option>)}
+                    </select>
+                  </F>
+                  <F label="Expected annual return">
+                    <select value={form.expected_return} onChange={(e) => set('expected_return', e.target.value)} className={ic}>
+                      <option value="">Select</option>
+                      {['8%', '10%', '12%', '15%', '20%+'].map((o) => <option key={o}>{o}</option>)}
+                    </select>
+                  </F>
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 6 && (
+            <div className="space-y-5">
+              <F label="Do you think prices will rise in the next 1 year?">
+                <div className="flex gap-3">
+                  {[{ v: 'up', e: '⬆️' }, { v: 'flat', e: '➡️' }, { v: 'down', e: '⬇️' }].map((o) => (
+                    <button key={o.v} onClick={() => set('price_trend_1yr', o.v)} className={`flex-1 py-3 rounded-lg border text-xl transition-colors ${form.price_trend_1yr === o.v ? 'border-orange-500 bg-orange-50' : 'border-stone-200 hover:border-stone-300'}`}>{o.e}</button>
+                  ))}
+                </div>
+              </F>
+              <F label="What about over the next 5 years?">
+                <div className="flex gap-3">
+                  {[{ v: 'up', e: '⬆️' }, { v: 'flat', e: '➡️' }, { v: 'down', e: '⬇️' }].map((o) => (
+                    <button key={o.v} onClick={() => set('price_trend_5yr', o.v)} className={`flex-1 py-3 rounded-lg border text-xl transition-colors ${form.price_trend_5yr === o.v ? 'border-orange-500 bg-orange-50' : 'border-stone-200 hover:border-stone-300'}`}>{o.e}</button>
+                  ))}
+                </div>
+              </F>
+              <F label="On a scale of 1-10, would you recommend this locality?">
+                <div className="grid grid-cols-5 md:grid-cols-10 gap-1.5">
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                    <button key={n} onClick={() => set('recommend_score', n)} className={`py-2 rounded-lg border text-sm font-semibold transition-colors ${form.recommend_score === n ? 'border-orange-500 bg-orange-500 text-white' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>{n}</button>
+                  ))}
+                </div>
+              </F>
+            </div>
+          )}
+
           {step === 7 && (
             <div className="space-y-4">
-              <p className="text-sm text-stone-500">Your details are private — only Sumanth will see them, and only to follow up if there's something relevant for your situation.</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <F label="Your name *">
-                  <input value={form.name} onChange={(e) => set('name', e.target.value)} className={ic} placeholder="Sumanth Reddy" />
-                </F>
-                <F label="WhatsApp number *">
-                  <input value={form.phone} onChange={(e) => set('phone', e.target.value)} className={ic} placeholder="+91 98765 43210" />
-                </F>
-                <F label="Can Sumanth contact you about relevant properties?" full>
-                  <div className="flex gap-3 mt-1">
-                    {['Yes', 'No — survey only'].map((opt) => (
-                      <button
-                        key={opt}
-                        onClick={() => set('willing_to_contact', opt)}
-                        className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
-                          form.willing_to_contact === opt
-                            ? 'bg-orange-500 text-white border-orange-500'
-                            : 'border-stone-200 text-stone-600 hover:border-stone-300'
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </F>
-              </div>
+              {isTenant ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <F label="Monthly rent (₹)"><input value={form.monthly_rent} onChange={(e) => set('monthly_rent', e.target.value)} className={ic} placeholder="e.g. 22000" /></F>
+                  <F label="Rental demand in your area">
+                    <select value={form.rental_demand} onChange={(e) => set('rental_demand', e.target.value)} className={ic}>
+                      <option value="">Select</option>
+                      <option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+                    </select>
+                  </F>
+                </div>
+              ) : (
+                <>
+                  <F label="Are you planning to sell?">
+                    <div className="flex gap-3">
+                      {['yes', 'no', 'maybe'].map((v) => (
+                        <button key={v} onClick={() => set('planning_to_sell', v)} className={`px-4 py-2 rounded-lg border text-sm capitalize transition-colors ${form.planning_to_sell === v ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-stone-200 text-stone-600 hover:border-stone-300'}`}>{v}</button>
+                      ))}
+                    </div>
+                  </F>
+                  {form.planning_to_sell && form.planning_to_sell !== 'no' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <F label="Expected price (₹)"><input value={form.expected_sale_price} onChange={(e) => set('expected_sale_price', e.target.value)} className={ic} placeholder="e.g. 9500000" /></F>
+                      <F label="Main reason">
+                        <select value={form.sell_reason} onChange={(e) => set('sell_reason', e.target.value)} className={ic}>
+                          <option value="">Select</option>
+                          <option>Upgrade</option><option>Investment</option><option>Relocation</option>
+                          <option>Financial Need</option><option>Other</option>
+                        </select>
+                      </F>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {step === 8 && (
+            <div className="space-y-4">
+              <F label="What's the best thing about your locality?"><textarea value={form.feedback_best_thing} onChange={(e) => set('feedback_best_thing', e.target.value)} className={ic + ' h-20 resize-none'} /></F>
+              <F label="What should the government improve?"><textarea value={form.feedback_govt_improvement} onChange={(e) => set('feedback_govt_improvement', e.target.value)} className={ic + ' h-20 resize-none'} /></F>
+              <F label="What would make you invest here?"><textarea value={form.feedback_invest_reason} onChange={(e) => set('feedback_invest_reason', e.target.value)} className={ic + ' h-20 resize-none'} /></F>
+
+              <label className="flex items-start gap-2.5 pt-2 cursor-pointer">
+                <input type="checkbox" checked={form.willing_to_contact} onChange={(e) => set('willing_to_contact', e.target.checked)} className="mt-0.5" />
+                <span className="text-xs text-stone-500">I'm open to Sumanth contacting me about this property or investment opportunities.</span>
+              </label>
             </div>
           )}
 
@@ -596,7 +514,7 @@ export default function DetailedSurveyPage() {
             )}
           </div>
 
-          <p className="text-xs text-stone-400 text-center mt-3">All responses are private · No spam · Takes 4–6 minutes</p>
+          <p className="text-xs text-stone-400 text-center mt-3">All responses are private · No spam · Takes 5–7 minutes</p>
         </div>
       </div>
     </div>
@@ -614,6 +532,21 @@ function F({ label, full, children }: { label: string; full?: boolean; children:
     <div className={full ? 'md:col-span-2' : ''}>
       <label className="block text-xs font-medium text-stone-500 mb-1.5">{label}</label>
       {children}
+    </div>
+  );
+}
+
+function Stars({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-sm text-stone-600">{label}</span>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} onClick={() => onChange(n)} className="text-xl leading-none" aria-label={`${n} star`}>
+            {n <= value ? '⭐' : '☆'}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

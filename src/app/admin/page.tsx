@@ -20,27 +20,45 @@ interface Conversation {
 }
 interface SurveyResponse {
   id: number; user_type: string; name: string | null; phone: string | null;
-  willing_to_contact: boolean; area: string | null; locality: string | null;
-  property_type: string | null; bhk: string | null; floor: string | null;
-  building_age: string | null; society_name: string | null;
-  purchase_year: string | null; purchase_price_range: string | null;
-  purchase_price_exact: number | null; purchase_price_per_sqft: number | null;
-  current_value_range: string | null; current_value_exact: number | null;
-  appreciation_feel: string | null;
-  rent_amount_range: string | null; rent_amount_exact: number | null;
-  deposit_range: string | null; deposit_exact: number | null;
-  rent_increase_last_year: string | null; rent_increase_amount: number | null;
-  years_renting: string | null;
-  infra_water: string | null; infra_road_width: string | null;
-  infra_road_condition: string | null; infra_power: string | null;
-  infra_drainage: string | null; infra_garbage: string | null;
-  nearby_developments: string | null; metro_connectivity: string | null;
-  new_projects_nearby: string | null; price_impact: string | null;
-  builder_name: string | null; builder_rating: string | null;
-  maintenance_charges: string | null; oc_status: string | null;
-  society_quality: string | null;
-  would_recommend: string | null; best_about_area: string | null; worst_about_area: string | null;
-  created_at: string;
+  willing_to_contact: boolean; area: string | null;
+  property_type: string | null; created_at: string;
+
+  // v2 fields
+  years_in_locality: string | null; landmark: string | null;
+  property_size_value: number | null; property_size_unit: string | null;
+  facing: string | null; corner_plot: boolean | null;
+  purchase_year: string | null; purchase_price: number | null; purchase_price_per_unit: number | null;
+  purchase_type: string | null;
+  builder_rating_construction: number | null; builder_rating_amenities: number | null; builder_rating_value: number | null;
+  current_value: number | null; price_growth_bucket: string | null; growth_main_reason: string | null;
+  received_offers: boolean | null; highest_offer: number | null;
+  rating_roads: number | null; rating_water: number | null; rating_electricity: number | null;
+  rating_drainage_garbage: number | null; rating_safety: number | null; rating_traffic_parking: number | null;
+  rating_public_transport: number | null; rating_schools_hospitals: number | null; rating_shopping: number | null;
+  water_source: string | null; power_cuts: string | null;
+  recent_developments_list: string[] | null; biggest_issues_list: string[] | null;
+  investment_interest: string | null; investment_budget: string | null; preferred_property_type: string | null;
+  preferred_location: string | null; holding_period: string | null; expected_return: string | null;
+  price_trend_1yr: string | null; price_trend_5yr: string | null; recommend_score: number | null;
+  planning_to_sell: string | null; expected_sale_price: number | null; sell_reason: string | null;
+  monthly_rent: number | null; rental_demand: string | null;
+  feedback_best_thing: string | null; feedback_govt_improvement: string | null; feedback_invest_reason: string | null;
+
+  // legacy fields (older survey submissions)
+  locality?: string | null; bhk?: string | null; floor?: string | null;
+  building_age?: string | null; society_name?: string | null;
+  purchase_price_range?: string | null; purchase_price_exact?: number | null; purchase_price_per_sqft?: number | null;
+  current_value_range?: string | null; current_value_exact?: number | null; appreciation_feel?: string | null;
+  rent_amount_range?: string | null; rent_amount_exact?: number | null;
+  deposit_range?: string | null; deposit_exact?: number | null;
+  rent_increase_last_year?: string | null; rent_increase_amount?: number | null; years_renting?: string | null;
+  infra_water?: string | null; infra_road_width?: string | null; infra_road_condition?: string | null;
+  infra_power?: string | null; infra_drainage?: string | null; infra_garbage?: string | null;
+  nearby_developments?: string | null; metro_connectivity?: string | null;
+  new_projects_nearby?: string | null; price_impact?: string | null;
+  builder_name?: string | null; builder_rating?: string | null;
+  maintenance_charges?: string | null; oc_status?: string | null; society_quality?: string | null;
+  would_recommend?: string | null; best_about_area?: string | null; worst_about_area?: string | null;
 }
 
 interface SubmissionImage { id: number; storage_path: string; is_primary: boolean; }
@@ -72,7 +90,7 @@ export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState<PropertySubmission[]>([]);
   const [newMessageAlert, setNewMessageAlert] = useState(0);
   const [propStatusFilter, setPropStatusFilter] = useState<string>('all');
-  const [surveyTypeFilter, setSurveyTypeFilter] = useState<'all' | 'owner' | 'renter'>('all');
+  const [surveyTypeFilter, setSurveyTypeFilter] = useState<'all' | 'owner' | 'tenant' | 'investor' | 'broker'>('all');
 
   const loadLeads = useCallback(() => {
     fetch('/api/leads').then((r) => r.json()).then((d) => d.success && setLeads(d.leads));
@@ -391,8 +409,8 @@ function SurveyResponses({
   setTypeFilter,
 }: {
   responses: SurveyResponse[];
-  typeFilter: 'all' | 'owner' | 'renter';
-  setTypeFilter: (v: 'all' | 'owner' | 'renter') => void;
+  typeFilter: 'all' | 'owner' | 'tenant' | 'investor' | 'broker';
+  setTypeFilter: (v: 'all' | 'owner' | 'tenant' | 'investor' | 'broker') => void;
 }) {
   const [expanded, setExpanded] = useState<number | null>(null);
 
@@ -402,7 +420,7 @@ function SurveyResponses({
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div className="flex gap-2 flex-wrap">
-          {(['all', 'owner', 'renter'] as const).map((t) => (
+          {(['all', 'owner', 'tenant', 'investor', 'broker'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTypeFilter(t)}
@@ -434,9 +452,10 @@ function SurveyResponses({
           <thead>
             <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
               <th className="p-3.5">Type</th>
-              <th className="p-3.5">Area / Locality</th>
+              <th className="p-3.5">Area</th>
               <th className="p-3.5">Property</th>
-              <th className="p-3.5">Value / Rent</th>
+              <th className="p-3.5">Value</th>
+              <th className="p-3.5">Recommend</th>
               <th className="p-3.5">Contact</th>
               <th className="p-3.5">Date</th>
               <th className="p-3.5"></th>
@@ -448,21 +467,28 @@ function SurveyResponses({
                 <tr className="border-b border-stone-200/50 hover:bg-stone-50">
                   <td className="p-3.5">
                     <span className={'text-[10px] px-2 py-0.5 rounded uppercase font-semibold ' + (
-                      r.user_type === 'owner' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-purple-50 text-purple-600 border border-purple-200'
+                      r.user_type === 'owner' ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                      : r.user_type === 'tenant' || r.user_type === 'renter' ? 'bg-purple-50 text-purple-600 border border-purple-200'
+                      : r.user_type === 'investor' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                      : 'bg-amber-50 text-amber-600 border border-amber-200'
                     )}>
                       {r.user_type}
                     </span>
                   </td>
                   <td className="p-3.5">
                     <div className="font-medium">{r.area || '—'}</div>
-                    <div className="text-xs text-stone-500">{r.locality || ''}</div>
+                    <div className="text-xs text-stone-500">{r.landmark || r.locality || ''}</div>
                   </td>
-                  <td className="p-3.5 text-stone-500">{[r.property_type, r.bhk].filter(Boolean).join(' · ') || '—'}</td>
+                  <td className="p-3.5 text-stone-500">
+                    {[r.property_type, r.property_size_value ? `${r.property_size_value} ${r.property_size_unit || 'sqft'}` : r.bhk].filter(Boolean).join(' · ') || '—'}
+                  </td>
                   <td className="p-3.5 text-orange-400">
-                    {r.user_type === 'owner'
-                      ? (r.current_value_exact ? '₹' + r.current_value_exact.toLocaleString('en-IN') : r.current_value_range || '—')
-                      : (r.rent_amount_exact ? '₹' + r.rent_amount_exact.toLocaleString('en-IN') + '/mo' : r.rent_amount_range || '—')}
+                    {r.current_value ? '₹' + r.current_value.toLocaleString('en-IN')
+                      : r.current_value_exact ? '₹' + r.current_value_exact.toLocaleString('en-IN')
+                      : r.monthly_rent ? '₹' + r.monthly_rent.toLocaleString('en-IN') + '/mo'
+                      : '—'}
                   </td>
+                  <td className="p-3.5 text-stone-500">{r.recommend_score ? `${r.recommend_score}/10` : '—'}</td>
                   <td className="p-3.5">
                     {r.willing_to_contact && r.phone ? (
                       <a href={'https://wa.me/91' + r.phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 rounded px-2 py-1">
@@ -484,88 +510,112 @@ function SurveyResponses({
                 </tr>
                 {expanded === r.id && (
                   <tr className="border-b border-stone-200/50 bg-stone-50">
-                    <td colSpan={7} className="p-5">
+                    <td colSpan={8} className="p-5">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-5 text-xs">
 
                         <div>
-                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Contact</div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">About</div>
                           <div className="space-y-1.5">
                             <DetailRow label="Name" value={r.name} />
                             <DetailRow label="Phone" value={r.phone} />
-                            <DetailRow label="Willing to contact" value={r.willing_to_contact ? 'Yes' : 'No'} />
+                            <DetailRow label="Years in locality" value={r.years_in_locality} />
+                            <DetailRow label="Facing" value={r.facing} />
+                            <DetailRow label="Corner plot" value={r.corner_plot === null ? null : r.corner_plot ? 'Yes' : 'No'} />
                           </div>
                         </div>
 
                         <div>
-                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Property Details</div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Purchase History</div>
                           <div className="space-y-1.5">
-                            <DetailRow label="Floor" value={r.floor} />
-                            <DetailRow label="Building age" value={r.building_age} />
-                            <DetailRow label="Society name" value={r.society_name} />
-                          </div>
-                        </div>
-
-                        {r.user_type === 'owner' ? (
-                          <div>
-                            <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Purchase & Pricing</div>
-                            <div className="space-y-1.5">
-                              <DetailRow label="Purchase year" value={r.purchase_year} />
-                              <DetailRow label="Purchase price" value={r.purchase_price_exact ? '₹' + r.purchase_price_exact.toLocaleString('en-IN') : r.purchase_price_range} />
-                              <DetailRow label="Price per sqft" value={r.purchase_price_per_sqft} />
-                              <DetailRow label="Appreciation feel" value={r.appreciation_feel} />
-                            </div>
-                          </div>
-                        ) : (
-                          <div>
-                            <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Rent & Deposit</div>
-                            <div className="space-y-1.5">
-                              <DetailRow label="Deposit" value={r.deposit_exact ? '₹' + r.deposit_exact.toLocaleString('en-IN') : r.deposit_range} />
-                              <DetailRow label="Years renting" value={r.years_renting} />
-                              <DetailRow label="Rent increased last year" value={r.rent_increase_last_year} />
-                              <DetailRow label="Increase amount" value={r.rent_increase_amount} />
-                            </div>
-                          </div>
-                        )}
-
-                        <div>
-                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Infrastructure</div>
-                          <div className="space-y-1.5">
-                            <DetailRow label="Water supply" value={r.infra_water} />
-                            <DetailRow label="Road width" value={r.infra_road_width} />
-                            <DetailRow label="Road condition" value={r.infra_road_condition} />
-                            <DetailRow label="Power cuts" value={r.infra_power} />
-                            <DetailRow label="Drainage" value={r.infra_drainage} />
-                            <DetailRow label="Garbage collection" value={r.infra_garbage} />
+                            <DetailRow label="Purchase year" value={r.purchase_year} />
+                            <DetailRow label="Purchase price" value={r.purchase_price ? '₹' + r.purchase_price.toLocaleString('en-IN') : r.purchase_price_exact ? '₹' + r.purchase_price_exact.toLocaleString('en-IN') : null} />
+                            <DetailRow label="Price per unit" value={r.purchase_price_per_unit ? '₹' + r.purchase_price_per_unit.toLocaleString('en-IN') : null} />
+                            <DetailRow label="Acquired via" value={r.purchase_type} />
                           </div>
                         </div>
 
                         <div>
-                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Developments</div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Current Value & Growth</div>
                           <div className="space-y-1.5">
-                            <DetailRow label="Nearby developments" value={r.nearby_developments} />
-                            <DetailRow label="Metro connectivity" value={r.metro_connectivity} />
-                            <DetailRow label="New projects nearby" value={r.new_projects_nearby} />
-                            <DetailRow label="Price impact" value={r.price_impact} />
+                            <DetailRow label="Current value" value={r.current_value ? '₹' + r.current_value.toLocaleString('en-IN') : null} />
+                            <DetailRow label="Growth" value={r.price_growth_bucket} />
+                            <DetailRow label="Main reason" value={r.growth_main_reason} />
+                            <DetailRow label="Highest offer" value={r.highest_offer ? '₹' + r.highest_offer.toLocaleString('en-IN') : null} />
                           </div>
                         </div>
 
                         <div>
-                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Builder & Society</div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Infrastructure (1-5)</div>
                           <div className="space-y-1.5">
-                            <DetailRow label="Builder name" value={r.builder_name} />
-                            <DetailRow label="Builder rating" value={r.builder_rating} />
-                            <DetailRow label="Maintenance charges" value={r.maintenance_charges} />
-                            <DetailRow label="OC status" value={r.oc_status} />
-                            <DetailRow label="Society quality" value={r.society_quality} />
+                            <DetailRow label="Roads" value={r.rating_roads} />
+                            <DetailRow label="Water" value={r.rating_water} />
+                            <DetailRow label="Electricity" value={r.rating_electricity} />
+                            <DetailRow label="Drainage & garbage" value={r.rating_drainage_garbage} />
+                            <DetailRow label="Safety" value={r.rating_safety} />
+                            <DetailRow label="Traffic & parking" value={r.rating_traffic_parking} />
+                            <DetailRow label="Public transport" value={r.rating_public_transport} />
+                            <DetailRow label="Schools & hospitals" value={r.rating_schools_hospitals} />
+                            <DetailRow label="Shopping" value={r.rating_shopping} />
+                            <DetailRow label="Water source" value={r.water_source} />
+                            <DetailRow label="Power cuts" value={r.power_cuts} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Developments & Issues</div>
+                          <div className="space-y-1.5">
+                            <DetailRow label="Developments" value={r.recent_developments_list?.join(', ')} />
+                            <DetailRow label="Issues" value={r.biggest_issues_list?.join(', ')} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Investment Interest</div>
+                          <div className="space-y-1.5">
+                            <DetailRow label="Interested" value={r.investment_interest} />
+                            <DetailRow label="Budget" value={r.investment_budget} />
+                            <DetailRow label="Preferred type" value={r.preferred_property_type} />
+                            <DetailRow label="Preferred location" value={r.preferred_location} />
+                            <DetailRow label="Holding period" value={r.holding_period} />
+                            <DetailRow label="Expected return" value={r.expected_return} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Future Outlook</div>
+                          <div className="space-y-1.5">
+                            <DetailRow label="1yr trend" value={r.price_trend_1yr} />
+                            <DetailRow label="5yr trend" value={r.price_trend_5yr} />
+                            <DetailRow label="Recommend score" value={r.recommend_score ? `${r.recommend_score}/10` : null} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">
+                            {r.user_type === 'tenant' || r.user_type === 'renter' ? 'Rental Market' : 'Selling Intent'}
+                          </div>
+                          <div className="space-y-1.5">
+                            {r.user_type === 'tenant' || r.user_type === 'renter' ? (
+                              <>
+                                <DetailRow label="Monthly rent" value={r.monthly_rent ? '₹' + r.monthly_rent.toLocaleString('en-IN') : null} />
+                                <DetailRow label="Rental demand" value={r.rental_demand} />
+                              </>
+                            ) : (
+                              <>
+                                <DetailRow label="Planning to sell" value={r.planning_to_sell} />
+                                <DetailRow label="Expected price" value={r.expected_sale_price ? '₹' + r.expected_sale_price.toLocaleString('en-IN') : null} />
+                                <DetailRow label="Reason" value={r.sell_reason} />
+                              </>
+                            )}
                           </div>
                         </div>
 
                         <div className="md:col-span-3">
-                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Their View</div>
+                          <div className="text-orange-400 font-semibold uppercase tracking-wide mb-2 text-[10px]">Open Feedback</div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-1.5">
-                            <DetailRow label="Would recommend area" value={r.would_recommend} />
-                            <DetailRow label="Best about area" value={r.best_about_area} />
-                            <DetailRow label="Worst about area" value={r.worst_about_area} />
+                            <DetailRow label="Best thing" value={r.feedback_best_thing || r.best_about_area} />
+                            <DetailRow label="Govt improvement" value={r.feedback_govt_improvement} />
+                            <DetailRow label="Would invest if" value={r.feedback_invest_reason} />
                           </div>
                         </div>
 
