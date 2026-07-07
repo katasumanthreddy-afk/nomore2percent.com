@@ -63,10 +63,10 @@ export default function PropertyDetailClient({ property }: { property: Property 
         )}
       </div>
       {property.images?.length > 1 && (
-        <div className="flex gap-2 mb-8 -mt-4">
+        <div className="flex gap-2 mb-8 -mt-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {property.images.map((img, i) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={img} onClick={() => setActiveImg(i)} className={`w-16 h-16 rounded-lg object-cover cursor-pointer border-2 ${i === activeImg ? 'border-orange-500' : 'border-transparent'}`} alt="" />
+            <img key={i} src={img} onClick={() => setActiveImg(i)} className={`w-16 h-16 flex-shrink-0 rounded-lg object-cover cursor-pointer border-2 ${i === activeImg ? 'border-orange-500' : 'border-transparent'}`} alt="" />
           ))}
         </div>
       )}
