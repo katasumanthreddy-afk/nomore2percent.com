@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Header from '@/components/Header';
+import { parseAmount } from '@/lib/parse-amount';
 
 const AREAS = [
   'Gachibowli', 'Madhapur', 'Banjara Hills', 'Jubilee Hills', 'Kondapur',
@@ -152,6 +153,13 @@ export default function DetailedSurveyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          purchase_price: parseAmount(form.purchase_price),
+          purchase_price_per_unit: parseAmount(form.purchase_price_per_unit),
+          current_value: parseAmount(form.current_value),
+          highest_offer: parseAmount(form.highest_offer),
+          expected_sale_price: parseAmount(form.expected_sale_price),
+          monthly_rent: parseAmount(form.monthly_rent),
+          property_size_value: parseAmount(form.property_size_value),
           corner_plot: form.corner_plot === 'yes' ? true : form.corner_plot === 'no' ? false : null,
           received_offers: form.received_offers === 'yes' ? true : form.received_offers === 'no' ? false : null,
         }),

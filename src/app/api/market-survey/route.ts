@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { parseAmount } from '@/lib/parse-amount';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,26 +18,26 @@ export async function POST(req: NextRequest) {
         area: b.area || null,
         landmark: b.landmark || null,
         property_type: b.property_type || null,
-        property_size_value: b.property_size_value || null,
+        property_size_value: parseAmount(b.property_size_value),
         property_size_unit: b.property_size_unit || null,
         facing: b.facing || null,
         corner_plot: b.corner_plot ?? null,
 
         // Section 2: Purchase History
         purchase_year: b.purchase_year || null,
-        purchase_price: b.purchase_price || null,
-        purchase_price_per_unit: b.purchase_price_per_unit || null,
+        purchase_price: parseAmount(b.purchase_price),
+        purchase_price_per_unit: parseAmount(b.purchase_price_per_unit),
         purchase_type: b.purchase_type || null,
         builder_rating_construction: b.builder_rating_construction || null,
         builder_rating_amenities: b.builder_rating_amenities || null,
         builder_rating_value: b.builder_rating_value || null,
 
         // Section 3: Current Value & Growth
-        current_value: b.current_value || null,
+        current_value: parseAmount(b.current_value),
         price_growth_bucket: b.price_growth_bucket || null,
         growth_main_reason: b.growth_main_reason || null,
         received_offers: b.received_offers ?? null,
-        highest_offer: b.highest_offer || null,
+        highest_offer: parseAmount(b.highest_offer),
 
         // Section 4: Infrastructure
         rating_roads: b.rating_roads || null,
@@ -70,9 +71,9 @@ export async function POST(req: NextRequest) {
 
         // Section 8: Selling / Renting Intent
         planning_to_sell: b.planning_to_sell || null,
-        expected_sale_price: b.expected_sale_price || null,
+        expected_sale_price: parseAmount(b.expected_sale_price),
         sell_reason: b.sell_reason || null,
-        monthly_rent: b.monthly_rent || null,
+        monthly_rent: parseAmount(b.monthly_rent),
         rental_demand: b.rental_demand || null,
 
         // Section 9: Open Feedback
