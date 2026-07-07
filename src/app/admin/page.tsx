@@ -173,7 +173,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-white border border-stone-200 rounded-xl p-1 w-fit mb-5">
+        <div className="flex gap-1 bg-white border border-stone-200 rounded-xl p-1 w-fit mb-5 max-w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <TabBtn active={tab === 'leads'} onClick={() => setTab('leads')}>Leads ({stats.total})</TabBtn>
           <TabBtn active={tab === 'properties'} onClick={() => setTab('properties')}>Properties ({properties.length})</TabBtn>
           <TabBtn active={tab === 'chat'} onClick={() => { setTab('chat'); setNewMessageAlert(0); }}>
@@ -190,6 +190,7 @@ export default function AdminDashboard() {
         {/* LEADS TAB */}
         {tab === 'leads' && (
           <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
@@ -225,6 +226,7 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+            </div>
             {leads.length === 0 && <div className="p-10 text-center text-stone-500 text-sm">No leads yet.</div>}
           </div>
         )}
@@ -236,7 +238,7 @@ export default function AdminDashboard() {
               <Link href="/admin/properties/new" className="inline-block bg-orange-500 text-white rounded-lg px-4 py-2 text-sm font-bold hover:bg-orange-400 transition-colors">
                 + Add Property
               </Link>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {['all', 'active', 'sold', 'rented', 'inactive'].map((s) => (
                   <button
                     key={s}
@@ -256,7 +258,8 @@ export default function AdminDashboard() {
             </div>
 
             <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+            <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
                     <th className="p-3.5">Property</th>
@@ -301,6 +304,7 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
               {filteredProperties.length === 0 && (
                 <div className="p-10 text-center text-stone-500 text-sm">
                   {propStatusFilter === 'all' ? 'No properties yet.' : 'No ' + propStatusFilter + ' properties.'}
@@ -338,7 +342,7 @@ function StatCard({ label, value, color = 'text-stone-900' }: { label: string; v
 
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className={'px-4 py-2 rounded-lg text-sm font-medium transition-colors ' + (active ? 'bg-orange-500 text-white' : 'text-stone-500 hover:text-stone-900')}>
+    <button onClick={onClick} className={'px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0 whitespace-nowrap ' + (active ? 'bg-orange-500 text-white' : 'text-stone-500 hover:text-stone-900')}>
       {children}
     </button>
   );
@@ -397,7 +401,7 @@ function SurveyResponses({
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {(['all', 'owner', 'renter'] as const).map((t) => (
             <button
               key={t}
@@ -425,7 +429,8 @@ function SurveyResponses({
       </div>
 
       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+            <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
               <th className="p-3.5">Type</th>
@@ -572,6 +577,7 @@ function SurveyResponses({
             ))}
           </tbody>
         </table>
+            </div>
         {filtered.length === 0 && (
           <div className="p-10 text-center text-stone-500 text-sm">
             {typeFilter === 'all' ? 'No survey responses yet.' : 'No ' + typeFilter + ' responses yet.'}
@@ -621,7 +627,7 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
 
   return (
     <div>
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 flex-wrap">
         {(['pending', 'approved', 'rejected', 'all'] as const).map((f) => (
           <button
             key={f}
@@ -680,10 +686,10 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
                 {s.description && <div className="text-xs text-stone-500 mt-2 line-clamp-2">{s.description}</div>}
 
                 {s.property_submission_images?.length > 1 && (
-                  <div className="flex gap-1.5 mt-2">
+                  <div className="flex gap-1.5 mt-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {s.property_submission_images.slice(0, 6).map((img) => (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img key={img.id} src={img.storage_path} alt="" className="w-9 h-9 rounded object-cover border border-stone-200" />
+                      <img key={img.id} src={img.storage_path} alt="" className="w-9 h-9 flex-shrink-0 rounded object-cover border border-stone-200" />
                     ))}
                   </div>
                 )}

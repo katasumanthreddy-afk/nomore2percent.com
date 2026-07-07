@@ -48,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className="h-full antialiased overflow-x-hidden">
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden">
         {children}
         {/* Footer mounted globally so it appears on every page */}
