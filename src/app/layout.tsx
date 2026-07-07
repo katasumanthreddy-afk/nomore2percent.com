@@ -1,7 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import LiveChatWidget from "@/components/LiveChatWidget";
 import Footer from "@/components/Footer";
+import InstallPWA from "@/components/InstallPWA";
+
+export const viewport: Viewport = {
+  themeColor: '#fb923c',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.nomore2percent.com'),
@@ -10,6 +15,19 @@ export const metadata: Metadata = {
     template: '%s',
   },
   description: 'Buy, sell and rent properties in Hyderabad at just 1% brokerage. Browse verified listings across Gachibowli, Madhapur, Banjara Hills and more.',
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/icons/apple-touch-icon.png',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'nomore2%',
+  },
   openGraph: {
     siteName: 'nomore2percent',
     title: 'nomore2percent — Hyderabad Real Estate Marketplace',
@@ -37,6 +55,8 @@ export default function RootLayout({
         <Footer />
         {/* LiveChat mounted globally so the chat bubble follows visitors across every page */}
         <LiveChatWidget />
+        {/* Install prompt: registers the service worker + shows a native/iOS install nudge */}
+        <InstallPWA />
       </body>
     </html>
   );
