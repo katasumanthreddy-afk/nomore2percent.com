@@ -56,10 +56,10 @@ interface PropertySubmission {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active: 'text-emerald-400 bg-emerald-950/40 border-emerald-900/40',
-  sold: 'text-blue-400 bg-blue-950/40 border-blue-900/40',
-  rented: 'text-purple-400 bg-purple-950/40 border-purple-900/40',
-  inactive: 'text-stone-400 bg-stone-800/40 border-stone-700/40',
+  active: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+  sold: 'text-blue-600 bg-blue-50 border-blue-200',
+  rented: 'text-purple-600 bg-purple-50 border-purple-200',
+  inactive: 'text-stone-500 bg-stone-100 border-stone-300',
 };
 
 export default function AdminDashboard() {
@@ -154,12 +154,12 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex-1 bg-stone-950 text-stone-100 min-h-screen">
-      <div className="bg-stone-900 border-b border-stone-800 px-7 h-14 flex items-center justify-between sticky top-0 z-10">
+    <div className="flex-1 bg-stone-50 text-stone-900 min-h-screen">
+      <div className="bg-white border-b border-stone-200 px-7 h-14 flex items-center justify-between sticky top-0 z-10">
         <div className="font-bold">nomore<span className="text-orange-400">2%</span> <span className="text-xs text-stone-500 font-normal">Admin</span></div>
         <div className="flex items-center gap-2.5">
-          <Link href="/" className="border border-stone-800 rounded-lg px-3 py-1.5 text-xs hover:border-orange-400 hover:text-orange-400 transition-colors">View Site</Link>
-          <button onClick={logout} className="border border-stone-800 rounded-lg px-3 py-1.5 text-xs hover:border-stone-700">Sign Out</button>
+          <Link href="/" className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs hover:border-orange-400 hover:text-orange-400 transition-colors">View Site</Link>
+          <button onClick={logout} className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs hover:border-stone-400">Sign Out</button>
         </div>
       </div>
 
@@ -167,13 +167,13 @@ export default function AdminDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-6">
           <StatCard label="Total Leads" value={stats.total} />
-          <StatCard label="Hot Leads" value={stats.hot} color="text-red-400" />
-          <StatCard label="Closed Deals" value={stats.closed} color="text-emerald-400" />
+          <StatCard label="Hot Leads" value={stats.hot} color="text-red-600" />
+          <StatCard label="Closed Deals" value={stats.closed} color="text-emerald-600" />
           <StatCard label="Active Listings" value={stats.activeProps} color="text-orange-400" />
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-stone-900 border border-stone-800 rounded-xl p-1 w-fit mb-5">
+        <div className="flex gap-1 bg-white border border-stone-200 rounded-xl p-1 w-fit mb-5">
           <TabBtn active={tab === 'leads'} onClick={() => setTab('leads')}>Leads ({stats.total})</TabBtn>
           <TabBtn active={tab === 'properties'} onClick={() => setTab('properties')}>Properties ({properties.length})</TabBtn>
           <TabBtn active={tab === 'chat'} onClick={() => { setTab('chat'); setNewMessageAlert(0); }}>
@@ -189,10 +189,10 @@ export default function AdminDashboard() {
 
         {/* LEADS TAB */}
         {tab === 'leads' && (
-          <div className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden">
+          <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-800 bg-stone-950/40">
+                <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
                   <th className="p-3.5">Name</th><th className="p-3.5">Phone</th><th className="p-3.5">Area</th>
                   <th className="p-3.5">Budget</th><th className="p-3.5">Source</th><th className="p-3.5">Status</th>
                   <th className="p-3.5">Date</th><th className="p-3.5">Actions</th>
@@ -200,14 +200,14 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 {leads.map((l) => (
-                  <tr key={l.id} className="border-b border-stone-800/50 hover:bg-stone-850/50">
+                  <tr key={l.id} className="border-b border-stone-200/50 hover:bg-stone-50">
                     <td className="p-3.5 font-medium">{l.name}</td>
                     <td className="p-3.5">{l.phone}</td>
-                    <td className="p-3.5 text-stone-400">{l.area || '—'}</td>
+                    <td className="p-3.5 text-stone-500">{l.area || '—'}</td>
                     <td className="p-3.5 text-orange-400">{l.budget || '—'}</td>
-                    <td className="p-3.5"><span className="text-[10px] bg-stone-800 px-2 py-0.5 rounded text-stone-400">{l.source}</span></td>
+                    <td className="p-3.5"><span className="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-500">{l.source}</span></td>
                     <td className="p-3.5">
-                      <select value={l.status} onChange={(e) => updateLeadStatus(l.id, e.target.value)} className="bg-stone-800 border border-stone-700 rounded px-2 py-1 text-xs">
+                      <select value={l.status} onChange={(e) => updateLeadStatus(l.id, e.target.value)} className="bg-stone-100 border border-stone-300 rounded px-2 py-1 text-xs">
                         <option value="hot">Hot</option>
                         <option value="warm">Warm</option>
                         <option value="cold">Cold</option>
@@ -217,8 +217,8 @@ export default function AdminDashboard() {
                     <td className="p-3.5 text-stone-500 text-xs">{new Date(l.created_at).toLocaleDateString('en-IN')}</td>
                     <td className="p-3.5">
                       <div className="flex gap-1.5">
-                        <a href={'https://wa.me/91' + l.phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 rounded px-2 py-1">WA</a>
-                        <button onClick={() => deleteLead(l.id)} className="text-xs bg-red-950/40 text-red-400 border border-red-900/40 rounded px-2 py-1">Delete</button>
+                        <a href={'https://wa.me/91' + l.phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 rounded px-2 py-1">WA</a>
+                        <button onClick={() => deleteLead(l.id)} className="text-xs bg-red-50 text-red-600 border border-red-200 rounded px-2 py-1">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -233,7 +233,7 @@ export default function AdminDashboard() {
         {tab === 'properties' && (
           <div>
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-              <Link href="/admin/properties/new" className="inline-block bg-orange-500 text-stone-950 rounded-lg px-4 py-2 text-sm font-bold hover:bg-orange-400 transition-colors">
+              <Link href="/admin/properties/new" className="inline-block bg-orange-500 text-white rounded-lg px-4 py-2 text-sm font-bold hover:bg-orange-400 transition-colors">
                 + Add Property
               </Link>
               <div className="flex gap-2">
@@ -243,8 +243,8 @@ export default function AdminDashboard() {
                     onClick={() => setPropStatusFilter(s)}
                     className={'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ' + (
                       propStatusFilter === s
-                        ? 'bg-orange-500 text-stone-950 border-orange-500'
-                        : 'border-stone-800 text-stone-400 hover:border-stone-600'
+                        ? 'bg-orange-500 text-white border-orange-500'
+                        : 'border-stone-200 text-stone-500 hover:border-stone-400'
                     )}
                   >
                     {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -255,10 +255,10 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden">
+            <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-800 bg-stone-950/40">
+                  <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
                     <th className="p-3.5">Property</th>
                     <th className="p-3.5">Price</th>
                     <th className="p-3.5">Type</th>
@@ -268,20 +268,20 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody>
                   {filteredProperties.map((p) => (
-                    <tr key={p.id} className="border-b border-stone-800/50 hover:bg-stone-850/50">
+                    <tr key={p.id} className="border-b border-stone-200/50 hover:bg-stone-50">
                       <td className="p-3.5">
                         <div className="font-medium text-sm">{p.title}</div>
                         <div className="text-xs text-stone-500">📍 {p.area}</div>
                       </td>
                       <td className="p-3.5 text-orange-400 font-semibold">₹{p.price}</td>
                       <td className="p-3.5">
-                        <span className="text-[10px] bg-stone-800 px-2 py-0.5 rounded text-stone-400 uppercase">{p.listing_type}</span>
+                        <span className="text-[10px] bg-stone-100 px-2 py-0.5 rounded text-stone-500 uppercase">{p.listing_type}</span>
                       </td>
                       <td className="p-3.5">
                         <select
                           value={p.status}
                           onChange={(e) => updatePropertyStatus(p.id, e.target.value)}
-                          className={'text-xs rounded px-2 py-1.5 border font-semibold bg-transparent ' + (STATUS_COLORS[p.status] || 'text-stone-400')}
+                          className={'text-xs rounded px-2 py-1.5 border font-semibold bg-transparent ' + (STATUS_COLORS[p.status] || 'text-stone-500')}
                         >
                           <option value="active">Active</option>
                           <option value="sold">Sold</option>
@@ -292,7 +292,7 @@ export default function AdminDashboard() {
                       <td className="p-3.5">
                         <button
                           onClick={() => deleteProperty(p.id, p.title)}
-                          className="text-xs bg-red-950/40 text-red-400 border border-red-900/40 rounded px-3 py-1.5 hover:bg-red-900/40 transition-colors"
+                          className="text-xs bg-red-50 text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-100 transition-colors"
                         >
                           Delete
                         </button>
@@ -327,9 +327,9 @@ export default function AdminDashboard() {
   );
 }
 
-function StatCard({ label, value, color = 'text-stone-100' }: { label: string; value: number; color?: string }) {
+function StatCard({ label, value, color = 'text-stone-900' }: { label: string; value: number; color?: string }) {
   return (
-    <div className="bg-stone-900 border border-stone-800 rounded-xl p-4">
+    <div className="bg-white border border-stone-200 rounded-xl p-4">
       <div className="text-[11px] uppercase tracking-wide text-stone-500">{label}</div>
       <div className={'font-serif text-2xl font-bold mt-1 ' + color}>{value}</div>
     </div>
@@ -338,7 +338,7 @@ function StatCard({ label, value, color = 'text-stone-100' }: { label: string; v
 
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className={'px-4 py-2 rounded-lg text-sm font-medium transition-colors ' + (active ? 'bg-orange-500 text-stone-950' : 'text-stone-400 hover:text-stone-100')}>
+    <button onClick={onClick} className={'px-4 py-2 rounded-lg text-sm font-medium transition-colors ' + (active ? 'bg-orange-500 text-white' : 'text-stone-500 hover:text-stone-900')}>
       {children}
     </button>
   );
@@ -376,7 +376,7 @@ function DetailRow({ label, value }: { label: string; value: string | number | n
   return (
     <div>
       <span className="text-stone-500">{label}:</span>{' '}
-      <span className="text-stone-300">{value === null || value === undefined || value === '' ? '—' : value}</span>
+      <span className="text-stone-700">{value === null || value === undefined || value === '' ? '—' : value}</span>
     </div>
   );
 }
@@ -404,8 +404,8 @@ function SurveyResponses({
               onClick={() => setTypeFilter(t)}
               className={'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ' + (
                 typeFilter === t
-                  ? 'bg-orange-500 text-stone-950 border-orange-500'
-                  : 'border-stone-800 text-stone-400 hover:border-stone-600'
+                  ? 'bg-orange-500 text-white border-orange-500'
+                  : 'border-stone-200 text-stone-500 hover:border-stone-400'
               )}
             >
               {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -418,16 +418,16 @@ function SurveyResponses({
         <button
           onClick={() => downloadCSV(filtered)}
           disabled={filtered.length === 0}
-          className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-stone-800 text-stone-300 hover:border-orange-400 hover:text-orange-400 transition-colors disabled:opacity-40 disabled:hover:border-stone-800 disabled:hover:text-stone-300"
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-stone-200 text-stone-700 hover:border-orange-400 hover:text-orange-400 transition-colors disabled:opacity-40 disabled:hover:border-stone-300 disabled:hover:text-stone-700"
         >
           Export CSV ({filtered.length})
         </button>
       </div>
 
-      <div className="bg-stone-900 border border-stone-800 rounded-xl overflow-hidden">
+      <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-800 bg-stone-950/40">
+            <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
               <th className="p-3.5">Type</th>
               <th className="p-3.5">Area / Locality</th>
               <th className="p-3.5">Property</th>
@@ -440,10 +440,10 @@ function SurveyResponses({
           <tbody>
             {filtered.map((r) => (
               <Fragment key={r.id}>
-                <tr className="border-b border-stone-800/50 hover:bg-stone-850/50">
+                <tr className="border-b border-stone-200/50 hover:bg-stone-50">
                   <td className="p-3.5">
                     <span className={'text-[10px] px-2 py-0.5 rounded uppercase font-semibold ' + (
-                      r.user_type === 'owner' ? 'bg-blue-950/40 text-blue-400 border border-blue-900/40' : 'bg-purple-950/40 text-purple-400 border border-purple-900/40'
+                      r.user_type === 'owner' ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-purple-50 text-purple-600 border border-purple-200'
                     )}>
                       {r.user_type}
                     </span>
@@ -452,7 +452,7 @@ function SurveyResponses({
                     <div className="font-medium">{r.area || '—'}</div>
                     <div className="text-xs text-stone-500">{r.locality || ''}</div>
                   </td>
-                  <td className="p-3.5 text-stone-400">{[r.property_type, r.bhk].filter(Boolean).join(' · ') || '—'}</td>
+                  <td className="p-3.5 text-stone-500">{[r.property_type, r.bhk].filter(Boolean).join(' · ') || '—'}</td>
                   <td className="p-3.5 text-orange-400">
                     {r.user_type === 'owner'
                       ? (r.current_value_exact ? '₹' + r.current_value_exact.toLocaleString('en-IN') : r.current_value_range || '—')
@@ -460,7 +460,7 @@ function SurveyResponses({
                   </td>
                   <td className="p-3.5">
                     {r.willing_to_contact && r.phone ? (
-                      <a href={'https://wa.me/91' + r.phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 rounded px-2 py-1">
+                      <a href={'https://wa.me/91' + r.phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 rounded px-2 py-1">
                         {r.name || 'WA'}
                       </a>
                     ) : (
@@ -471,14 +471,14 @@ function SurveyResponses({
                   <td className="p-3.5">
                     <button
                       onClick={() => setExpanded(expanded === r.id ? null : r.id)}
-                      className="text-xs text-stone-400 hover:text-orange-400"
+                      className="text-xs text-stone-500 hover:text-orange-400"
                     >
                       {expanded === r.id ? 'Hide' : 'Details'}
                     </button>
                   </td>
                 </tr>
                 {expanded === r.id && (
-                  <tr className="border-b border-stone-800/50 bg-stone-950/40">
+                  <tr className="border-b border-stone-200/50 bg-stone-50">
                     <td colSpan={7} className="p-5">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-5 text-xs">
 
@@ -627,7 +627,7 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
             key={f}
             onClick={() => setFilter(f)}
             className={'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ' + (
-              filter === f ? 'bg-orange-500 text-stone-950 border-orange-500' : 'border-stone-800 text-stone-400 hover:border-stone-600'
+              filter === f ? 'bg-orange-500 text-white border-orange-500' : 'border-stone-200 text-stone-500 hover:border-stone-400'
             )}
           >
             {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -640,8 +640,8 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
         {filtered.map((s) => {
           const cover = s.property_submission_images?.find((i) => i.is_primary) || s.property_submission_images?.[0];
           return (
-            <div key={s.id} className="bg-stone-900 border border-stone-800 rounded-xl p-4 flex gap-4">
-              <div className="w-24 h-24 rounded-lg bg-stone-800 flex-shrink-0 overflow-hidden flex items-center justify-center text-3xl">
+            <div key={s.id} className="bg-white border border-stone-200 rounded-xl p-4 flex gap-4">
+              <div className="w-24 h-24 rounded-lg bg-stone-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-3xl">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={cover.storage_path} alt="" className="w-full h-full object-cover" />
@@ -661,17 +661,17 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
                     </div>
                   </div>
                   <span className={'text-[10px] px-2 py-0.5 rounded uppercase font-semibold flex-shrink-0 ' + (
-                    s.status === 'pending' ? 'bg-amber-950/40 text-amber-400 border border-amber-900/40'
-                    : s.status === 'approved' ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/40'
-                    : 'bg-red-950/40 text-red-400 border border-red-900/40'
+                    s.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-200'
+                    : s.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                    : 'bg-red-50 text-red-600 border border-red-200'
                   )}>
                     {s.status}
                   </span>
                 </div>
 
-                <div className="text-xs text-stone-400 mt-2">
-                  From <span className="text-stone-200">{s.owner_name}</span> ·{' '}
-                  <a href={'https://wa.me/91' + s.owner_phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline">
+                <div className="text-xs text-stone-500 mt-2">
+                  From <span className="text-stone-800">{s.owner_name}</span> ·{' '}
+                  <a href={'https://wa.me/91' + s.owner_phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">
                     {s.owner_phone}
                   </a>
                   {s.owner_email ? ` · ${s.owner_email}` : ''}
@@ -683,7 +683,7 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
                   <div className="flex gap-1.5 mt-2">
                     {s.property_submission_images.slice(0, 6).map((img) => (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img key={img.id} src={img.storage_path} alt="" className="w-9 h-9 rounded object-cover border border-stone-800" />
+                      <img key={img.id} src={img.storage_path} alt="" className="w-9 h-9 rounded object-cover border border-stone-200" />
                     ))}
                   </div>
                 )}
@@ -696,19 +696,19 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
                           value={rejectNote}
                           onChange={(e) => setRejectNote(e.target.value)}
                           placeholder="Reason (optional)"
-                          className="flex-1 bg-stone-950 border border-stone-800 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-orange-400"
+                          className="flex-1 bg-white border border-stone-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-orange-400"
                         />
-                        <button onClick={() => reject(s.id)} disabled={busyId === s.id} className="text-xs bg-red-950/40 text-red-400 border border-red-900/40 rounded px-3 py-1.5 hover:bg-red-900/40 transition-colors disabled:opacity-50">
+                        <button onClick={() => reject(s.id)} disabled={busyId === s.id} className="text-xs bg-red-50 text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-100 transition-colors disabled:opacity-50">
                           Confirm Reject
                         </button>
-                        <button onClick={() => { setRejectingId(null); setRejectNote(''); }} className="text-xs text-stone-500 hover:text-stone-300">Cancel</button>
+                        <button onClick={() => { setRejectingId(null); setRejectNote(''); }} className="text-xs text-stone-500 hover:text-stone-700">Cancel</button>
                       </div>
                     ) : (
                       <div className="flex gap-2">
-                        <button onClick={() => approve(s.id)} disabled={busyId === s.id} className="text-xs bg-emerald-950/40 text-emerald-400 border border-emerald-900/40 rounded px-3 py-1.5 hover:bg-emerald-900/40 transition-colors disabled:opacity-50">
+                        <button onClick={() => approve(s.id)} disabled={busyId === s.id} className="text-xs bg-emerald-50 text-emerald-600 border border-emerald-200 rounded px-3 py-1.5 hover:bg-emerald-100 transition-colors disabled:opacity-50">
                           {busyId === s.id ? 'Publishing...' : '✓ Approve & Publish'}
                         </button>
-                        <button onClick={() => setRejectingId(s.id)} disabled={busyId === s.id} className="text-xs bg-stone-800 text-stone-300 border border-stone-700 rounded px-3 py-1.5 hover:bg-stone-700 transition-colors disabled:opacity-50">
+                        <button onClick={() => setRejectingId(s.id)} disabled={busyId === s.id} className="text-xs bg-stone-100 text-stone-700 border border-stone-300 rounded px-3 py-1.5 hover:bg-stone-700 transition-colors disabled:opacity-50">
                           Reject
                         </button>
                       </div>
@@ -724,7 +724,7 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
           );
         })}
         {filtered.length === 0 && (
-          <div className="p-10 text-center text-stone-500 text-sm bg-stone-900 border border-stone-800 rounded-xl">
+          <div className="p-10 text-center text-stone-500 text-sm bg-white border border-stone-200 rounded-xl">
             No {filter !== 'all' ? filter : ''} submissions.
           </div>
         )}
@@ -759,19 +759,19 @@ function ChatInbox({ conversations, onRefresh }: { conversations: Conversation[]
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 bg-stone-900 border border-stone-800 rounded-xl overflow-hidden" style={{ height: 520 }}>
-      <div className="border-r border-stone-800 overflow-y-auto">
+    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 bg-white border border-stone-200 rounded-xl overflow-hidden" style={{ height: 520 }}>
+      <div className="border-r border-stone-200 overflow-y-auto">
         {conversations.map((c) => (
-          <button key={c.id} onClick={() => setActiveConvo(c.id)} className={'w-full text-left p-3.5 border-b border-stone-800/50 hover:bg-stone-800/50 ' + (activeConvo === c.id ? 'bg-stone-800/50' : '')}>
+          <button key={c.id} onClick={() => setActiveConvo(c.id)} className={'w-full text-left p-3.5 border-b border-stone-200/50 hover:bg-stone-50 ' + (activeConvo === c.id ? 'bg-stone-100' : '')}>
             <div className="flex items-center justify-between gap-2">
               <div className="font-medium text-sm">{c.visitor_name}</div>
               {c.handoff_requested && (
-                <span className="text-[9px] font-bold uppercase tracking-wide bg-red-950/40 text-red-400 border border-red-900/40 rounded px-1.5 py-0.5 flex-shrink-0">
+                <span className="text-[9px] font-bold uppercase tracking-wide bg-red-50 text-red-600 border border-red-200 rounded px-1.5 py-0.5 flex-shrink-0">
                   Needs you
                 </span>
               )}
               {!c.handoff_requested && c.mode === 'ai' && (
-                <span className="text-[9px] font-bold uppercase tracking-wide bg-blue-950/40 text-blue-400 border border-blue-900/40 rounded px-1.5 py-0.5 flex-shrink-0">
+                <span className="text-[9px] font-bold uppercase tracking-wide bg-blue-50 text-blue-600 border border-blue-200 rounded px-1.5 py-0.5 flex-shrink-0">
                   AI
                 </span>
               )}
@@ -788,16 +788,16 @@ function ChatInbox({ conversations, onRefresh }: { conversations: Conversation[]
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5">
               {messages.map((m) => (
                 <div key={m.id} className={'flex flex-col gap-1 max-w-[75%] ' + (m.sender === 'admin' ? 'self-end items-end' : 'self-start items-start')}>
-                  {m.sender === 'ai' && <span className="text-[9px] uppercase tracking-wide text-blue-400 font-semibold px-1">AI Assistant</span>}
-                  <div className={'px-3 py-2 rounded-xl text-sm ' + (m.sender === 'admin' ? 'bg-orange-500 text-stone-950' : m.sender === 'ai' ? 'bg-blue-950/40 border border-blue-900/40 text-stone-200' : 'bg-stone-800 text-stone-100')}>
+                  {m.sender === 'ai' && <span className="text-[9px] uppercase tracking-wide text-blue-600 font-semibold px-1">AI Assistant</span>}
+                  <div className={'px-3 py-2 rounded-xl text-sm ' + (m.sender === 'admin' ? 'bg-orange-500 text-white' : m.sender === 'ai' ? 'bg-blue-50 border border-blue-200 text-stone-800' : 'bg-stone-100 text-stone-900')}>
                     {m.message}
                   </div>
                 </div>
               ))}
             </div>
-            <div className="p-3 border-t border-stone-800 flex gap-2">
-              <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder="Reply to visitor..." className="flex-1 bg-stone-950 border border-stone-800 rounded-full px-4 py-2 text-sm outline-none focus:border-orange-400" />
-              <button onClick={send} className="bg-orange-500 text-stone-950 rounded-full w-9 h-9 flex items-center justify-center font-bold">Send</button>
+            <div className="p-3 border-t border-stone-200 flex gap-2">
+              <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder="Reply to visitor..." className="flex-1 bg-white border border-stone-200 rounded-full px-4 py-2 text-sm outline-none focus:border-orange-400" />
+              <button onClick={send} className="bg-orange-500 text-white rounded-full w-9 h-9 flex items-center justify-center font-bold">Send</button>
             </div>
           </>
         ) : (

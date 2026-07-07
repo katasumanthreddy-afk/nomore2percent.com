@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { X, Share, Plus } from 'lucide-react';
 
-const DISMISSED_KEY = 'n2p_install_prompt_dismissed';
-
 export default function InstallPWA() {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith('/admin') ?? false;
+  const dismissedKey = isAdmin ? 'n2p_install_prompt_dismissed_admin' : 'n2p_install_prompt_dismissed_main';
+
   const [installEvent, setInstallEvent] = useState<any>(null);
   const [showIosHint, setShowIosHint] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -18,14 +21,16 @@ export default function InstallPWA() {
       });
     }
 
-    if (localStorage.getItem(DISMISSED_KEY)) return;
+    if (localStorage.getItem(dismissedKey)) return;
 
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
     if (isStandalone) return; // already installed, nothing to prompt
 
-    // Android/Chrome/Edge: listen for the native install prompt
+    // Android/Chrome/Edge: listen for the native install prompt. Because the
+    // page's <link rel="manifest"> switches between the main site and admin
+    // manifests depending on route, this automatically offers the right one.
     const handler = (e: Event) => {
       e.preventDefault();
       setInstallEvent(e);
@@ -47,11 +52,11 @@ export default function InstallPWA() {
     }
 
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [dismissedKey, pathname]);
 
   const dismiss = () => {
     setVisible(false);
-    localStorage.setItem(DISMISSED_KEY, '1');
+    localStorage.setItem(dismissedKey, '1');
   };
 
   const install = async () => {
@@ -59,10 +64,17 @@ export default function InstallPWA() {
     installEvent.prompt();
     await installEvent.userChoice;
     setVisible(false);
-    localStorage.setItem(DISMISSED_KEY, '1');
+    localStorage.setItem(dismissedKey, '1');
   };
 
   if (!visible) return null;
+
+  const label = isAdmin ? 'nomore2% Admin' : 'nomore2percent';
+  const iconBg = isAdmin ? 'bg-stone-900' : 'bg-orange-400';
+  const iconText = isAdmin ? 'text-orange-400' : 'text-white';
+  const description = isAdmin
+    ? 'One-tap access to your dashboard — leads, chat, and submissions.'
+    : 'Get one-tap access, faster loading, and a home screen icon.';
 
   return (
     <div className="fixed bottom-5 right-5 z-40 max-w-xs animate-[fadeIn_0.3s_ease-out]">
@@ -72,8 +84,8 @@ export default function InstallPWA() {
         </button>
 
         <div className="flex items-center gap-2.5 mb-2.5">
-          <div className="w-9 h-9 rounded-lg bg-orange-400 text-white flex items-center justify-center font-serif font-bold text-xs flex-shrink-0">N2</div>
-          <div className="font-bold text-sm text-stone-900">Install nomore2percent</div>
+          <div className={`w-9 h-9 rounded-lg ${iconBg} ${iconText} flex items-center justify-center font-serif font-bold text-xs flex-shrink-0`}>N2</div>
+          <div className="font-bold text-sm text-stone-900">Install {label}</div>
         </div>
 
         {showIosHint ? (
@@ -83,7 +95,7 @@ export default function InstallPWA() {
           </p>
         ) : (
           <>
-            <p className="text-xs text-stone-500 mb-3">Get one-tap access, faster loading, and a home screen icon.</p>
+            <p className="text-xs text-stone-500 mb-3">{description}</p>
             <button onClick={install} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-lg py-2 transition-colors">
               Install App
             </button>
