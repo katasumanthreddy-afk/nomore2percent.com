@@ -100,6 +100,78 @@ export function estimateValue(input: ValuationInput): ValuationResult {
   };
 }
 
+export interface HealthScore {
+  score: number; // 0-100
+  band: 'Excellent' | 'Good' | 'Fair' | 'Needs Attention';
+  factors: { label: string; impact: 'positive' | 'neutral' | 'negative'; note: string }[];
+}
+
+/**
+ * A directional "how healthy does this property look" score — deliberately
+ * simple and explainable rather than a black box, since the factors are shown
+ * to the user alongside the score. This is NOT a substitute for a real
+ * inspection or professional appraisal; it's a marketing/engagement device
+ * built from the same inputs already collected for the valuation estimate.
+ */
+export function calculateHealthScore(input: ValuationInput, result: ValuationResult): HealthScore {
+  let score = 65;
+  const factors: HealthScore['factors'] = [];
+
+  // Age
+  if (input.age_years <= 2) {
+    score += 15;
+    factors.push({ label: 'Property age', impact: 'positive', note: 'Newer construction, minimal wear expected' });
+  } else if (input.age_years <= 5) {
+    score += 8;
+    factors.push({ label: 'Property age', impact: 'positive', note: 'Relatively new, in good condition typically' });
+  } else if (input.age_years <= 10) {
+    factors.push({ label: 'Property age', impact: 'neutral', note: 'Mid-life property, condition varies' });
+  } else {
+    score -= 10;
+    factors.push({ label: 'Property age', impact: 'negative', note: 'Older construction — factor in maintenance costs' });
+  }
+
+  // Market position vs benchmark
+  const positionRatio = result.rate_per_sqft_used / result.benchmark_rate;
+  if (positionRatio >= 1.1) {
+    score += 10;
+    factors.push({ label: 'Locality strength', impact: 'positive', note: 'Priced above the area benchmark — strong local demand' });
+  } else if (positionRatio >= 0.9) {
+    score += 5;
+    factors.push({ label: 'Locality strength', impact: 'neutral', note: 'In line with the area benchmark' });
+  } else {
+    score -= 5;
+    factors.push({ label: 'Locality strength', impact: 'negative', note: 'Below the area benchmark — worth understanding why' });
+  }
+
+  // Data confidence
+  if (result.used_live_data && result.live_comp_count >= 4) {
+    score += 5;
+    factors.push({ label: 'Data confidence', impact: 'positive', note: `Backed by ${result.live_comp_count} comparable live listings` });
+  } else if (result.used_live_data) {
+    score += 2;
+    factors.push({ label: 'Data confidence', impact: 'neutral', note: 'Backed by a small number of live listings' });
+  } else {
+    factors.push({ label: 'Data confidence', impact: 'neutral', note: 'Based on area benchmark — limited live listings here yet' });
+  }
+
+  // Property type
+  if (input.property_type === 'villa' || input.property_type === 'commercial') {
+    score += 3;
+    factors.push({ label: 'Property type', impact: 'positive', note: 'Tends to hold value well in this category' });
+  } else if (input.property_type === 'plot') {
+    score -= 3;
+    factors.push({ label: 'Property type', impact: 'negative', note: 'No rental income potential until built' });
+  }
+
+  score = Math.max(0, Math.min(100, score));
+
+  const band: HealthScore['band'] =
+    score >= 85 ? 'Excellent' : score >= 70 ? 'Good' : score >= 50 ? 'Fair' : 'Needs Attention';
+
+  return { score, band, factors };
+}
+
 export function formatINR(amount: number): string {
   if (amount >= 10000000) return '₹' + (amount / 10000000).toFixed(2).replace(/\.00$/, '') + ' Cr';
   if (amount >= 100000) return '₹' + (amount / 100000).toFixed(2).replace(/\.00$/, '') + ' L';

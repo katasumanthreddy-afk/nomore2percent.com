@@ -187,6 +187,12 @@ export default function DetailedSurveyPage() {
         params.set('auto', '1');
       }
     }
+    // If they already consented to contact during the survey, don't make them
+    // re-enter name/phone at the valuation gate — they've already given it once.
+    if (form.willing_to_contact && form.respondent_name && form.respondent_phone) {
+      params.set('name', form.respondent_name);
+      params.set('phone', form.respondent_phone);
+    }
     return '/property-valuation?' + params.toString();
   };
 
