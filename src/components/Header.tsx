@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,6 +24,9 @@ export default function Header() {
       </nav>
 
       <div className="hidden md:flex items-center gap-2">
+        <Link href="/account" aria-label="Account" className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-stone-200 text-stone-500 hover:border-stone-300 hover:text-stone-700 transition-colors">
+          <User size={16} />
+        </Link>
         <Link href="/list-your-property" className="inline-flex items-center px-4 py-2 rounded-lg border border-orange-300 text-orange-500 text-sm font-bold hover:bg-orange-50 transition-colors">List Your Property</Link>
         <a href="https://wa.me/917013224895" target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-4 py-2 rounded-lg bg-orange-400 text-white text-sm font-bold hover:bg-orange-500 transition-colors">WhatsApp Us</a>
       </div>
@@ -40,6 +43,7 @@ export default function Header() {
           <Link href="/market-survey" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>Market Survey</Link>
           <Link href="/property-valuation" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>Valuation</Link>
           <Link href="/list-your-property" className="py-2.5 text-sm text-orange-500 font-semibold border-b border-stone-100" onClick={() => setMenuOpen(false)}>List Your Property</Link>
+          <Link href="/account" className="py-2.5 text-sm text-stone-600 border-b border-stone-100" onClick={() => setMenuOpen(false)}>My Account</Link>
           <Link href="/blog" className="py-2.5 text-sm text-stone-600" onClick={() => setMenuOpen(false)}>Blog</Link>
         </div>
       )}
