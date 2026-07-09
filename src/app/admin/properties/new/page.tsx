@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { defaultSizeUnitForType } from '@/types/property';
 
 interface PhotoPreview {
   file: File;
@@ -15,7 +16,7 @@ export default function NewPropertyPage() {
   const [form, setForm] = useState({
     title: '', description: '', price: '', price_per_sqft: '', area: 'Gachibowli',
     address: '', property_type: 'apartment', listing_type: 'sale',
-    bedrooms: '', bathrooms: '', sqft: '', floor: '', parking: '',
+    bedrooms: '', bathrooms: '', sqft: '', size_unit: 'sqft', floor: '', parking: '',
     year_built: '', rera_number: '', amenities: '', featured: false,
   });
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
@@ -25,6 +26,10 @@ export default function NewPropertyPage() {
   const [aiError, setAiError] = useState('');
 
   const set = (k: string, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
+
+  const handlePropertyTypeChange = (type: string) => {
+    setForm((prev) => ({ ...prev, property_type: type, size_unit: defaultSizeUnitForType(type) }));
+  };
 
   const parsePriceNum = (price: string) => {
     const lower = price.toLowerCase();
@@ -133,7 +138,7 @@ export default function NewPropertyPage() {
         price_num: parsePriceNum(form.price),
         bedrooms: parseInt(form.bedrooms) || 0,
         bathrooms: parseInt(form.bathrooms) || 0,
-        sqft: parseInt(form.sqft) || 0,
+        sqft: parseFloat(form.sqft) || 0,
         parking: parseInt(form.parking) || 0,
         amenities: form.amenities.split(',').map((a) => a.trim()).filter(Boolean),
       }),
@@ -174,9 +179,10 @@ export default function NewPropertyPage() {
           </Field>
           <Field label="Full Address"><input value={form.address} onChange={(e) => set('address', e.target.value)} className={inputClass} placeholder="Plot no, street, pincode" /></Field>
           <Field label="Property Type">
-            <select value={form.property_type} onChange={(e) => set('property_type', e.target.value)} className={inputClass}>
+            <select value={form.property_type} onChange={(e) => handlePropertyTypeChange(e.target.value)} className={inputClass}>
               <option value="apartment">Apartment</option><option value="villa">Villa</option>
               <option value="plot">Plot</option><option value="commercial">Commercial</option>
+              <option value="agricultural">Agricultural Land</option>
             </select>
           </Field>
           <Field label="Listing Type">
@@ -189,7 +195,16 @@ export default function NewPropertyPage() {
         <Section title="Specs">
           <Field label="Bedrooms"><input type="number" value={form.bedrooms} onChange={(e) => set('bedrooms', e.target.value)} className={inputClass} /></Field>
           <Field label="Bathrooms"><input type="number" value={form.bathrooms} onChange={(e) => set('bathrooms', e.target.value)} className={inputClass} /></Field>
-          <Field label="Area (sqft)"><input type="number" value={form.sqft} onChange={(e) => set('sqft', e.target.value)} className={inputClass} /></Field>
+          <Field label={form.property_type === 'plot' ? 'Plot Size' : form.property_type === 'agricultural' ? 'Land Size' : 'Built-up Area'}>
+            <div className="flex gap-2">
+              <input type="number" value={form.sqft} onChange={(e) => set('sqft', e.target.value)} className={inputClass} placeholder="e.g. 1450" />
+              <select value={form.size_unit} onChange={(e) => set('size_unit', e.target.value)} className={inputClass + ' w-28 flex-shrink-0'}>
+                <option value="sqft">sq.ft</option>
+                <option value="sqyd">sq.yd</option>
+                <option value="acres">acres</option>
+              </select>
+            </div>
+          </Field>
           <Field label="Floor"><input value={form.floor} onChange={(e) => set('floor', e.target.value)} className={inputClass} placeholder="e.g. 14th" /></Field>
           <Field label="Parking"><input type="number" value={form.parking} onChange={(e) => set('parking', e.target.value)} className={inputClass} /></Field>
           <Field label="Year Built"><input value={form.year_built} onChange={(e) => set('year_built', e.target.value)} className={inputClass} /></Field>

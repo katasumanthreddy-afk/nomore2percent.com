@@ -66,7 +66,7 @@ interface PropertySubmission {
   id: number; owner_name: string; owner_phone: string; owner_email: string | null;
   title: string | null; description: string | null;
   property_type: string; listing_type: string; area: string; address: string | null;
-  bedrooms: number | null; bathrooms: number | null; sqft: number | null;
+  bedrooms: number | null; bathrooms: number | null; sqft: number | null; size_unit: string | null;
   price: string | null; floor: string | null; year_built: string | null;
   status: 'pending' | 'approved' | 'rejected'; admin_notes: string | null;
   created_at: string;
@@ -713,7 +713,7 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
                       {s.price ? ` · ₹${s.price}` : ''}
                     </div>
                     <div className="text-xs text-stone-500 mt-0.5">
-                      {[s.bedrooms && `${s.bedrooms} BHK`, s.sqft && `${s.sqft} sqft`, s.floor].filter(Boolean).join(' · ')}
+                      {[s.bedrooms && `${s.bedrooms} BHK`, s.sqft && `${s.sqft} ${s.size_unit === 'sqyd' ? 'sq.yd' : s.size_unit === 'acres' ? 'acres' : 'sqft'}`, s.floor].filter(Boolean).join(' · ')}
                     </div>
                   </div>
                   <span className={'text-[10px] px-2 py-0.5 rounded uppercase font-semibold flex-shrink-0 ' + (

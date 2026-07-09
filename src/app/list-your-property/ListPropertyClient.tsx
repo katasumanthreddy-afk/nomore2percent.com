@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Header from '@/components/Header';
 import { supabase } from '@/lib/supabase';
+import { defaultSizeUnitForType } from '@/types/property';
 import { Upload, X, CheckCircle2 } from 'lucide-react';
 
 interface PhotoPreview {
@@ -15,7 +16,7 @@ export default function ListPropertyClient() {
     owner_name: '', owner_phone: '', owner_email: '',
     title: '', description: '', price: '',
     property_type: 'apartment', listing_type: 'sale',
-    area: '', address: '', bedrooms: '', bathrooms: '', sqft: '', floor: '', year_built: '',
+    area: '', address: '', bedrooms: '', bathrooms: '', sqft: '', size_unit: 'sqft', floor: '', year_built: '',
   });
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [saving, setSaving] = useState(false);
@@ -24,6 +25,10 @@ export default function ListPropertyClient() {
   const [submitted, setSubmitted] = useState(false);
 
   const set = (k: string, v: string) => setForm((prev) => ({ ...prev, [k]: v }));
+
+  const handlePropertyTypeChange = (type: string) => {
+    setForm((prev) => ({ ...prev, property_type: type, size_unit: defaultSizeUnitForType(type) }));
+  };
 
   const parsePriceNum = (price: string) => {
     const lower = price.toLowerCase();
@@ -97,7 +102,7 @@ export default function ListPropertyClient() {
           ...form,
           bedrooms: form.bedrooms ? parseInt(form.bedrooms) : null,
           bathrooms: form.bathrooms ? parseInt(form.bathrooms) : null,
-          sqft: form.sqft ? parseInt(form.sqft) : null,
+          sqft: form.sqft ? parseFloat(form.sqft) : null,
           price_num: form.price ? parsePriceNum(form.price) : null,
         }),
       });
@@ -174,18 +179,29 @@ export default function ListPropertyClient() {
               </div>
               <div>
                 <label className={labelClass}>Property Type</label>
-                <select value={form.property_type} onChange={(e) => set('property_type', e.target.value)} className={inputClass}>
+                <select value={form.property_type} onChange={(e) => handlePropertyTypeChange(e.target.value)} className={inputClass}>
                   <option value="apartment">Apartment</option>
                   <option value="villa">Villa / Independent House</option>
                   <option value="plot">Plot / Land</option>
                   <option value="commercial">Commercial</option>
+                  <option value="agricultural">Agricultural Land</option>
                 </select>
               </div>
               <div className="md:col-span-2"><label className={labelClass}>Title (optional)</label><input value={form.title} onChange={(e) => set('title', e.target.value)} className={inputClass} placeholder="e.g. Spacious 3BHK near Gachibowli IT hub" /></div>
               <div><label className={labelClass}>Area / Locality *</label><input value={form.area} onChange={(e) => set('area', e.target.value)} className={inputClass} placeholder="e.g. Gachibowli" /></div>
               <div><label className={labelClass}>Full Address (optional)</label><input value={form.address} onChange={(e) => set('address', e.target.value)} className={inputClass} placeholder="Street, landmark" /></div>
               <div><label className={labelClass}>Price</label><input value={form.price} onChange={(e) => set('price', e.target.value)} className={inputClass} placeholder="e.g. 85 Lakhs or 25,000/mo" /></div>
-              <div><label className={labelClass}>Built-up Area (sqft)</label><input type="number" value={form.sqft} onChange={(e) => set('sqft', e.target.value)} className={inputClass} placeholder="e.g. 1450" /></div>
+              <div>
+                <label className={labelClass}>{form.property_type === 'plot' ? 'Plot Size' : form.property_type === 'agricultural' ? 'Land Size' : 'Built-up Area'}</label>
+                <div className="flex gap-2">
+                  <input type="number" value={form.sqft} onChange={(e) => set('sqft', e.target.value)} className={inputClass} placeholder="e.g. 1450" />
+                  <select value={form.size_unit} onChange={(e) => set('size_unit', e.target.value)} className={inputClass + ' w-24 flex-shrink-0'}>
+                    <option value="sqft">sq.ft</option>
+                    <option value="sqyd">sq.yd</option>
+                    <option value="acres">acres</option>
+                  </select>
+                </div>
+              </div>
               <div><label className={labelClass}>Bedrooms</label><input type="number" value={form.bedrooms} onChange={(e) => set('bedrooms', e.target.value)} className={inputClass} placeholder="e.g. 3" /></div>
               <div><label className={labelClass}>Bathrooms</label><input type="number" value={form.bathrooms} onChange={(e) => set('bathrooms', e.target.value)} className={inputClass} placeholder="e.g. 2" /></div>
               <div><label className={labelClass}>Floor</label><input value={form.floor} onChange={(e) => set('floor', e.target.value)} className={inputClass} placeholder="e.g. 4 of 12" /></div>

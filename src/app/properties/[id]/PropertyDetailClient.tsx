@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Property, savingsLabel } from '@/types/property';
+import { Property, savingsLabel, sizeUnitLabel } from '@/types/property';
 import { Bed, Bath, Maximize, Car, Calendar, Layers } from 'lucide-react';
 
 export default function PropertyDetailClient({ property }: { property: Property }) {
@@ -77,7 +77,7 @@ export default function PropertyDetailClient({ property }: { property: Property 
           <div className="flex border border-stone-200 rounded-xl overflow-hidden mb-8 bg-white">
             {property.bedrooms > 0 && <Spec icon={<Bed size={18} />} val={property.bedrooms} label="Bedrooms" />}
             {property.bathrooms > 0 && <Spec icon={<Bath size={18} />} val={property.bathrooms} label="Bathrooms" />}
-            {property.sqft > 0 && <Spec icon={<Maximize size={18} />} val={property.sqft.toLocaleString('en-IN')} label="Sq.ft" />}
+            {property.sqft > 0 && <Spec icon={<Maximize size={18} />} val={property.sqft.toLocaleString('en-IN')} label={sizeUnitLabel(property.size_unit) === 'sqft' ? 'Sq.ft' : sizeUnitLabel(property.size_unit) === 'sqyd' ? 'Sq.yd' : 'Acres'} />}
             {property.floor && <Spec icon={<Layers size={18} />} val={property.floor} label="Floor" />}
             {property.parking > 0 && <Spec icon={<Car size={18} />} val={property.parking} label="Parking" />}
             {property.year_built && <Spec icon={<Calendar size={18} />} val={property.year_built} label="Built" />}

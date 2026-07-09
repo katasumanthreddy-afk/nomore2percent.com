@@ -179,7 +179,7 @@ export default function DetailedSurveyPage() {
     const params = new URLSearchParams({ source: 'survey' });
     if (form.area) params.set('area', form.area);
     if (form.property_type && typeMap[form.property_type]) params.set('type', typeMap[form.property_type]);
-    if (form.property_size_value) {
+    if (form.property_size_value && form.property_size_unit !== 'acres') {
       const raw = Number(form.property_size_value);
       const sqft = form.property_size_unit === 'sqyd' ? Math.round(raw * 9) : raw;
       if (sqft > 0) {
@@ -285,6 +285,7 @@ export default function DetailedSurveyPage() {
                     <select value={form.property_size_unit} onChange={(e) => set('property_size_unit', e.target.value)} className={ic + ' w-28 flex-shrink-0'}>
                       <option value="sqft">sq.ft</option>
                       <option value="sqyd">sq.yd</option>
+                      <option value="acres">acres</option>
                     </select>
                   </div>
                 </F>
@@ -312,7 +313,7 @@ export default function DetailedSurveyPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <F label="When did you buy? (Year)"><input value={form.purchase_year} onChange={(e) => set('purchase_year', e.target.value)} className={ic} placeholder="e.g. 2018" /></F>
                 <F label="Purchase price (₹)"><input value={form.purchase_price} onChange={(e) => set('purchase_price', e.target.value)} className={ic} placeholder="e.g. 6500000" /></F>
-                <F label={`Price per ${form.property_size_unit === 'sqyd' ? 'sq.yd' : 'sq.ft'} (₹)`}><input value={form.purchase_price_per_unit} onChange={(e) => set('purchase_price_per_unit', e.target.value)} className={ic} placeholder="e.g. 4500" /></F>
+                <F label={`Price per ${form.property_size_unit === 'sqyd' ? 'sq.yd' : form.property_size_unit === 'acres' ? 'acre' : 'sq.ft'} (₹)`}><input value={form.purchase_price_per_unit} onChange={(e) => set('purchase_price_per_unit', e.target.value)} className={ic} placeholder="e.g. 4500" /></F>
                 <F label="How did you acquire it?">
                   <select value={form.purchase_type} onChange={(e) => set('purchase_type', e.target.value)} className={ic}>
                     <option value="">Select</option>

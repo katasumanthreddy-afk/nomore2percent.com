@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const {
       owner_name, owner_phone, owner_email, title, description,
       property_type, listing_type, area, address,
-      bedrooms, bathrooms, sqft, price, price_num, floor, year_built, amenities,
+      bedrooms, bathrooms, sqft, size_unit, price, price_num, floor, year_built, amenities,
     } = body;
 
     if (!owner_name || !owner_phone || !property_type || !listing_type || !area) {
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
         title: title || null, description: description || null,
         property_type, listing_type, area, address: address || null,
         bedrooms: bedrooms || null, bathrooms: bathrooms || null, sqft: sqft || null,
+        size_unit: size_unit || 'sqft',
         price: price || null, price_num: price_num || null,
         floor: floor || null, year_built: year_built || null,
         amenities: amenities || [],

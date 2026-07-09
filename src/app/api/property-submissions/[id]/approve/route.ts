@@ -40,6 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         bedrooms: submission.bedrooms || 0,
         bathrooms: submission.bathrooms || 0,
         sqft: submission.sqft || 0,
+        size_unit: submission.size_unit || 'sqft',
         floor: submission.floor,
         year_built: submission.year_built,
         amenities: submission.amenities || [],

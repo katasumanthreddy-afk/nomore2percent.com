@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       title, description, price, price_num, price_per_sqft, area, address,
-      property_type, listing_type, bedrooms, bathrooms, sqft, floor,
+      property_type, listing_type, bedrooms, bathrooms, sqft, size_unit, floor,
       parking, year_built, rera_number, amenities, featured,
     } = body;
 
@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
         property_type: property_type || 'apartment',
         listing_type: listing_type || 'sale',
         bedrooms: bedrooms || 0, bathrooms: bathrooms || 0, sqft: sqft || 0,
+        size_unit: size_unit || 'sqft',
         floor, parking: parking || 0, year_built, rera_number,
         amenities: amenities || [], featured: !!featured,
       }])

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Bed, Bath, Maximize } from 'lucide-react';
-import { Property, savingsLabel } from '@/types/property';
+import { Property, savingsLabel, sizeUnitLabel } from '@/types/property';
 
 const ICONS = ['🏢', '🏡', '🏠', '🏗️', '🏘️', '🌿', '🌊', '🏛️'];
 
@@ -46,7 +46,7 @@ export default function PropertyCard({ property, index = 0 }: { property: Proper
         <div className="flex gap-3 text-xs text-stone-500 pt-3 border-t border-stone-100 mt-auto">
           {property.bedrooms > 0 && <span className="flex items-center gap-1"><Bed size={12} /> {property.bedrooms} BHK</span>}
           {property.bathrooms > 0 && <span className="flex items-center gap-1"><Bath size={12} /> {property.bathrooms}</span>}
-          {property.sqft > 0 && <span className="flex items-center gap-1"><Maximize size={12} /> {property.sqft.toLocaleString('en-IN')} sqft</span>}
+          {property.sqft > 0 && <span className="flex items-center gap-1"><Maximize size={12} /> {property.sqft.toLocaleString('en-IN')} {sizeUnitLabel(property.size_unit)}</span>}
         </div>
       </div>
     </Link>
