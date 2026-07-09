@@ -159,10 +159,10 @@ export default function NewPropertyPage() {
   };
 
   return (
-    <div className="flex-1 bg-stone-950 text-stone-100 min-h-screen">
-      <div className="bg-stone-900 border-b border-stone-800 h-14 px-7 flex items-center justify-between">
+    <div className="flex-1 bg-stone-50 text-stone-900 min-h-screen">
+      <div className="bg-white border-b border-stone-200 h-14 px-7 flex items-center justify-between">
         <div className="font-bold">nomore<span className="text-orange-400">2%</span> <span className="text-xs text-stone-500 font-normal">/ Add Property</span></div>
-        <Link href="/admin" className="text-sm text-stone-400 hover:text-orange-400">Back to Admin</Link>
+        <Link href="/admin" className="text-sm text-stone-500 hover:text-orange-400">Back to Admin</Link>
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-8">
@@ -230,7 +230,7 @@ export default function NewPropertyPage() {
                 type="button"
                 onClick={generateDescription}
                 disabled={generatingDesc}
-                className="flex items-center gap-2 bg-emerald-900/40 border border-emerald-800/60 text-emerald-400 rounded-lg px-4 py-2 text-xs font-bold hover:bg-emerald-900/60 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-lg px-4 py-2 text-xs font-bold hover:bg-emerald-100 transition-colors disabled:opacity-50"
               >
                 {generatingDesc ? (
                   <>
@@ -245,11 +245,11 @@ export default function NewPropertyPage() {
               </button>
               <span className="text-[11px] text-stone-500">Fill in title, area, and amenities first for best results</span>
             </div>
-            {aiError && <div className="text-xs text-red-400 mt-1">{aiError}</div>}
+            {aiError && <div className="text-xs text-red-600 mt-1">{aiError}</div>}
           </Field>
 
           <Field label="" full>
-            <label className="flex items-center gap-2 text-sm text-stone-300">
+            <label className="flex items-center gap-2 text-sm text-stone-700">
               <input type="checkbox" checked={form.featured} onChange={(e) => set('featured', e.target.checked)} />
               Mark as Featured Property
             </label>
@@ -261,20 +261,20 @@ export default function NewPropertyPage() {
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
-              className="border-2 border-dashed border-stone-700 rounded-xl p-8 text-center relative hover:border-orange-400 transition-colors"
+              className="border-2 border-dashed border-stone-300 rounded-xl p-8 text-center relative hover:border-orange-400 transition-colors"
             >
               <input type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="absolute inset-0 opacity-0 cursor-pointer" />
               <div className="text-3xl mb-2">Photo</div>
-              <div className="text-sm font-semibold text-stone-200">Drop photos here or click to browse</div>
+              <div className="text-sm font-semibold text-stone-800">Drop photos here or click to browse</div>
               <div className="text-xs text-stone-500 mt-1">JPG, PNG, WEBP. First photo becomes the cover image.</div>
             </div>
 
             {photos.length > 0 && (
               <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-4">
                 {photos.map((p, i) => (
-                  <div key={i} className="relative aspect-[4/3] rounded-lg overflow-hidden bg-stone-900 border border-stone-800">
+                  <div key={i} className="relative aspect-[4/3] rounded-lg overflow-hidden bg-white border border-stone-200">
                     <img src={p.previewUrl} alt="" className="w-full h-full object-cover" />
-                    {i === 0 && <span className="absolute top-1.5 left-1.5 bg-orange-500 text-stone-950 text-[10px] font-bold px-2 py-0.5 rounded">COVER</span>}
+                    {i === 0 && <span className="absolute top-1.5 left-1.5 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">COVER</span>}
                     <button type="button" onClick={() => removePhoto(i)} className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/70 text-white text-xs flex items-center justify-center hover:bg-red-600 transition-colors">X</button>
                   </div>
                 ))}
@@ -284,22 +284,22 @@ export default function NewPropertyPage() {
         </Section>
 
         <div className="flex gap-3 mt-6 items-center">
-          <button onClick={submit} disabled={saving} className="bg-orange-500 text-stone-950 rounded-lg px-6 py-2.5 text-sm font-bold hover:bg-orange-400 transition-colors disabled:opacity-50">
+          <button onClick={submit} disabled={saving} className="bg-orange-500 text-white rounded-lg px-6 py-2.5 text-sm font-bold hover:bg-orange-400 transition-colors disabled:opacity-50">
             {saving ? (uploadProgress || 'Saving...') : 'Add Property'}
           </button>
-          <Link href="/admin" className="border border-stone-800 rounded-lg px-6 py-2.5 text-sm text-stone-400 hover:text-stone-100">Cancel</Link>
+          <Link href="/admin" className="border border-stone-200 rounded-lg px-6 py-2.5 text-sm text-stone-500 hover:text-stone-900">Cancel</Link>
         </div>
       </div>
     </div>
   );
 }
 
-const inputClass = "w-full bg-stone-900 border border-stone-800 rounded-lg px-3.5 py-2.5 text-sm text-stone-100 outline-none focus:border-orange-400";
+const inputClass = "w-full bg-white border border-stone-200 rounded-lg px-3.5 py-2.5 text-sm text-stone-900 outline-none focus:border-orange-400";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-7">
-      <div className="text-xs font-bold uppercase tracking-wide text-stone-500 mb-3 pb-2 border-b border-stone-800">{title}</div>
+      <div className="text-xs font-bold uppercase tracking-wide text-stone-500 mb-3 pb-2 border-b border-stone-200">{title}</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{children}</div>
     </div>
   );

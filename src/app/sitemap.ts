@@ -7,6 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/`, changeFrequency: 'daily', priority: 1 },
     { url: `${BASE_URL}/properties`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${BASE_URL}/projects`, changeFrequency: 'daily', priority: 0.8 },
     { url: `${BASE_URL}/area-insights`, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${BASE_URL}/area-guides`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE_URL}/market-survey`, changeFrequency: 'monthly', priority: 0.5 },
@@ -32,5 +33,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...propertyRoutes];
+  // Active developer projects
+  const { data: projects } = await supabase
+    .from('developer_projects')
+    .select('id, created_at')
+    .eq('is_active', true);
+
+  const projectRoutes: MetadataRoute.Sitemap = (projects || []).map((p) => ({
+    url: `${BASE_URL}/projects/${p.id}`,
+    lastModified: p.created_at ? new Date(p.created_at) : undefined,
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...propertyRoutes, ...projectRoutes];
 }

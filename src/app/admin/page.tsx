@@ -73,6 +73,14 @@ interface PropertySubmission {
   property_submission_images: SubmissionImage[];
 }
 
+interface Project {
+  id: number; project_name: string; developer_name: string; project_type: string;
+  area: string; price_range: string | null; starting_price_num: number | null;
+  status: 'upcoming' | 'under_construction' | 'ready_to_move';
+  featured: boolean; is_active: boolean; possession_date: string | null;
+  total_units: number | null; created_at: string;
+}
+
 const STATUS_COLORS: Record<string, string> = {
   active: 'text-emerald-600 bg-emerald-50 border-emerald-200',
   sold: 'text-blue-600 bg-blue-50 border-blue-200',
@@ -82,14 +90,16 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [tab, setTab] = useState<'leads' | 'properties' | 'chat' | 'survey' | 'submissions'>('leads');
+  const [tab, setTab] = useState<'leads' | 'properties' | 'projects' | 'chat' | 'survey' | 'submissions'>('leads');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [properties, setProperties] = useState<Prop[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
   const [submissions, setSubmissions] = useState<PropertySubmission[]>([]);
   const [newMessageAlert, setNewMessageAlert] = useState(0);
   const [propStatusFilter, setPropStatusFilter] = useState<string>('all');
+  const [projectStatusFilter, setProjectStatusFilter] = useState<string>('all');
   const [surveyTypeFilter, setSurveyTypeFilter] = useState<'all' | 'owner' | 'tenant' | 'investor' | 'broker'>('all');
 
   const loadLeads = useCallback(() => {
@@ -100,6 +110,10 @@ export default function AdminDashboard() {
     fetch('/api/properties').then((r) => r.json()).then((d) => {
       if (d.success) setProperties(d.properties);
     });
+  }, []);
+
+  const loadProjects = useCallback(() => {
+    fetch('/api/developer-projects?all=1').then((r) => r.json()).then((d) => d.success && setProjects(d.projects));
   }, []);
 
   const loadConversations = useCallback(() => {
@@ -117,10 +131,11 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadLeads();
     loadProperties();
+    loadProjects();
     loadConversations();
     loadSurveyResponses();
     loadSubmissions();
-  }, [loadLeads, loadProperties, loadConversations, loadSurveyResponses, loadSubmissions]);
+  }, [loadLeads, loadProperties, loadProjects, loadConversations, loadSurveyResponses, loadSubmissions]);
 
   useEffect(() => {
     const pusher = getPusherClient();
@@ -152,6 +167,27 @@ export default function AdminDashboard() {
     if (!confirm('Permanently delete "' + title + '"? This cannot be undone.')) return;
     await fetch('/api/properties/' + id, { method: 'DELETE' });
     loadProperties();
+  };
+
+  const updateProjectStatus = async (id: number, status: string) => {
+    await fetch('/api/developer-projects/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+    loadProjects();
+  };
+
+  const toggleProjectFeatured = async (id: number, featured: boolean) => {
+    await fetch('/api/developer-projects/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ featured: !featured }) });
+    loadProjects();
+  };
+
+  const toggleProjectActive = async (id: number, isActive: boolean) => {
+    await fetch('/api/developer-projects/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: !isActive }) });
+    loadProjects();
+  };
+
+  const deleteProject = async (id: number, name: string) => {
+    if (!confirm('Permanently delete "' + name + '"? This cannot be undone.')) return;
+    await fetch('/api/developer-projects/' + id, { method: 'DELETE' });
+    loadProjects();
   };
 
   const logout = async () => {
@@ -194,6 +230,7 @@ export default function AdminDashboard() {
         <div className="flex gap-1 bg-white border border-stone-200 rounded-xl p-1 w-fit mb-5 max-w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <TabBtn active={tab === 'leads'} onClick={() => setTab('leads')}>Leads ({stats.total})</TabBtn>
           <TabBtn active={tab === 'properties'} onClick={() => setTab('properties')}>Properties ({properties.length})</TabBtn>
+          <TabBtn active={tab === 'projects'} onClick={() => setTab('projects')}>Developer Projects ({projects.length})</TabBtn>
           <TabBtn active={tab === 'chat'} onClick={() => { setTab('chat'); setNewMessageAlert(0); }}>
             Live Chat {newMessageAlert > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] rounded-full px-1.5">{newMessageAlert}</span>}
           </TabBtn>
@@ -327,6 +364,95 @@ export default function AdminDashboard() {
                 <div className="p-10 text-center text-stone-500 text-sm">
                   {propStatusFilter === 'all' ? 'No properties yet.' : 'No ' + propStatusFilter + ' properties.'}
                 </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* PROJECTS TAB */}
+        {tab === 'projects' && (
+          <div>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <Link href="/admin/projects/new" className="inline-block bg-orange-500 text-white rounded-lg px-4 py-2 text-sm font-bold hover:bg-orange-400 transition-colors">
+                + Add Developer Project
+              </Link>
+              <div className="flex gap-2 flex-wrap">
+                {['all', 'upcoming', 'under_construction', 'ready_to_move'].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setProjectStatusFilter(s)}
+                    className={'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ' + (
+                      projectStatusFilter === s
+                        ? 'bg-orange-500 text-white border-orange-500'
+                        : 'border-stone-200 text-stone-500 hover:border-stone-400'
+                    )}
+                  >
+                    {s === 'all' ? 'All' : s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                    <span className="ml-1.5 opacity-60">
+                      ({s === 'all' ? projects.length : projects.filter((p) => p.status === s).length})
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
+                      <th className="p-3.5">Project</th>
+                      <th className="p-3.5">Price Range</th>
+                      <th className="p-3.5">Status</th>
+                      <th className="p-3.5">Featured</th>
+                      <th className="p-3.5">Visible</th>
+                      <th className="p-3.5">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(projectStatusFilter === 'all' ? projects : projects.filter((p) => p.status === projectStatusFilter)).map((p) => (
+                      <tr key={p.id} className="border-b border-stone-200/50 hover:bg-stone-50">
+                        <td className="p-3.5">
+                          <div className="font-medium text-sm">{p.project_name}</div>
+                          <div className="text-xs text-stone-500">{p.developer_name} · 📍 {p.area}</div>
+                        </td>
+                        <td className="p-3.5 text-orange-400 font-semibold">{p.price_range || '—'}</td>
+                        <td className="p-3.5">
+                          <select
+                            value={p.status}
+                            onChange={(e) => updateProjectStatus(p.id, e.target.value)}
+                            className="text-xs rounded px-2 py-1.5 border font-semibold bg-transparent border-stone-200 text-stone-600"
+                          >
+                            <option value="upcoming">Upcoming</option>
+                            <option value="under_construction">Under Construction</option>
+                            <option value="ready_to_move">Ready to Move</option>
+                          </select>
+                        </td>
+                        <td className="p-3.5">
+                          <button onClick={() => toggleProjectFeatured(p.id, p.featured)} className={'text-xs rounded px-2 py-1 border font-semibold transition-colors ' + (p.featured ? 'bg-amber-50 text-amber-600 border-amber-200' : 'border-stone-200 text-stone-400')}>
+                            {p.featured ? '★ Featured' : '☆ Feature'}
+                          </button>
+                        </td>
+                        <td className="p-3.5">
+                          <button onClick={() => toggleProjectActive(p.id, p.is_active)} className={'text-xs rounded px-2 py-1 border font-semibold transition-colors ' + (p.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-stone-100 text-stone-500 border-stone-200')}>
+                            {p.is_active ? 'Live' : 'Hidden'}
+                          </button>
+                        </td>
+                        <td className="p-3.5">
+                          <button
+                            onClick={() => deleteProject(p.id, p.project_name)}
+                            className="text-xs bg-red-50 text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-100 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {projects.filter((p) => projectStatusFilter === 'all' || p.status === projectStatusFilter).length === 0 && (
+                <div className="p-10 text-center text-stone-500 text-sm">No developer projects yet.</div>
               )}
             </div>
           </div>
