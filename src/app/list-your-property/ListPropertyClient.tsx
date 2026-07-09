@@ -202,8 +202,12 @@ export default function ListPropertyClient() {
                   </select>
                 </div>
               </div>
-              <div><label className={labelClass}>Bedrooms</label><input type="number" value={form.bedrooms} onChange={(e) => set('bedrooms', e.target.value)} className={inputClass} placeholder="e.g. 3" /></div>
-              <div><label className={labelClass}>Bathrooms</label><input type="number" value={form.bathrooms} onChange={(e) => set('bathrooms', e.target.value)} className={inputClass} placeholder="e.g. 2" /></div>
+              {form.property_type !== 'plot' && form.property_type !== 'agricultural' && (
+                <>
+                  <div><label className={labelClass}>Bedrooms</label><input type="number" value={form.bedrooms} onChange={(e) => set('bedrooms', e.target.value)} className={inputClass} placeholder="e.g. 3" /></div>
+                  <div><label className={labelClass}>Bathrooms</label><input type="number" value={form.bathrooms} onChange={(e) => set('bathrooms', e.target.value)} className={inputClass} placeholder="e.g. 2" /></div>
+                </>
+              )}
               <div><label className={labelClass}>Floor</label><input value={form.floor} onChange={(e) => set('floor', e.target.value)} className={inputClass} placeholder="e.g. 4 of 12" /></div>
               <div><label className={labelClass}>Year Built</label><input value={form.year_built} onChange={(e) => set('year_built', e.target.value)} className={inputClass} placeholder="e.g. 2019" /></div>
               <div className="md:col-span-2"><label className={labelClass}>Description (optional)</label><textarea value={form.description} onChange={(e) => set('description', e.target.value)} className={inputClass + ' h-24 resize-none'} placeholder="Anything buyers/renters should know" /></div>

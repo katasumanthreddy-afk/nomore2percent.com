@@ -133,7 +133,14 @@ export default function NewProjectPage() {
           <Field label="Project Name *" full><input value={form.project_name} onChange={(e) => set('project_name', e.target.value)} className={inputClass} placeholder="e.g. Prestige High Fields" /></Field>
           <Field label="Developer / Builder Name *"><input value={form.developer_name} onChange={(e) => set('developer_name', e.target.value)} className={inputClass} placeholder="e.g. Prestige Group" /></Field>
           <Field label="Project Type">
-            <select value={form.project_type} onChange={(e) => set('project_type', e.target.value)} className={inputClass}>
+            <select
+              value={form.project_type}
+              onChange={(e) => {
+                const type = e.target.value;
+                setForm((prev) => ({ ...prev, project_type: type, status: type === 'plot' && prev.status === 'ready_to_move' ? 'under_construction' : prev.status }));
+              }}
+              className={inputClass}
+            >
               <option value="apartment">Apartment</option><option value="villa">Villa</option>
               <option value="plot">Plotted Development</option><option value="commercial">Commercial</option>
               <option value="mixed">Mixed-Use</option>
@@ -148,8 +155,8 @@ export default function NewProjectPage() {
           <Field label="Status">
             <select value={form.status} onChange={(e) => set('status', e.target.value)} className={inputClass}>
               <option value="upcoming">Upcoming</option>
-              <option value="under_construction">Under Construction</option>
-              <option value="ready_to_move">Ready to Move</option>
+              <option value="under_construction">{form.project_type === 'plot' ? 'Development in Progress' : 'Under Construction'}</option>
+              {form.project_type !== 'plot' && <option value="ready_to_move">Ready to Move</option>}
             </select>
           </Field>
           <Field label="Possession Date"><input value={form.possession_date} onChange={(e) => set('possession_date', e.target.value)} className={inputClass} placeholder="e.g. Dec 2027 or Ready to Move" /></Field>

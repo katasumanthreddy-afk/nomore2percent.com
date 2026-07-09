@@ -193,8 +193,12 @@ export default function NewPropertyPage() {
         </Section>
 
         <Section title="Specs">
-          <Field label="Bedrooms"><input type="number" value={form.bedrooms} onChange={(e) => set('bedrooms', e.target.value)} className={inputClass} /></Field>
-          <Field label="Bathrooms"><input type="number" value={form.bathrooms} onChange={(e) => set('bathrooms', e.target.value)} className={inputClass} /></Field>
+          {form.property_type !== 'plot' && form.property_type !== 'agricultural' && (
+            <>
+              <Field label="Bedrooms"><input type="number" value={form.bedrooms} onChange={(e) => set('bedrooms', e.target.value)} className={inputClass} /></Field>
+              <Field label="Bathrooms"><input type="number" value={form.bathrooms} onChange={(e) => set('bathrooms', e.target.value)} className={inputClass} /></Field>
+            </>
+          )}
           <Field label={form.property_type === 'plot' ? 'Plot Size' : form.property_type === 'agricultural' ? 'Land Size' : 'Built-up Area'}>
             <div className="flex gap-2">
               <input type="number" value={form.sqft} onChange={(e) => set('sqft', e.target.value)} className={inputClass} placeholder="e.g. 1450" />
