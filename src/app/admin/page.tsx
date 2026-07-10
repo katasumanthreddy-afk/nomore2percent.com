@@ -348,12 +348,20 @@ export default function AdminDashboard() {
                         </select>
                       </td>
                       <td className="p-3.5">
-                        <button
-                          onClick={() => deleteProperty(p.id, p.title)}
-                          className="text-xs bg-red-50 text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-100 transition-colors"
-                        >
-                          Delete
-                        </button>
+                        <div className="flex gap-2">
+                          <Link
+                            href={'/admin/properties/edit/' + p.id}
+                            className="text-xs bg-stone-100 text-stone-600 border border-stone-200 rounded px-3 py-1.5 hover:bg-stone-200 transition-colors"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => deleteProperty(p.id, p.title)}
+                            className="text-xs bg-red-50 text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-100 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
