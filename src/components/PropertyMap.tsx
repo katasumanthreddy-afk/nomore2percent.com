@@ -10,11 +10,10 @@ function shortPrice(price: string): string {
   return price.length > 12 ? price.slice(0, 11) + '…' : price;
 }
 
-function PriceBubble({ property, active, onClick }: { property: Property; active: boolean; onClick: () => void }) {
+function PriceBubble({ property, active }: { property: Property; active: boolean }) {
   return (
-    <button
-      onClick={onClick}
-      className={`px-2.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-md border transition-transform hover:scale-105 ${
+    <div
+      className={`px-2.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-md border transition-transform hover:scale-105 cursor-pointer ${
         active
           ? 'bg-stone-900 text-white border-stone-900 z-10'
           : property.featured
@@ -23,7 +22,7 @@ function PriceBubble({ property, active, onClick }: { property: Property; active
       }`}
     >
       ₹{shortPrice(property.price)}
-    </button>
+    </div>
   );
 }
 
@@ -67,7 +66,7 @@ export default function PropertyMap({ properties }: { properties: Property[] }) 
               position={{ lat: coords[0], lng: coords[1] }}
               onClick={() => setActiveId(p.id === activeId ? null : p.id)}
             >
-              <PriceBubble property={p} active={p.id === activeId} onClick={() => setActiveId(p.id === activeId ? null : p.id)} />
+              <PriceBubble property={p} active={p.id === activeId} />
             </AdvancedMarker>
           ))}
         </Map>
