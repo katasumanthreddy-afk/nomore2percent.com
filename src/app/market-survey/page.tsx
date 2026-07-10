@@ -173,7 +173,7 @@ export default function DetailedSurveyPage() {
 
   const buildValuationUrl = () => {
     const typeMap: Record<string, string> = {
-      'Apartment': 'apartment', 'Independent House': 'villa', 'Villa': 'villa',
+      'Apartment': 'apartment', 'Independent House': 'independent_house', 'Villa': 'villa',
       'Plot': 'plot', 'Commercial': 'commercial', 'Agricultural Land': 'plot',
     };
     const params = new URLSearchParams({ source: 'survey' });

@@ -181,7 +181,8 @@ export default function ListPropertyClient() {
                 <label className={labelClass}>Property Type</label>
                 <select value={form.property_type} onChange={(e) => handlePropertyTypeChange(e.target.value)} className={inputClass}>
                   <option value="apartment">Apartment</option>
-                  <option value="villa">Villa / Independent House</option>
+                  <option value="villa">Villa</option>
+                  <option value="independent_house">Independent House</option>
                   <option value="plot">Plot / Land</option>
                   <option value="commercial">Commercial</option>
                   <option value="agricultural">Agricultural Land</option>

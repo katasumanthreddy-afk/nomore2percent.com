@@ -110,7 +110,7 @@ export default function AreaInsightsPage() {
   const bestType = propertyTypes.sort((a, b) => b.count - a.count)[0];
 
   const typeLabels: Record<string, string> = {
-    apartment: 'Apartment / Flat', villa: 'Villa / Independent House', plot: 'Plot / Land', commercial: 'Commercial',
+    apartment: 'Apartment / Flat', villa: 'Villa', independent_house: 'Independent House', plot: 'Plot / Land', commercial: 'Commercial',
   };
 
   return (

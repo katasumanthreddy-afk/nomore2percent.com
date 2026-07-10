@@ -7,7 +7,7 @@ export interface Property {
   price_per_sqft: string | null;
   area: string;
   address: string | null;
-  property_type: 'apartment' | 'villa' | 'plot' | 'commercial' | 'agricultural';
+  property_type: 'apartment' | 'villa' | 'independent_house' | 'plot' | 'commercial' | 'agricultural';
   listing_type: 'sale' | 'rent';
   bedrooms: number;
   bathrooms: number;
@@ -30,6 +30,18 @@ export function savingsLabel(priceNum: number | null, listingType: string): stri
   if (saving >= 10000000) return '₹' + (saving / 10000000).toFixed(2) + ' Cr';
   if (saving >= 100000) return '₹' + (saving / 100000).toFixed(1) + 'L';
   return '₹' + saving.toLocaleString('en-IN');
+}
+
+export function propertyTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    apartment: 'Apartment / Flat',
+    villa: 'Villa',
+    independent_house: 'Independent House',
+    plot: 'Plot / Land',
+    commercial: 'Commercial',
+    agricultural: 'Agricultural Land',
+  };
+  return labels[type] || type;
 }
 
 export function sizeUnitLabel(unit: string | null | undefined): string {

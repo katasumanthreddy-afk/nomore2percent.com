@@ -40,7 +40,7 @@ type Stage = 'form' | 'gate' | 'results';
 export default function ValuationClient() {
   const searchParams = useSearchParams();
   const prefillArea = searchParams.get('area') || '';
-  const prefillType = searchParams.get('type') as 'apartment' | 'villa' | 'plot' | 'commercial' | null;
+  const prefillType = searchParams.get('type') as 'apartment' | 'villa' | 'independent_house' | 'plot' | 'commercial' | null;
   const prefillSqft = searchParams.get('sqft') || '';
   const prefillName = searchParams.get('name') || '';
   const prefillPhone = searchParams.get('phone') || '';
@@ -51,7 +51,7 @@ export default function ValuationClient() {
     prefillArea ? (AREAS.includes(prefillArea) ? prefillArea : 'Other') : 'Gachibowli'
   );
   const [customArea, setCustomArea] = useState(prefillArea && !AREAS.includes(prefillArea) ? prefillArea : '');
-  const [propertyType, setPropertyType] = useState<'apartment' | 'villa' | 'plot' | 'commercial'>(prefillType || 'apartment');
+  const [propertyType, setPropertyType] = useState<'apartment' | 'villa' | 'independent_house' | 'plot' | 'commercial'>(prefillType || 'apartment');
   const [sqft, setSqft] = useState(prefillSqft);
   const [ageYears, setAgeYears] = useState('5');
 
@@ -163,7 +163,8 @@ export default function ValuationClient() {
                   <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Property Type</label>
                   <select value={propertyType} onChange={(e) => setPropertyType(e.target.value as any)} className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-orange-400 bg-white">
                     <option value="apartment">Apartment</option>
-                    <option value="villa">Villa / Independent House</option>
+                    <option value="villa">Villa</option>
+                <option value="independent_house">Independent House</option>
                     <option value="plot">Plot / Land</option>
                     <option value="commercial">Commercial</option>
                   </select>

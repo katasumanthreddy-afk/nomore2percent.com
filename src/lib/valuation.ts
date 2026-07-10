@@ -31,6 +31,7 @@ const DEFAULT_BENCHMARK = 5500;
 const PROPERTY_TYPE_MULTIPLIER: Record<string, number> = {
   apartment: 1,
   villa: 1.2,
+  independent_house: 1.1,
   plot: 0.85,
   commercial: 1.3,
 };
@@ -49,7 +50,7 @@ export function getBenchmarkRate(area: string): number {
 
 export interface ValuationInput {
   area: string;
-  property_type: 'apartment' | 'villa' | 'plot' | 'commercial';
+  property_type: 'apartment' | 'villa' | 'independent_house' | 'plot' | 'commercial';
   sqft: number;
   age_years: number;
   live_comp_avg?: number | null;
@@ -156,7 +157,7 @@ export function calculateHealthScore(input: ValuationInput, result: ValuationRes
   }
 
   // Property type
-  if (input.property_type === 'villa' || input.property_type === 'commercial') {
+  if (input.property_type === 'villa' || input.property_type === 'independent_house' || input.property_type === 'commercial') {
     score += 3;
     factors.push({ label: 'Property type', impact: 'positive', note: 'Tends to hold value well in this category' });
   } else if (input.property_type === 'plot') {
