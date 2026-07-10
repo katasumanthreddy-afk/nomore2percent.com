@@ -29,6 +29,7 @@ export default function EditPropertyPage() {
           floor: p.floor || '', parking: p.parking ? String(p.parking) : '',
           year_built: p.year_built || '', rera_number: p.rera_number || '',
           amenities: (p.amenities || []).join(', '), featured: !!p.featured,
+          lat: p.lat ?? null, lng: p.lng ?? null,
         });
         setInitialPhotos((p.property_images || []).sort((a: any, b: any) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0)));
       })

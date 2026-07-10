@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const {
       title, description, price, price_num, price_per_sqft, area, address,
       property_type, listing_type, bedrooms, bathrooms, sqft, size_unit, floor,
-      parking, year_built, rera_number, amenities, featured,
+      parking, year_built, rera_number, amenities, featured, lat, lng,
     } = body;
 
     if (!title || !price || !area) {
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
         listing_type: listing_type || 'sale',
         bedrooms: bedrooms || 0, bathrooms: bathrooms || 0, sqft: sqft || 0,
         size_unit: size_unit || 'sqft',
+        lat: lat || null, lng: lng || null,
         floor, parking: parking || 0, year_built, rera_number,
         amenities: amenities || [], featured: !!featured,
       }])

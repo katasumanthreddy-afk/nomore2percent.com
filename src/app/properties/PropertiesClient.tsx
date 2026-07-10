@@ -2,9 +2,16 @@
 
 import { useEffect, useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import PropertyCard from '@/components/PropertyCard';
 import { Property } from '@/types/property';
+import { List, MapIcon } from 'lucide-react';
+
+const PropertyMap = dynamic(() => import('@/components/PropertyMap'), {
+  ssr: false,
+  loading: () => <div className="h-[600px] rounded-2xl bg-stone-200 animate-pulse" />,
+});
 
 function PropertiesContent() {
   const searchParams = useSearchParams();
@@ -14,6 +21,7 @@ function PropertiesContent() {
   const [listingFilter, setListingFilter] = useState<string>('');
   const [areaFilter, setAreaFilter] = useState<string>(searchParams.get('area') || '');
   const [sort, setSort] = useState('default');
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     fetch('/api/properties')
@@ -70,6 +78,20 @@ function PropertiesContent() {
             <option value="price_desc">Price: High to Low</option>
             <option value="newest">Newest First</option>
           </select>
+          <div className="flex border border-stone-200 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setView('list')}
+              className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-colors ${view === 'list' ? 'bg-orange-500 text-white' : 'text-stone-500 hover:bg-stone-50'}`}
+            >
+              <List size={14} /> List
+            </button>
+            <button
+              onClick={() => setView('map')}
+              className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-colors ${view === 'map' ? 'bg-orange-500 text-white' : 'text-stone-500 hover:bg-stone-50'}`}
+            >
+              <MapIcon size={14} /> Map
+            </button>
+          </div>
           <span className="text-sm text-stone-500 ml-auto"><strong className="text-stone-800">{filtered.length}</strong> properties</span>
         </div>
 
@@ -78,9 +100,13 @@ function PropertiesContent() {
             {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-64 bg-stone-200 rounded-2xl animate-pulse" />)}
           </div>
         ) : filtered.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {filtered.map((p, i) => <PropertyCard key={p.id} property={p} index={i} />)}
-          </div>
+          view === 'map' ? (
+            <PropertyMap properties={filtered} />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {filtered.map((p, i) => <PropertyCard key={p.id} property={p} index={i} />)}
+            </div>
+          )
         ) : (
           <div className="text-center py-20 text-stone-400">
             <div className="text-5xl mb-3 opacity-20">🏠</div>

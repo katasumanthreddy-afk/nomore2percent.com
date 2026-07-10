@@ -3,8 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase';
 import { defaultSizeUnitForType } from '@/types/property';
+import { getAreaCoordinates } from '@/lib/area-coordinates';
+
+const LocationPicker = dynamic(() => import('./LocationPicker'), { ssr: false });
 
 interface PhotoPreview {
   file: File;
@@ -22,6 +26,7 @@ export interface PropertyFormData {
   address: string; property_type: string; listing_type: string;
   bedrooms: string; bathrooms: string; sqft: string; size_unit: string; floor: string; parking: string;
   year_built: string; rera_number: string; amenities: string; featured: boolean;
+  lat: number | null; lng: number | null;
 }
 
 const AREAS = ['Gachibowli', 'Madhapur', 'Banjara Hills', 'Jubilee Hills', 'Kondapur', 'Hitech City', 'Kompally', 'Yapral', 'Alwal', 'Kukatpally', 'Miyapur', 'Dammaiguda'];
@@ -31,6 +36,7 @@ const emptyForm: PropertyFormData = {
   address: '', property_type: 'apartment', listing_type: 'sale',
   bedrooms: '', bathrooms: '', sqft: '', size_unit: 'sqft', floor: '', parking: '',
   year_built: '', rera_number: '', amenities: '', featured: false,
+  lat: null, lng: null,
 };
 
 export default function PropertyForm({
@@ -226,6 +232,17 @@ export default function PropertyForm({
             <select value={form.listing_type} onChange={(e) => set('listing_type', e.target.value)} className={inputClass}>
               <option value="sale">For Sale</option><option value="rent">For Rent</option>
             </select>
+          </Field>
+        </Section>
+
+        <Section title="Location">
+          <Field label="Pin Location" full>
+            <LocationPicker
+              lat={form.lat}
+              lng={form.lng}
+              defaultCenter={getAreaCoordinates(form.area)}
+              onChange={(lat, lng) => setForm((prev) => ({ ...prev, lat, lng }))}
+            />
           </Field>
         </Section>
 

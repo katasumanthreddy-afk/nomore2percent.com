@@ -13,6 +13,8 @@ export interface Property {
   bathrooms: number;
   sqft: number;
   size_unit: 'sqft' | 'sqyd' | 'acres' | null;
+  lat: number | null;
+  lng: number | null;
   floor: string | null;
   parking: number;
   year_built: string | null;
