@@ -1,16 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { Property, savingsLabel, sizeUnitLabel } from '@/types/property';
-import { Bed, Bath, Maximize, Car, Calendar, Layers } from 'lucide-react';
+import { Bed, Bath, Maximize, Car, Calendar, Layers, X, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const PropertySingleMap = dynamic(() => import('@/components/PropertySingleMap'), {
+  ssr: false,
+  loading: () => <div className="h-72 rounded-xl bg-stone-200 animate-pulse" />,
+});
 
 export default function PropertyDetailClient({ property }: { property: Property }) {
   const router = useRouter();
   const [activeImg, setActiveImg] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [sent, setSent] = useState(false);
+
+  const imageCount = property.images?.length || 0;
+  const nextImg = () => setActiveImg((i) => (i + 1) % imageCount);
+  const prevImg = () => setActiveImg((i) => (i - 1 + imageCount) % imageCount);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxOpen(false);
+      if (e.key === 'ArrowRight') nextImg();
+      if (e.key === 'ArrowLeft') prevImg();
+    };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lightboxOpen, imageCount]);
 
   const sendEnquiry = async () => {
     if (!name.trim() || !phone.trim()) {
@@ -54,7 +81,10 @@ export default function PropertyDetailClient({ property }: { property: Property 
       </div>
 
       {/* Gallery */}
-      <div className="rounded-2xl overflow-hidden h-80 bg-stone-200 mb-8 flex items-center justify-center">
+      <div
+        onClick={() => property.images?.length > 0 && setLightboxOpen(true)}
+        className={`rounded-2xl overflow-hidden h-80 bg-stone-200 mb-8 flex items-center justify-center ${property.images?.length > 0 ? 'cursor-zoom-in' : ''}`}
+      >
         {property.images?.length > 0 ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={property.images[activeImg]} alt={property.title} className="w-full h-full object-cover" />
@@ -100,6 +130,9 @@ export default function PropertyDetailClient({ property }: { property: Property 
               </div>
             </>
           )}
+
+          <h2 className="font-serif text-lg font-bold mb-3">Location</h2>
+          <PropertySingleMap lat={property.lat} lng={property.lng} area={property.area} />
         </div>
 
         {/* Sidebar */}
@@ -134,6 +167,55 @@ export default function PropertyDetailClient({ property }: { property: Property 
           </div>
         </div>
       </div>
+
+      {lightboxOpen && property.images?.length > 0 && (
+        <div
+          onClick={() => setLightboxOpen(false)}
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 md:p-10"
+        >
+          <button
+            onClick={() => setLightboxOpen(false)}
+            className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
+
+          {imageCount > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); prevImg(); }}
+              className="absolute left-2 md:left-6 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              aria-label="Previous photo"
+            >
+              <ChevronLeft size={24} />
+            </button>
+          )}
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={property.images[activeImg]}
+            alt={property.title}
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-full max-h-full object-contain rounded-lg"
+          />
+
+          {imageCount > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); nextImg(); }}
+              className="absolute right-2 md:right-6 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+              aria-label="Next photo"
+            >
+              <ChevronRight size={24} />
+            </button>
+          )}
+
+          {imageCount > 1 && (
+            <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 text-white/70 text-xs font-medium bg-black/40 px-3 py-1 rounded-full">
+              {activeImg + 1} / {imageCount}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
