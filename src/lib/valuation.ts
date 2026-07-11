@@ -24,6 +24,10 @@ export const LOCALITY_BENCHMARKS: Record<string, number> = {
   'begumpet': 9000,
   'somajiguda': 9500,
   'ameerpet': 6000,
+  'thumkunta': 3800,
+  'keesara': 3600,
+  'devar yamjal': 3500,
+  'shamirpet': 4000,
 };
 
 const DEFAULT_BENCHMARK = 5500;

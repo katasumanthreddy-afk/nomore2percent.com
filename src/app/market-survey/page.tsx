@@ -7,7 +7,7 @@ import { parseAmount } from '@/lib/parse-amount';
 const AREAS = [
   'Gachibowli', 'Madhapur', 'Banjara Hills', 'Jubilee Hills', 'Kondapur',
   'Hitech City', 'Kompally', 'Yapral', 'Alwal', 'Kukatpally', 'Miyapur',
-  'Dammaiguda', 'Thumkunta', 'Bachupally', 'Nizampet', 'Bowrampet',
+  'Dammaiguda', 'Thumkunta', 'Keesara', 'Devar Yamjal', 'Shamirpet', 'Bachupally', 'Nizampet', 'Bowrampet',
   'Uppal', 'LB Nagar', 'Dilsukhnagar', 'Secunderabad', 'Other',
 ];
 

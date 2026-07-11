@@ -148,7 +148,7 @@ export default function NewProjectPage() {
           </Field>
           <Field label="Area *">
             <select value={form.area} onChange={(e) => set('area', e.target.value)} className={inputClass}>
-              {['Gachibowli', 'Madhapur', 'Banjara Hills', 'Jubilee Hills', 'Kondapur', 'Hitech City', 'Kompally', 'Yapral', 'Alwal', 'Kukatpally', 'Miyapur', 'Dammaiguda', 'Kokapet', 'Financial District'].map((a) => <option key={a}>{a}</option>)}
+              {['Gachibowli', 'Madhapur', 'Banjara Hills', 'Jubilee Hills', 'Kondapur', 'Hitech City', 'Kompally', 'Yapral', 'Alwal', 'Kukatpally', 'Miyapur', 'Dammaiguda', 'Kokapet', 'Financial District', 'Thumkunta', 'Keesara', 'Devar Yamjal', 'Shamirpet'].map((a) => <option key={a}>{a}</option>)}
             </select>
           </Field>
           <Field label="Full Address" full><input value={form.address} onChange={(e) => set('address', e.target.value)} className={inputClass} placeholder="Locality, landmark" /></Field>

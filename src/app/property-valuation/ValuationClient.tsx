@@ -8,6 +8,7 @@ const AREAS = [
   'Gachibowli', 'Madhapur', 'Kondapur', 'Banjara Hills', 'Jubilee Hills', 'Kokapet',
   'Manikonda', 'Miyapur', 'Kukatpally', 'Hitech City', 'Financial District',
   'Nizampet', 'Alwal', 'Uppal', 'Secunderabad', 'Kompally', 'Begumpet', 'Somajiguda', 'Ameerpet',
+  'Thumkunta', 'Keesara', 'Devar Yamjal', 'Shamirpet',
 ];
 
 interface HealthFactor { label: string; impact: 'positive' | 'neutral' | 'negative'; note: string; }

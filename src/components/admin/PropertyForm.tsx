@@ -29,7 +29,7 @@ export interface PropertyFormData {
   lat: number | null; lng: number | null;
 }
 
-const AREAS = ['Gachibowli', 'Madhapur', 'Banjara Hills', 'Jubilee Hills', 'Kondapur', 'Hitech City', 'Kompally', 'Yapral', 'Alwal', 'Kukatpally', 'Miyapur', 'Dammaiguda'];
+const AREAS = ['Gachibowli', 'Madhapur', 'Banjara Hills', 'Jubilee Hills', 'Kondapur', 'Hitech City', 'Kompally', 'Yapral', 'Alwal', 'Kukatpally', 'Miyapur', 'Dammaiguda', 'Thumkunta', 'Keesara', 'Devar Yamjal', 'Shamirpet'];
 
 const emptyForm: PropertyFormData = {
   title: '', description: '', price: '', price_per_sqft: '', area: 'Gachibowli',
