@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase';
+import { getAreaCoordinates } from '@/lib/area-coordinates';
+
+const LocationPicker = dynamic(() => import('@/components/admin/LocationPicker'), { ssr: false });
 
 interface PhotoPreview {
   file: File;
@@ -21,6 +25,7 @@ export default function NewProjectPage() {
     price_range: '', starting_price_num: '',
     possession_date: '', rera_number: '', total_units: '', land_area: '',
     status: 'under_construction', featured: false,
+    lat: null as number | null, lng: null as number | null,
   });
   const [unitTypes, setUnitTypes] = useState<string[]>([]);
   const [amenities, setAmenities] = useState<string[]>([]);
@@ -160,6 +165,17 @@ export default function NewProjectPage() {
             </select>
           </Field>
           <Field label="Possession Date"><input value={form.possession_date} onChange={(e) => set('possession_date', e.target.value)} className={inputClass} placeholder="e.g. Dec 2027 or Ready to Move" /></Field>
+        </Section>
+
+        <Section title="Location">
+          <Field label="Pin Location" full>
+            <LocationPicker
+              lat={form.lat}
+              lng={form.lng}
+              defaultCenter={getAreaCoordinates(form.area)}
+              onChange={(lat, lng) => setForm((prev) => ({ ...prev, lat, lng }))}
+            />
+          </Field>
         </Section>
 
         <Section title="Pricing & Scale">

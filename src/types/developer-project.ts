@@ -17,6 +17,8 @@ export interface DeveloperProject {
   status: 'upcoming' | 'under_construction' | 'ready_to_move';
   featured: boolean;
   is_active: boolean;
+  lat: number | null;
+  lng: number | null;
   images: string[];
   created_at: string;
 }

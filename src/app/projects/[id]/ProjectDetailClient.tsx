@@ -1,8 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { DeveloperProject, projectStatusLabel } from '@/types/developer-project';
 import { Building2, MapPin, Calendar, FileCheck, LandPlot, Layers } from 'lucide-react';
+
+const PropertySingleMap = dynamic(() => import('@/components/PropertySingleMap'), {
+  ssr: false,
+  loading: () => <div className="h-72 rounded-xl bg-stone-200 animate-pulse" />,
+});
 
 export default function ProjectDetailClient({ project }: { project: DeveloperProject }) {
   const [activeImg, setActiveImg] = useState(0);
@@ -82,6 +88,9 @@ export default function ProjectDetailClient({ project }: { project: DeveloperPro
               </div>
             </>
           )}
+
+          <h2 className="font-serif text-lg font-bold mb-3">Location</h2>
+          <PropertySingleMap lat={project.lat} lng={project.lng} area={project.area} />
         </div>
 
         {/* Sidebar */}

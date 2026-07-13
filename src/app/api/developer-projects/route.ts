@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     const {
       project_name, developer_name, project_type, area, address, description,
       price_range, starting_price_num, possession_date, rera_number, total_units,
-      land_area, unit_types, amenities, status, featured,
+      land_area, unit_types, amenities, status, featured, lat, lng,
     } = body;
 
     if (!project_name || !developer_name || !area) {
@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
         total_units: total_units || null, land_area: land_area || null,
         unit_types: unit_types || [], amenities: amenities || [],
         status: status || 'under_construction', featured: !!featured,
+        lat: lat || null, lng: lng || null,
       }])
       .select()
       .single();

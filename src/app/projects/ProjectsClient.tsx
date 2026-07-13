@@ -2,8 +2,15 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import { DeveloperProject, projectStatusLabel } from '@/types/developer-project';
+import { List, MapIcon } from 'lucide-react';
+
+const ProjectMap = dynamic(() => import('@/components/ProjectMap'), {
+  ssr: false,
+  loading: () => <div className="h-[600px] rounded-2xl bg-stone-200 animate-pulse" />,
+});
 
 const STATUS_BADGE: Record<string, string> = {
   upcoming: 'bg-purple-50 text-purple-600 border-purple-200',
@@ -17,6 +24,7 @@ export default function ProjectsClient() {
   const [areaFilter, setAreaFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sort, setSort] = useState('default');
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     fetch('/api/developer-projects')
@@ -61,6 +69,20 @@ export default function ProjectsClient() {
             <option value="price_desc">Price: High to Low</option>
             <option value="newest">Newest First</option>
           </select>
+          <div className="flex border border-stone-200 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setView('list')}
+              className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-colors ${view === 'list' ? 'bg-orange-500 text-white' : 'text-stone-500 hover:bg-stone-50'}`}
+            >
+              <List size={14} /> List
+            </button>
+            <button
+              onClick={() => setView('map')}
+              className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold transition-colors ${view === 'map' ? 'bg-orange-500 text-white' : 'text-stone-500 hover:bg-stone-50'}`}
+            >
+              <MapIcon size={14} /> Map
+            </button>
+          </div>
           <span className="text-sm text-stone-500 ml-auto"><strong className="text-stone-800">{filtered.length}</strong> projects</span>
         </div>
 
@@ -69,6 +91,9 @@ export default function ProjectsClient() {
             {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-72 bg-stone-200 rounded-2xl animate-pulse" />)}
           </div>
         ) : filtered.length > 0 ? (
+          view === 'map' ? (
+            <ProjectMap projects={filtered} />
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {filtered.map((p) => (
               <Link key={p.id} href={`/projects/${p.id}`} className="group bg-white border border-stone-200 rounded-2xl overflow-hidden hover:border-orange-400 hover:-translate-y-1 transition-all shadow-sm hover:shadow-lg flex flex-col">
@@ -100,6 +125,7 @@ export default function ProjectsClient() {
               </Link>
             ))}
           </div>
+          )
         ) : (
           <div className="text-center py-20 text-stone-400">
             <div className="text-5xl mb-3 opacity-20">🏗️</div>
