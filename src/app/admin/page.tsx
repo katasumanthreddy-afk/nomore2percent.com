@@ -67,6 +67,7 @@ interface PropertySubmission {
   title: string | null; description: string | null;
   property_type: string; listing_type: string; area: string; address: string | null;
   bedrooms: number | null; bathrooms: number | null; sqft: number | null; size_unit: string | null;
+  lat: number | null; lng: number | null;
   price: string | null; floor: string | null; year_built: string | null;
   status: 'pending' | 'approved' | 'rejected'; admin_notes: string | null;
   created_at: string;
@@ -848,6 +849,7 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
                     </div>
                     <div className="text-xs text-stone-500 mt-0.5">
                       {[s.bedrooms && `${s.bedrooms} BHK`, s.sqft && `${s.sqft} ${s.size_unit === 'sqyd' ? 'sq.yd' : s.size_unit === 'acres' ? 'acres' : 'sqft'}`, s.floor].filter(Boolean).join(' · ')}
+                      {s.lat != null && s.lng != null && <span className="text-emerald-500 ml-2">📍 Location pinned</span>}
                     </div>
                   </div>
                   <span className={'text-[10px] px-2 py-0.5 rounded uppercase font-semibold flex-shrink-0 ' + (

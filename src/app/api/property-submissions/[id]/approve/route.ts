@@ -41,6 +41,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         bathrooms: submission.bathrooms || 0,
         sqft: submission.sqft || 0,
         size_unit: submission.size_unit || 'sqft',
+        lat: submission.lat || null,
+        lng: submission.lng || null,
         floor: submission.floor,
         year_built: submission.year_built,
         amenities: submission.amenities || [],

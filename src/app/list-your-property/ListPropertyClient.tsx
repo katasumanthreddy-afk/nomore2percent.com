@@ -1,10 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import { supabase } from '@/lib/supabase';
 import { defaultSizeUnitForType } from '@/types/property';
+import { getAreaCoordinates } from '@/lib/area-coordinates';
 import { Upload, X, CheckCircle2 } from 'lucide-react';
+
+const LocationPicker = dynamic(() => import('@/components/admin/LocationPicker'), { ssr: false });
 
 interface PhotoPreview {
   file: File;
@@ -17,6 +21,7 @@ export default function ListPropertyClient() {
     title: '', description: '', price: '',
     property_type: 'apartment', listing_type: 'sale',
     area: '', address: '', bedrooms: '', bathrooms: '', sqft: '', size_unit: 'sqft', floor: '', year_built: '',
+    lat: null as number | null, lng: null as number | null,
   });
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [saving, setSaving] = useState(false);
@@ -213,6 +218,17 @@ export default function ListPropertyClient() {
               <div><label className={labelClass}>Year Built</label><input value={form.year_built} onChange={(e) => set('year_built', e.target.value)} className={inputClass} placeholder="e.g. 2019" /></div>
               <div className="md:col-span-2"><label className={labelClass}>Description (optional)</label><textarea value={form.description} onChange={(e) => set('description', e.target.value)} className={inputClass + ' h-24 resize-none'} placeholder="Anything buyers/renters should know" /></div>
             </div>
+          </div>
+
+          {/* Location */}
+          <div>
+            <div className="text-sm font-bold text-stone-800 mb-3">Pin Your Property's Location <span className="font-normal text-stone-400">(optional, but helps buyers find it)</span></div>
+            <LocationPicker
+              lat={form.lat}
+              lng={form.lng}
+              defaultCenter={getAreaCoordinates(form.area)}
+              onChange={(lat, lng) => setForm((prev) => ({ ...prev, lat, lng }))}
+            />
           </div>
 
           {/* Photos */}
