@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 import LiveChatWidget from "@/components/LiveChatWidget";
 import Footer from "@/components/Footer";
@@ -47,9 +48,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="en" className="h-full antialiased overflow-x-hidden">
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden">
+        {gaId && (
+          <>
+            {/* Google Analytics (gtag.js) — afterInteractive so it never
+                blocks the page from rendering/becoming interactive first. */}
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');
+              `}
+            </Script>
+          </>
+        )}
         {children}
         {/* Footer mounted globally so it appears on every page */}
         <Footer />
