@@ -21,9 +21,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'News API not configured' }, { status: 500 });
     }
 
-    // Search for area-specific infrastructure/development news.
-    // NewsData.io's 'q' param does a full-text search across title+content.
-    const query = `Hyderabad ${area} (metro OR road OR infrastructure OR development OR project)`;
+    // Force real co-occurrence instead of relying on implicit/loose matching:
+    // NewsData.io's q param doesn't guarantee AND semantics between bare
+    // space-separated terms, so "Hyderabad Kompally (metro OR ...)" can match
+    // an article that only contains "Hyderabad" and "metro" with no mention
+    // of Kompally at all. Quoting the area name and using explicit AND/OR
+    // keywords (which NewsData.io does support) closes that gap.
+    const topicCluster = '(metro OR road OR infrastructure OR development OR project OR "real estate" OR property OR apartment OR housing OR realty OR "property prices" OR investment)';
+    const query = `Hyderabad AND "${area}" AND ${topicCluster}`;
     const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=${encodeURIComponent(query)}&country=in&language=en`;
 
     const res = await fetch(url);
