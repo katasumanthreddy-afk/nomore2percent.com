@@ -8,7 +8,10 @@ import { defaultSizeUnitForType } from '@/types/property';
 import { getAreaCoordinates } from '@/lib/area-coordinates';
 import { Upload, X, CheckCircle2 } from 'lucide-react';
 
-const LocationPicker = dynamic(() => import('@/components/admin/LocationPicker'), { ssr: false });
+const LocationPicker = dynamic(() => import('@/components/admin/LocationPicker'), {
+  ssr: false,
+  loading: () => <div className="h-64 rounded-lg bg-stone-100 animate-pulse" />,
+});
 
 interface PhotoPreview {
   file: File;

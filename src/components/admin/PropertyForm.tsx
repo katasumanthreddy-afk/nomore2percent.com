@@ -8,7 +8,10 @@ import { supabase } from '@/lib/supabase';
 import { defaultSizeUnitForType } from '@/types/property';
 import { getAreaCoordinates } from '@/lib/area-coordinates';
 
-const LocationPicker = dynamic(() => import('./LocationPicker'), { ssr: false });
+const LocationPicker = dynamic(() => import('./LocationPicker'), {
+  ssr: false,
+  loading: () => <div className="h-64 rounded-lg bg-stone-100 animate-pulse" />,
+});
 
 interface PhotoPreview {
   file: File;

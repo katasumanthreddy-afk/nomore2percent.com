@@ -18,8 +18,9 @@ function PropertiesContent() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get('q') || '');
-  const [listingFilter, setListingFilter] = useState<string>('');
+  const [listingFilter, setListingFilter] = useState<string>(searchParams.get('listing') || '');
   const [areaFilter, setAreaFilter] = useState<string>(searchParams.get('area') || '');
+  const [typeFilter, setTypeFilter] = useState<string>(searchParams.get('type') || '');
   const [sort, setSort] = useState('default');
   const [view, setView] = useState<'list' | 'map'>('list');
 
@@ -40,11 +41,12 @@ function PropertiesContent() {
     }
     if (listingFilter) list = list.filter((p) => p.listing_type === listingFilter);
     if (areaFilter) list = list.filter((p) => p.area === areaFilter);
+    if (typeFilter) list = list.filter((p) => p.property_type === typeFilter);
     if (sort === 'price_asc') list.sort((a, b) => (a.price_num || 0) - (b.price_num || 0));
     if (sort === 'price_desc') list.sort((a, b) => (b.price_num || 0) - (a.price_num || 0));
     if (sort === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     return list;
-  }, [properties, search, listingFilter, areaFilter, sort]);
+  }, [properties, search, listingFilter, areaFilter, typeFilter, sort]);
 
   const areas = Array.from(new Set(properties.map((p) => p.area))).sort();
 
@@ -71,6 +73,15 @@ function PropertiesContent() {
           <select value={areaFilter} onChange={(e) => setAreaFilter(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none">
             <option value="">All Areas</option>
             {areas.map((a) => <option key={a} value={a}>{a}</option>)}
+          </select>
+          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none">
+            <option value="">All Types</option>
+            <option value="apartment">Apartment</option>
+            <option value="villa">Villa</option>
+            <option value="independent_house">Independent House</option>
+            <option value="plot">Plot</option>
+            <option value="commercial">Commercial</option>
+            <option value="agricultural">Agricultural Land</option>
           </select>
           <select value={sort} onChange={(e) => setSort(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none">
             <option value="default">Sort: Default</option>

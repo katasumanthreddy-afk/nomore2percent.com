@@ -7,7 +7,10 @@ import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase';
 import { getAreaCoordinates } from '@/lib/area-coordinates';
 
-const LocationPicker = dynamic(() => import('@/components/admin/LocationPicker'), { ssr: false });
+const LocationPicker = dynamic(() => import('@/components/admin/LocationPicker'), {
+  ssr: false,
+  loading: () => <div className="h-64 rounded-lg bg-stone-100 animate-pulse" />,
+});
 
 interface PhotoPreview {
   file: File;
