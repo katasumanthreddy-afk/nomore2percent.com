@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Property, savingsLabel, sizeUnitLabel } from '@/types/property';
+import { Property, savingsLabel, sizeUnitLabel, titleCase } from '@/types/property';
 import { Bed, Bath, Maximize, Car, Calendar, Layers, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const PropertySingleMap = dynamic(() => import('@/components/PropertySingleMap'), {
@@ -70,8 +70,8 @@ export default function PropertyDetailClient({ property }: { property: Property 
             <span className="text-xs font-semibold bg-orange-100 text-orange-500 px-2.5 py-1 rounded-full">{property.listing_type === 'sale' ? 'For Sale' : 'For Rent'}</span>
             {property.rera_number && <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">RERA ✓</span>}
           </div>
-          <h1 className="font-serif text-2xl md:text-3xl font-bold">{property.title}</h1>
-          <p className="text-stone-500 text-sm mt-1">📍 {property.address || `${property.area}, Hyderabad`}</p>
+          <h1 className="font-serif text-2xl md:text-3xl font-bold">{titleCase(property.title)}</h1>
+          <p className="text-stone-500 text-sm mt-1">📍 {titleCase(property.address) || `${titleCase(property.area)}, Hyderabad`}</p>
         </div>
         <div className="text-right">
           <div className="font-serif text-3xl font-bold">₹{property.price}</div>

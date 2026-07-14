@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Hyderabad Area Guides | nomore2percent',
+  title: 'Hyderabad Neighborhood Guides | nomore2percent',
   description: 'Complete guides to buying, selling, and renting property in Hyderabad\'s key localities — Gachibowli, Madhapur, Banjara Hills, Kondapur, and more.',
 };
 
@@ -29,8 +29,9 @@ export default function AreaGuidesPage() {
       <div className="flex-1">
         <div className="bg-gradient-to-br from-stone-900 to-orange-950 px-6 md:px-10 py-14">
           <div className="max-w-5xl mx-auto">
-            <h1 className="font-serif text-3xl md:text-4xl font-bold text-white mb-3">Hyderabad Area Guides</h1>
-            <p className="text-stone-300 text-sm max-w-xl">Everything you need to know about buying, selling, or renting in Hyderabad's key localities — prices, yields, connectivity, and more.</p>
+            <h1 className="font-serif text-3xl md:text-4xl font-bold text-white mb-3">Hyderabad Neighborhood Guides</h1>
+            <p className="text-stone-300 text-sm max-w-xl mb-2">Everything you need to know about buying, selling, or renting in Hyderabad's key localities — prices, yields, connectivity, and more.</p>
+            <p className="text-stone-400 text-xs">Want live listing data instead? Try our <Link href="/area-insights" className="text-orange-400 hover:underline">Area Insights Tool</Link>.</p>
           </div>
         </div>
 

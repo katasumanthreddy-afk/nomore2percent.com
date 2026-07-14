@@ -5,6 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import { DeveloperProject, projectStatusLabel } from '@/types/developer-project';
+import { titleCase } from '@/types/property';
 import { List, MapIcon } from 'lucide-react';
 
 const ProjectMap = dynamic(() => import('@/components/ProjectMap'), {
@@ -112,8 +113,8 @@ export default function ProjectsClient() {
                   </div>
                 </div>
                 <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="font-serif font-bold text-stone-900 mb-0.5">{p.project_name}</h3>
-                  <p className="text-xs text-stone-500 mb-2">{p.developer_name} · 📍 {p.area}</p>
+                  <h3 className="font-serif font-bold text-stone-900 mb-0.5">{titleCase(p.project_name)}</h3>
+                  <p className="text-xs text-stone-500 mb-2">{titleCase(p.developer_name)} · 📍 {titleCase(p.area)}</p>
                   {p.unit_types && p.unit_types.length > 0 && (
                     <p className="text-xs text-stone-500 mb-2">{p.unit_types.join(' · ')}</p>
                   )}

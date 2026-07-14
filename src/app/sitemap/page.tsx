@@ -13,7 +13,7 @@ const SECTIONS = [
       { label: 'Home', href: '/' },
       { label: 'Properties', href: '/properties' },
       { label: 'Area Insights Tool', href: '/area-insights' },
-      { label: 'Area Guides', href: '/area-guides' },
+      { label: 'Neighborhood Guides', href: '/area-guides' },
       { label: 'Blog', href: '/blog' },
     ],
   },

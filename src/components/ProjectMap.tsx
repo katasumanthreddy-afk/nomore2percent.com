@@ -5,6 +5,7 @@ import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
 import Link from 'next/link';
 import { DeveloperProject, projectStatusLabel } from '@/types/developer-project';
 import { resolvePropertyCoordinates, HYDERABAD_CENTER } from '@/lib/area-coordinates';
+import { titleCase } from '@/types/property';
 
 function shortLabel(text: string): string {
   return text.length > 14 ? text.slice(0, 13) + '…' : text;
@@ -84,8 +85,8 @@ export default function ProjectMap({ projects }: { projects: DeveloperProject[] 
                 )}
               </div>
               <div className="p-2.5">
-                <div className="text-xs font-bold text-stone-900 truncate">{active.project.project_name}</div>
-                <div className="text-[11px] text-stone-500 mb-1">{active.project.developer_name} · {active.project.area}</div>
+                <div className="text-xs font-bold text-stone-900 truncate">{titleCase(active.project.project_name)}</div>
+                <div className="text-[11px] text-stone-500 mb-1">{titleCase(active.project.developer_name)} · {titleCase(active.project.area)}</div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-orange-500">{active.project.price_range || 'Price on request'}</span>
                   <span className="text-[10px] text-stone-400">{projectStatusLabel(active.project.status)}</span>

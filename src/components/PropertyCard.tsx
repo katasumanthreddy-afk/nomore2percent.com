@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Bed, Bath, Maximize } from 'lucide-react';
-import { Property, savingsLabel, sizeUnitLabel } from '@/types/property';
+import { Property, savingsLabel, sizeUnitLabel, titleCase } from '@/types/property';
 
 const ICONS = ['🏢', '🏡', '🏠', '🏗️', '🏘️', '🌿', '🌊', '🏛️'];
 
@@ -24,7 +24,10 @@ export default function PropertyCard({ property, index = 0 }: { property: Proper
           // eslint-disable-next-line @next/next/no-img-element
           <img src={coverImage} alt={property.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl opacity-30">{icon}</div>
+          <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-stone-100 to-stone-200">
+            <span className="text-4xl opacity-40">{icon}</span>
+            <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wide">Photos coming soon</span>
+          </div>
         )}
         <div className="absolute top-2.5 left-2.5 flex gap-1.5">
           <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded ${property.listing_type === 'sale' ? 'bg-orange-500 text-white' : 'bg-blue-500 text-white'}`}>
@@ -41,12 +44,15 @@ export default function PropertyCard({ property, index = 0 }: { property: Proper
       <div className="p-4 flex-1 flex flex-col">
         <div className="font-serif text-xl font-bold text-stone-900">₹{property.price}</div>
         {saving && <div className="text-[11px] text-emerald-600 font-semibold mb-1">✓ Save {saving} vs 2% broker</div>}
-        <div className="font-semibold text-sm text-stone-800 mt-1">{property.title}</div>
-        <div className="text-xs text-stone-500 mb-3">📍 {property.area}, Hyderabad</div>
+        <div className="font-semibold text-sm text-stone-800 mt-1">{titleCase(property.title)}</div>
+        <div className="text-xs text-stone-500 mb-3">📍 {titleCase(property.area)}, Hyderabad</div>
         <div className="flex gap-3 text-xs text-stone-500 pt-3 border-t border-stone-100 mt-auto">
           {property.bedrooms > 0 && <span className="flex items-center gap-1"><Bed size={12} /> {property.bedrooms} BHK</span>}
           {property.bathrooms > 0 && <span className="flex items-center gap-1"><Bath size={12} /> {property.bathrooms}</span>}
           {property.sqft > 0 && <span className="flex items-center gap-1"><Maximize size={12} /> {property.sqft.toLocaleString('en-IN')} {sizeUnitLabel(property.size_unit)}</span>}
+          {property.bedrooms === 0 && property.bathrooms === 0 && property.sqft === 0 && (
+            <span className="flex items-center gap-1 capitalize">{property.property_type?.replace('_', ' ')}</span>
+          )}
         </div>
       </div>
     </Link>

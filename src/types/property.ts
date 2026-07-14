@@ -46,6 +46,21 @@ export function propertyTypeLabel(type: string): string {
   return labels[type] || type;
 }
 
+const SMALL_WORDS = new Set(['in', 'of', 'to', 'a', 'an', 'the', 'and', 'for', 'on', 'at', 'near']);
+export function titleCase(text: string | null | undefined): string {
+  if (!text) return '';
+  return text
+    .split(' ')
+    .map((word, i) => {
+      if (!word) return word;
+      // Preserve things like "3BHK", "24x7" as-is rather than mangling them
+      if (/[A-Z]/.test(word.slice(1))) return word;
+      if (i > 0 && SMALL_WORDS.has(word.toLowerCase())) return word.toLowerCase();
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
 export function sizeUnitLabel(unit: string | null | undefined): string {
   if (unit === 'sqyd') return 'sq.yd';
   if (unit === 'acres') return 'acres';

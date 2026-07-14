@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, Fragment, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusher-client';
+import { titleCase } from '@/types/property';
 import { Users, Flame, CheckCircle2, Home, Building2, MessageCircle, ClipboardList, Inbox, ImageOff, ArrowUpDown, Clock } from 'lucide-react';
 
 interface Lead {
@@ -93,20 +94,7 @@ const STATUS_COLORS: Record<string, string> = {
 // Display-only formatting — doesn't touch stored data, just how it renders
 // in the admin panel, so inconsistently-cased titles like "3bhk vila" or
 // "agricultural in chikatmamidi" read as professional listings.
-const SMALL_WORDS = new Set(['in', 'of', 'to', 'a', 'an', 'the', 'and', 'for', 'on', 'at']);
-function titleCase(text: string | null | undefined): string {
-  if (!text) return '';
-  return text
-    .split(' ')
-    .map((word, i) => {
-      if (!word) return word;
-      // Preserve things like "3BHK", "24x7" as-is rather than mangling them
-      if (/[A-Z]/.test(word.slice(1))) return word;
-      if (i > 0 && SMALL_WORDS.has(word.toLowerCase())) return word.toLowerCase();
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    })
-    .join(' ');
-}
+// (titleCase itself now lives in @/types/property, shared with public pages.)
 
 function isThisWeek(dateStr: string | null | undefined): boolean {
   if (!dateStr) return false;

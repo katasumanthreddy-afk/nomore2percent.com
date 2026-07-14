@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import Header from '@/components/Header';
 
 interface AreaStat {
@@ -118,7 +119,8 @@ export default function AreaInsightsPage() {
       <Header />
       <div className="max-w-3xl mx-auto px-6 md:px-10 py-8">
         <h1 className="font-serif text-3xl font-bold mb-1">Area Insights Tool</h1>
-        <p className="text-stone-500 text-sm mb-6">Select an area to see a snapshot of price, demand, and growth.</p>
+        <p className="text-stone-500 text-sm mb-1">Select an area to see a live snapshot of price, demand, and growth from our own listings.</p>
+        <p className="text-stone-400 text-xs mb-6">Looking for a broader overview instead? See our <Link href="/area-guides" className="text-orange-500 hover:underline">Neighborhood Guides</Link>.</p>
 
         <div className="flex flex-wrap gap-2 mb-8">
           {ALL_AREAS.map((area) => {

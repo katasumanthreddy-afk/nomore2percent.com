@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { DeveloperProject, projectStatusLabel } from '@/types/developer-project';
+import { titleCase } from '@/types/property';
 import { Building2, MapPin, Calendar, FileCheck, LandPlot, Layers } from 'lucide-react';
 
 const PropertySingleMap = dynamic(() => import('@/components/PropertySingleMap'), {
@@ -23,8 +24,8 @@ export default function ProjectDetailClient({ project }: { project: DeveloperPro
             <span className="text-xs font-semibold bg-orange-100 text-orange-500 px-2.5 py-1 rounded-full">{projectStatusLabel(project.status)}</span>
             {project.rera_number && <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">RERA ✓</span>}
           </div>
-          <h1 className="font-serif text-2xl md:text-3xl font-bold">{project.project_name}</h1>
-          <p className="text-stone-500 text-sm mt-1">by {project.developer_name} · 📍 {project.address || `${project.area}, Hyderabad`}</p>
+          <h1 className="font-serif text-2xl md:text-3xl font-bold">{titleCase(project.project_name)}</h1>
+          <p className="text-stone-500 text-sm mt-1">by {titleCase(project.developer_name)} · 📍 {titleCase(project.address) || `${titleCase(project.area)}, Hyderabad`}</p>
         </div>
         <div className="text-right">
           <div className="font-serif text-2xl font-bold text-orange-500">{project.price_range || 'Price on request'}</div>
@@ -110,7 +111,7 @@ export default function ProjectDetailClient({ project }: { project: DeveloperPro
 
           <div className="bg-white border border-stone-200 rounded-xl p-5">
             <div className="text-xs font-bold uppercase tracking-wide text-stone-400 mb-2 flex items-center gap-1.5"><MapPin size={13} /> Location</div>
-            <p className="text-sm text-stone-700">{project.address || `${project.area}, Hyderabad`}</p>
+            <p className="text-sm text-stone-700">{titleCase(project.address) || `${titleCase(project.area)}, Hyderabad`}</p>
           </div>
         </div>
       </div>
