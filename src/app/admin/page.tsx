@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback, Fragment } from 'react';
+import { useEffect, useState, useCallback, Fragment, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getPusherClient } from '@/lib/pusher-client';
+import { Users, Flame, CheckCircle2, Home, Building2, MessageCircle, ClipboardList, Inbox, ImageOff, ArrowUpDown, Clock } from 'lucide-react';
 
 interface Lead {
   id: number; name: string; phone: string; email: string | null; area: string | null;
@@ -11,7 +12,7 @@ interface Lead {
 }
 interface Prop {
   id: number; title: string; area: string; price: string; listing_type: string;
-  status: string; bedrooms: number; sqft: number;
+  status: string; bedrooms: number; sqft: number; images?: string[]; created_at?: string;
 }
 interface Conversation {
   id: number; visitor_name: string; visitor_phone: string | null; last_message_at: string;
@@ -79,7 +80,7 @@ interface Project {
   area: string; price_range: string | null; starting_price_num: number | null;
   status: 'upcoming' | 'under_construction' | 'ready_to_move';
   featured: boolean; is_active: boolean; possession_date: string | null;
-  total_units: number | null; created_at: string;
+  total_units: number | null; created_at: string; images?: string[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -88,6 +89,30 @@ const STATUS_COLORS: Record<string, string> = {
   rented: 'text-purple-600 bg-purple-50 border-purple-200',
   inactive: 'text-stone-500 bg-stone-100 border-stone-300',
 };
+
+// Display-only formatting — doesn't touch stored data, just how it renders
+// in the admin panel, so inconsistently-cased titles like "3bhk vila" or
+// "agricultural in chikatmamidi" read as professional listings.
+const SMALL_WORDS = new Set(['in', 'of', 'to', 'a', 'an', 'the', 'and', 'for', 'on', 'at']);
+function titleCase(text: string | null | undefined): string {
+  if (!text) return '';
+  return text
+    .split(' ')
+    .map((word, i) => {
+      if (!word) return word;
+      // Preserve things like "3BHK", "24x7" as-is rather than mangling them
+      if (/[A-Z]/.test(word.slice(1))) return word;
+      if (i > 0 && SMALL_WORDS.has(word.toLowerCase())) return word.toLowerCase();
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
+function isThisWeek(dateStr: string | null | undefined): boolean {
+  if (!dateStr) return false;
+  const date = new Date(dateStr).getTime();
+  return Date.now() - date < 7 * 24 * 60 * 60 * 1000;
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -100,6 +125,7 @@ export default function AdminDashboard() {
   const [submissions, setSubmissions] = useState<PropertySubmission[]>([]);
   const [newMessageAlert, setNewMessageAlert] = useState(0);
   const [propStatusFilter, setPropStatusFilter] = useState<string>('all');
+  const [propSort, setPropSort] = useState<'default' | 'price_asc' | 'price_desc'>('default');
   const [projectStatusFilter, setProjectStatusFilter] = useState<string>('all');
   const [surveyTypeFilter, setSurveyTypeFilter] = useState<'all' | 'owner' | 'tenant' | 'investor' | 'broker'>('all');
 
@@ -196,22 +222,62 @@ export default function AdminDashboard() {
     router.push('/admin/login');
   };
 
+  const parsePriceForSort = (price: string): number => {
+    const lower = price.toLowerCase();
+    const num = parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
+    if (lower.includes('cr')) return num * 10000000;
+    if (lower.includes('l')) return num * 100000;
+    return num;
+  };
+
   const allProperties = properties;
-  const filteredProperties = propStatusFilter === 'all'
-    ? allProperties
-    : allProperties.filter((p) => p.status === propStatusFilter);
+  const filteredProperties = useMemo(() => {
+    let list = propStatusFilter === 'all' ? allProperties : allProperties.filter((p) => p.status === propStatusFilter);
+    if (propSort === 'price_asc') list = [...list].sort((a, b) => parsePriceForSort(a.price) - parsePriceForSort(b.price));
+    if (propSort === 'price_desc') list = [...list].sort((a, b) => parsePriceForSort(b.price) - parsePriceForSort(a.price));
+    return list;
+  }, [allProperties, propStatusFilter, propSort]);
 
   const stats = {
     total: leads.length,
+    totalNew: leads.filter((l) => isThisWeek(l.created_at)).length,
     hot: leads.filter((l) => l.status === 'hot').length,
     closed: leads.filter((l) => l.status === 'closed').length,
     activeProps: properties.filter((p) => p.status === 'active').length,
+    activePropsNew: properties.filter((p) => p.status === 'active' && isThisWeek(p.created_at)).length,
   };
+
+  const recentActivity = useMemo(() => {
+    type Item = { key: string; icon: React.ReactNode; text: string; sub: string; time: string };
+    const items: Item[] = [
+      ...leads.slice(0, 5).map((l) => ({
+        key: 'lead-' + l.id, icon: <Users size={13} />, text: `New lead: ${l.name}`,
+        sub: [l.area, l.budget].filter(Boolean).join(' · ') || l.source, time: l.created_at,
+      })),
+      ...submissions.slice(0, 5).map((s) => ({
+        key: 'sub-' + s.id, icon: <ClipboardList size={13} />, text: `Property submitted by ${s.owner_name}`,
+        sub: titleCase(s.title) || `${s.property_type} in ${s.area}`, time: s.created_at,
+      })),
+      ...surveyResponses.slice(0, 5).map((s) => ({
+        key: 'survey-' + s.id, icon: <MessageCircle size={13} />, text: `Survey response from ${s.area || 'a visitor'}`,
+        sub: s.name || 'Anonymous', time: s.created_at,
+      })),
+    ];
+    return items
+      .filter((i) => i.time)
+      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+      .slice(0, 6);
+  }, [leads, submissions, surveyResponses]);
 
   return (
     <div className="flex-1 bg-stone-50 text-stone-900 min-h-screen">
       <div className="bg-white border-b border-stone-200 px-7 h-14 flex items-center justify-between sticky top-0 z-10">
-        <div className="font-bold">nomore<span className="text-orange-400">2%</span> <span className="text-xs text-stone-500 font-normal">Admin</span></div>
+        <div className="flex items-center gap-3">
+          <div className="font-bold">nomore<span className="text-orange-400">2%</span> <span className="text-xs text-stone-500 font-normal">Admin</span></div>
+          <span className="hidden sm:inline text-xs text-stone-400 border-l border-stone-200 pl-3">
+            {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </span>
+        </div>
         <div className="flex items-center gap-2.5">
           <Link href="/" className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs hover:border-orange-400 hover:text-orange-400 transition-colors">View Site</Link>
           <button onClick={logout} className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs hover:border-stone-400">Sign Out</button>
@@ -221,10 +287,10 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto px-7 py-6">
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-6">
-          <StatCard label="Total Leads" value={stats.total} />
-          <StatCard label="Hot Leads" value={stats.hot} color="text-red-600" />
-          <StatCard label="Closed Deals" value={stats.closed} color="text-emerald-600" />
-          <StatCard label="Active Listings" value={stats.activeProps} color="text-orange-400" />
+          <StatCard label="Total Leads" value={stats.total} icon={<Users size={16} />} iconBg="bg-stone-100 text-stone-500" sub={stats.totalNew > 0 ? `+${stats.totalNew} this week` : undefined} />
+          <StatCard label="Hot Leads" value={stats.hot} color="text-red-600" icon={<Flame size={16} />} iconBg="bg-red-50 text-red-500" />
+          <StatCard label="Closed Deals" value={stats.closed} color="text-emerald-600" icon={<CheckCircle2 size={16} />} iconBg="bg-emerald-50 text-emerald-500" />
+          <StatCard label="Active Listings" value={stats.activeProps} color="text-orange-400" icon={<Home size={16} />} iconBg="bg-orange-50 text-orange-400" sub={stats.activePropsNew > 0 ? `+${stats.activePropsNew} this week` : undefined} />
         </div>
 
         {/* Tabs */}
@@ -233,11 +299,11 @@ export default function AdminDashboard() {
           <TabBtn active={tab === 'properties'} onClick={() => setTab('properties')}>Properties ({properties.length})</TabBtn>
           <TabBtn active={tab === 'projects'} onClick={() => setTab('projects')}>Developer Projects ({projects.length})</TabBtn>
           <TabBtn active={tab === 'chat'} onClick={() => { setTab('chat'); setNewMessageAlert(0); }}>
-            Live Chat {newMessageAlert > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] rounded-full px-1.5">{newMessageAlert}</span>}
+            Live Chat ({conversations.length}) {newMessageAlert > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] rounded-full px-1.5">{newMessageAlert}</span>}
           </TabBtn>
           <TabBtn active={tab === 'survey'} onClick={() => setTab('survey')}>Market Survey ({surveyResponses.length})</TabBtn>
           <TabBtn active={tab === 'submissions'} onClick={() => setTab('submissions')}>
-            Submissions {submissions.filter((s) => s.status === 'pending').length > 0 && (
+            Submissions ({submissions.length}) {submissions.filter((s) => s.status === 'pending').length > 0 && (
               <span className="ml-1 bg-red-500 text-white text-[10px] rounded-full px-1.5">{submissions.filter((s) => s.status === 'pending').length}</span>
             )}
           </TabBtn>
@@ -283,7 +349,31 @@ export default function AdminDashboard() {
               </tbody>
             </table>
             </div>
-            {leads.length === 0 && <div className="p-10 text-center text-stone-500 text-sm">No leads yet.</div>}
+            {leads.length === 0 && (
+              <div className="p-14 text-center">
+                <Inbox size={28} className="text-stone-300 mx-auto mb-2" />
+                <p className="text-stone-500 text-sm">No leads yet.</p>
+                <p className="text-stone-400 text-xs mt-1">New enquiries from your site will show up here automatically.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === 'leads' && recentActivity.length > 0 && (
+          <div className="mt-5">
+            <div className="text-xs font-bold uppercase tracking-wide text-stone-400 mb-2.5 flex items-center gap-1.5"><Clock size={12} /> Recent Activity</div>
+            <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+              {recentActivity.map((item) => (
+                <div key={item.key} className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-7 h-7 rounded-full bg-stone-100 text-stone-500 flex items-center justify-center flex-shrink-0">{item.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-stone-800 truncate">{item.text}</div>
+                    <div className="text-xs text-stone-500 truncate">{item.sub}</div>
+                  </div>
+                  <div className="text-[11px] text-stone-400 flex-shrink-0">{new Date(item.time).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -319,7 +409,14 @@ export default function AdminDashboard() {
                 <thead>
                   <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
                     <th className="p-3.5">Property</th>
-                    <th className="p-3.5">Price</th>
+                    <th className="p-3.5">
+                      <button
+                        onClick={() => setPropSort(propSort === 'price_asc' ? 'price_desc' : 'price_asc')}
+                        className="flex items-center gap-1 hover:text-stone-800 transition-colors"
+                      >
+                        Price <ArrowUpDown size={11} />
+                      </button>
+                    </th>
                     <th className="p-3.5">Type</th>
                     <th className="p-3.5">Status</th>
                     <th className="p-3.5">Actions</th>
@@ -329,8 +426,20 @@ export default function AdminDashboard() {
                   {filteredProperties.map((p) => (
                     <tr key={p.id} className="border-b border-stone-200/50 hover:bg-stone-50">
                       <td className="p-3.5">
-                        <div className="font-medium text-sm">{p.title}</div>
-                        <div className="text-xs text-stone-500">📍 {p.area}</div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-lg bg-stone-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                            {p.images?.[0] ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <ImageOff size={16} className="text-stone-300" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm">{titleCase(p.title)}</div>
+                            <div className="text-xs text-stone-500">📍 {p.area}</div>
+                          </div>
+                        </div>
                       </td>
                       <td className="p-3.5 text-orange-400 font-semibold">₹{p.price}</td>
                       <td className="p-3.5">
@@ -370,8 +479,10 @@ export default function AdminDashboard() {
               </table>
             </div>
               {filteredProperties.length === 0 && (
-                <div className="p-10 text-center text-stone-500 text-sm">
-                  {propStatusFilter === 'all' ? 'No properties yet.' : 'No ' + propStatusFilter + ' properties.'}
+                <div className="p-14 text-center">
+                  <Home size={28} className="text-stone-300 mx-auto mb-2" />
+                  <p className="text-stone-500 text-sm">{propStatusFilter === 'all' ? 'No properties yet.' : 'No ' + propStatusFilter + ' properties.'}</p>
+                  {propStatusFilter === 'all' && <p className="text-stone-400 text-xs mt-1">Click "+ Add Property" above to list your first one.</p>}
                 </div>
               )}
             </div>
@@ -422,8 +533,20 @@ export default function AdminDashboard() {
                     {(projectStatusFilter === 'all' ? projects : projects.filter((p) => p.status === projectStatusFilter)).map((p) => (
                       <tr key={p.id} className="border-b border-stone-200/50 hover:bg-stone-50">
                         <td className="p-3.5">
-                          <div className="font-medium text-sm">{p.project_name}</div>
-                          <div className="text-xs text-stone-500">{p.developer_name} · 📍 {p.area}</div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-lg bg-stone-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                              {p.images?.[0] ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <ImageOff size={16} className="text-stone-300" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">{titleCase(p.project_name)}</div>
+                              <div className="text-xs text-stone-500">{p.developer_name} · 📍 {p.area}</div>
+                            </div>
+                          </div>
                         </td>
                         <td className="p-3.5 text-orange-400 font-semibold">{p.price_range || '—'}</td>
                         <td className="p-3.5">
@@ -461,7 +584,11 @@ export default function AdminDashboard() {
                 </table>
               </div>
               {projects.filter((p) => projectStatusFilter === 'all' || p.status === projectStatusFilter).length === 0 && (
-                <div className="p-10 text-center text-stone-500 text-sm">No developer projects yet.</div>
+                <div className="p-14 text-center">
+                  <Building2 size={28} className="text-stone-300 mx-auto mb-2" />
+                  <p className="text-stone-500 text-sm">No developer projects yet.</p>
+                  <p className="text-stone-400 text-xs mt-1">Click "+ Add Developer Project" above to list your first one.</p>
+                </div>
               )}
             </div>
           </div>
@@ -484,11 +611,15 @@ export default function AdminDashboard() {
   );
 }
 
-function StatCard({ label, value, color = 'text-stone-900' }: { label: string; value: number; color?: string }) {
+function StatCard({ label, value, color = 'text-stone-900', icon, iconBg = 'bg-stone-100 text-stone-500', sub }: { label: string; value: number; color?: string; icon?: React.ReactNode; iconBg?: string; sub?: string }) {
   return (
     <div className="bg-white border border-stone-200 rounded-xl p-4">
-      <div className="text-[11px] uppercase tracking-wide text-stone-500">{label}</div>
-      <div className={'font-serif text-2xl font-bold mt-1 ' + color}>{value}</div>
+      <div className="flex items-center justify-between mb-1">
+        <div className="text-[11px] uppercase tracking-wide text-stone-500">{label}</div>
+        {icon && <div className={'w-7 h-7 rounded-lg flex items-center justify-center ' + iconBg}>{icon}</div>}
+      </div>
+      <div className={'font-serif text-2xl font-bold ' + color}>{value}</div>
+      {sub && <div className="text-[11px] text-emerald-500 font-medium mt-0.5">{sub}</div>}
     </div>
   );
 }
