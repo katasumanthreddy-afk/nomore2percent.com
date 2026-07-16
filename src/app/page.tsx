@@ -83,17 +83,15 @@ export default function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-orange-400/20 border border-orange-400/30 rounded-full px-3 py-1.5 mb-5">
               <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-              <span className="text-orange-300 text-xs font-semibold uppercase tracking-widest">Hyderabad's Fairest Real Estate Marketplace</span>
+              <span className="text-orange-300 text-xs font-semibold uppercase tracking-widest">Verified Listings · Real Data · Fair Pricing</span>
             </div>
 
             {/* Headline */}
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4">
-              Find Your <em className="text-orange-400 italic">Perfect Home.</em>
-              <br />Pay Just <span className="text-orange-400">1%</span> Brokerage.
+              Hyderabad's <em className="text-orange-400 italic">Property Intelligence</em> Platform
             </h1>
             <p className="text-stone-300 text-base md:text-lg mb-8 leading-relaxed">
-              Browse verified properties across Hyderabad. Buy, sell, or rent —
-              with half the brokerage of every other broker in the city.
+              Make smarter real estate decisions with verified listings, AI-powered area insights, resident surveys, infrastructure tracking, and transparent 1% brokerage.
             </p>
 
             {/* Search box */}

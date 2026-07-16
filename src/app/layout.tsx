@@ -12,10 +12,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.nomore2percent.com'),
   title: {
-    default: 'nomore2percent — Hyderabad Real Estate Marketplace',
+    default: "nomore2percent — Hyderabad's Property Intelligence Platform",
     template: '%s',
   },
-  description: 'Buy, sell and rent properties in Hyderabad at just 1% brokerage. Browse verified listings across Gachibowli, Madhapur, Banjara Hills and more.',
+  description: 'Make smarter real estate decisions in Hyderabad with verified listings, AI-powered area insights, resident surveys, infrastructure tracking, and transparent 1% brokerage.',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
@@ -31,15 +31,15 @@ export const metadata: Metadata = {
   },
   openGraph: {
     siteName: 'nomore2percent',
-    title: 'nomore2percent — Hyderabad Real Estate Marketplace',
-    description: 'Buy, sell and rent properties in Hyderabad at just 1% brokerage. Browse verified listings across Gachibowli, Madhapur, Banjara Hills and more.',
+    title: "nomore2percent — Hyderabad's Property Intelligence Platform",
+    description: 'Make smarter real estate decisions in Hyderabad with verified listings, AI-powered area insights, resident surveys, infrastructure tracking, and transparent 1% brokerage.',
     type: 'website',
     locale: 'en_IN',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'nomore2percent — Hyderabad Real Estate Marketplace',
-    description: 'Buy, sell and rent properties in Hyderabad at just 1% brokerage.',
+    title: "nomore2percent — Hyderabad's Property Intelligence Platform",
+    description: 'Verified listings, AI-powered area insights, and transparent 1% brokerage.',
   },
 };
 
