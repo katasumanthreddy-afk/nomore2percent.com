@@ -88,10 +88,10 @@ export default function HomePage() {
 
             {/* Headline */}
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4">
-              Hyderabad's <em className="text-orange-400 italic">Property Intelligence</em> Platform
+              Hyderabad Real Estate, Backed by <em className="text-orange-400 italic">Real Data.</em>
             </h1>
             <p className="text-stone-300 text-base md:text-lg mb-8 leading-relaxed">
-              Make smarter real estate decisions with verified listings, AI-powered area insights, resident surveys, infrastructure tracking, and transparent 1% brokerage.
+              Just 1% brokerage — with verified listings, AI-powered area insights, and infrastructure data most brokers can't give you.
             </p>
 
             {/* Search box */}

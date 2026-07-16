@@ -12,10 +12,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.nomore2percent.com'),
   title: {
-    default: "nomore2percent — Hyderabad's Property Intelligence Platform",
+    default: 'nomore2percent — Hyderabad Real Estate, Backed by Real Data',
     template: '%s',
   },
-  description: 'Make smarter real estate decisions in Hyderabad with verified listings, AI-powered area insights, resident surveys, infrastructure tracking, and transparent 1% brokerage.',
+  description: "Just 1% brokerage — with verified listings, AI-powered area insights, and infrastructure data most brokers can't give you.",
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
@@ -31,15 +31,15 @@ export const metadata: Metadata = {
   },
   openGraph: {
     siteName: 'nomore2percent',
-    title: "nomore2percent — Hyderabad's Property Intelligence Platform",
-    description: 'Make smarter real estate decisions in Hyderabad with verified listings, AI-powered area insights, resident surveys, infrastructure tracking, and transparent 1% brokerage.',
+    title: 'nomore2percent — Hyderabad Real Estate, Backed by Real Data',
+    description: "Just 1% brokerage — with verified listings, AI-powered area insights, and infrastructure data most brokers can't give you.",
     type: 'website',
     locale: 'en_IN',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "nomore2percent — Hyderabad's Property Intelligence Platform",
-    description: 'Verified listings, AI-powered area insights, and transparent 1% brokerage.',
+    title: 'nomore2percent — Hyderabad Real Estate, Backed by Real Data',
+    description: 'Verified listings, AI-powered area insights, and just 1% brokerage.',
   },
 };
 
