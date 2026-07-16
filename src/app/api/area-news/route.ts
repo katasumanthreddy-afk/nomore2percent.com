@@ -27,7 +27,13 @@ export async function GET(req: NextRequest) {
     // an article that only contains "Hyderabad" and "metro" with no mention
     // of Kompally at all. Quoting the area name and using explicit AND/OR
     // keywords (which NewsData.io does support) closes that gap.
-    const topicCluster = '(metro OR road OR infrastructure OR development OR project OR "real estate" OR property OR apartment OR housing OR realty OR "property prices" OR investment)';
+    //
+    // NewsData.io's actual q length limit is 100 characters (confirmed via a
+    // live "Query length cannot be greater than 100" API error) — NOT the
+    // 500-char limit documented for NewsAPI.org, which is a different
+    // service. Keep the topic cluster short enough that even the longest
+    // area name ("Financial District") stays under budget.
+    const topicCluster = '(real estate OR property OR infrastructure OR metro)';
     const query = `Hyderabad AND "${area}" AND ${topicCluster}`;
     const url = `https://newsdata.io/api/1/latest?apikey=${apiKey}&q=${encodeURIComponent(query)}&country=in&language=en`;
 
