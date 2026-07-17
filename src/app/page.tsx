@@ -270,7 +270,7 @@ export default function HomePage() {
               </p>
               <div className="space-y-3">
                 {[
-                  { icon: '✓', text: 'Verified listings across 12 Hyderabad localities' },
+                  { icon: '✓', text: `Verified listings across ${stats.areas > 0 ? stats.areas + '+' : 'multiple'} Hyderabad localities` },
                   { icon: '✓', text: 'Dedicated broker for every transaction' },
                   { icon: '✓', text: 'Real-time market data and area insights' },
                   { icon: '✓', text: '1% brokerage — not negotiable, always guaranteed' },

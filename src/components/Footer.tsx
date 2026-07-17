@@ -15,7 +15,7 @@ export default function Footer() {
               <span className="font-serif font-bold text-lg text-white">nomore<span className="text-orange-400">2%</span></span>
             </div>
             <p className="text-sm text-stone-400 leading-relaxed mb-4">
-              Hyderabad's fairest real estate brokerage. Buy, sell, or rent — at just 1% brokerage, always.
+              Hyderabad real estate, backed by real data. Verified listings, AI-powered area insights, and just 1% brokerage — always.
             </p>
             <div className="flex gap-3">
               <a href="https://wa.me/917013224895" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-lg bg-stone-800 hover:bg-green-600 flex items-center justify-center transition-colors text-sm font-bold" title="WhatsApp">WA</a>
