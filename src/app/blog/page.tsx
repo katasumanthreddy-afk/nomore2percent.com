@@ -3,6 +3,30 @@ import Header from '@/components/Header';
 
 const POSTS = [
   {
+    slug: 'gachibowli-vs-kondapur-vs-kokapet-comparison',
+    title: 'Gachibowli vs Kondapur vs Kokapet: Which Hyderabad Suburb Fits You?',
+    excerpt: "A practical comparison of Hyderabad's three major IT corridor suburbs — for buyers, renters, and investors trying to decide between them.",
+    date: '17 July 2026',
+    readTime: '6 min read',
+    category: 'Area Guide',
+  },
+  {
+    slug: 'evaluate-resale-apartment-hyderabad-checklist',
+    title: 'How to Evaluate a Resale Apartment in Hyderabad: A Practical Checklist',
+    excerpt: "A room-by-room, document-by-document checklist for evaluating a resale apartment before you make an offer.",
+    date: '17 July 2026',
+    readTime: '7 min read',
+    category: 'Buying Guide',
+  },
+  {
+    slug: 'rera-telangana-guide-hyderabad-home-buyers',
+    title: "A Home Buyer's Guide to RERA in Telangana",
+    excerpt: 'What TS-RERA actually protects you from, how to verify a project or agent is registered, and the red flags that should make you walk away.',
+    date: '17 July 2026',
+    readTime: '6 min read',
+    category: 'Buying Guide',
+  },
+  {
     slug: 'why-hyderabad-buyers-deserve-better-than-2-percent',
     title: "Why Hyderabad's Home Buyers Deserve Better Than 2%",
     excerpt: 'Every year, thousands of families in Hyderabad pay a quiet 2% tax to brokers for work they could do themselves. We built nomore2percent to change that.',

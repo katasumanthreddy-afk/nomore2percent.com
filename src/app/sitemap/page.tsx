@@ -30,6 +30,9 @@ const SECTIONS = [
   {
     title: 'Blog',
     links: [
+      { label: "Gachibowli vs Kondapur vs Kokapet: Which Hyderabad Suburb Fits You?", href: '/blog/gachibowli-vs-kondapur-vs-kokapet-comparison' },
+      { label: 'How to Evaluate a Resale Apartment in Hyderabad', href: '/blog/evaluate-resale-apartment-hyderabad-checklist' },
+      { label: "A Home Buyer's Guide to RERA in Telangana", href: '/blog/rera-telangana-guide-hyderabad-home-buyers' },
       { label: "Why Hyderabad's Home Buyers Deserve Better Than 2%", href: '/blog/why-hyderabad-buyers-deserve-better-than-2-percent' },
     ],
   },
@@ -38,6 +41,7 @@ const SECTIONS = [
     links: [
       'Gachibowli', 'Madhapur', 'Banjara Hills', 'Jubilee Hills', 'Kondapur',
       'Hitech City', 'Kompally', 'Yapral', 'Alwal', 'Kukatpally', 'Miyapur', 'Dammaiguda',
+      'Thumkunta', 'Keesara', 'Devar Yamjal', 'Shamirpet',
     ].map((area) => ({ label: area, href: '/properties?area=' + encodeURIComponent(area) })),
   },
 ];

@@ -3,7 +3,7 @@ import Header from '@/components/Header';
 
 export const metadata: Metadata = {
   title: 'About Us | nomore2percent',
-  description: 'nomore2percent is a Hyderabad real estate brokerage built on one idea: great service shouldn\'t cost a percentage that scales with the market. Meet the team behind the 1% promise.',
+  description: "nomore2percent is a Hyderabad real estate brokerage built on real data and fair pricing — verified listings, resident survey data, and AI-powered area insights, backed by a flat 1% brokerage.",
 };
 
 const VALUES = [
@@ -22,7 +22,7 @@ export default function AboutPage() {
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-serif text-3xl md:text-4xl font-bold text-white mb-4">About nomore2percent</h1>
           <p className="text-stone-300 text-base leading-relaxed max-w-2xl mx-auto">
-            We built nomore2percent because Hyderabad's home buyers deserve better than a quiet 2% tax on the biggest financial decision of their lives.
+            We built nomore2percent because Hyderabad's home buyers deserve better than a quiet 2% tax — and better than guesswork. Real data, honest pricing.
           </p>
         </div>
       </div>
@@ -37,6 +37,14 @@ export default function AboutPage() {
         </p>
         <p className="text-stone-600 leading-relaxed mb-10">
           We're still early — a founder-led, Hyderabad-focused brokerage, not a national franchise. That's by design. It means every listing on this site has actually been looked at, every conversation goes to a real person, and every promise we make is one we can keep.
+        </p>
+
+        <h2 className="font-serif text-2xl font-bold text-stone-900 mb-4">More Than a Listings Site</h2>
+        <p className="text-stone-600 leading-relaxed mb-4">
+          Fair pricing was the starting point — but it turned out to be only half the problem. The other half is that most buyers go into Hyderabad's property market with almost no real data: no sense of how a locality's infrastructure actually holds up, what current residents genuinely think of it, or whether a price is fair for the area, not just for the property.
+        </p>
+        <p className="text-stone-600 leading-relaxed mb-10">
+          So alongside the listings, we built the tools we wished existed when we started: a resident-submitted <strong className="text-stone-800">Market Survey</strong> tracking real infrastructure ratings and growth trends locality by locality, an <strong className="text-stone-800">Area Insights</strong> tool built from our own live listing data, an AI assistant that can actually answer questions about specific properties, and a <strong className="text-stone-800">Property Health Score</strong> on every valuation. None of it replaces good judgment — it's there to make sure you're forming that judgment on real information, not a broker's word alone.
         </p>
 
         <h2 className="font-serif text-2xl font-bold text-stone-900 mb-6">What We Stand For</h2>

@@ -127,6 +127,17 @@ export default function ProjectsClient() {
             ))}
           </div>
           )
+        ) : projects.length === 0 ? (
+          <div className="text-center py-20 px-6">
+            <div className="text-5xl mb-4 opacity-20">🏗️</div>
+            <h2 className="font-serif text-lg font-bold text-stone-700 mb-2">New Launches Coming Soon</h2>
+            <p className="text-stone-500 text-sm max-w-sm mx-auto mb-6">
+              We're onboarding developer projects for Hyderabad. In the meantime, browse our verified resale properties — same 1% brokerage, real listings today.
+            </p>
+            <Link href="/properties" className="inline-block bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-6 py-2.5 text-sm font-bold transition-colors">
+              Browse Properties →
+            </Link>
+          </div>
         ) : (
           <div className="text-center py-20 text-stone-400">
             <div className="text-5xl mb-3 opacity-20">🏗️</div>
