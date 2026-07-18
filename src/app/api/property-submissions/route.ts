@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const {
       owner_name, owner_phone, owner_email, title, description,
       property_type, listing_type, area, address,
-      bedrooms, bathrooms, sqft, size_unit, price, price_num, floor, year_built, amenities, lat, lng,
+      bedrooms, bathrooms, sqft, size_unit, price, price_num, floor, year_built, amenities, lat, lng, broker_id,
     } = body;
 
     if (!owner_name || !owner_phone || !property_type || !listing_type || !area) {
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
         price: price || null, price_num: price_num || null,
         floor: floor || null, year_built: year_built || null,
         amenities: amenities || [],
+        broker_id: broker_id || null,
       }])
       .select()
       .single();
@@ -49,7 +50,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from('property_submissions')
-      .select('*, property_submission_images(id, storage_path, is_primary)')
+      .select('*, property_submission_images(id, storage_path, is_primary), brokers(id, name)')
       .order('created_at', { ascending: false });
 
     if (error) throw error;

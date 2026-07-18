@@ -74,6 +74,15 @@ interface PropertySubmission {
   status: 'pending' | 'approved' | 'rejected'; admin_notes: string | null;
   created_at: string;
   property_submission_images: SubmissionImage[];
+  broker_id: number | null;
+  brokers: { id: number; name: string } | null;
+}
+
+interface Broker {
+  id: number; name: string; phone: string; email: string;
+  rera_agent_number: string | null; rera_verified: boolean; mou_signed: boolean;
+  status: 'invited' | 'active' | 'suspended'; notes: string | null;
+  submission_count: number; approved_count: number; created_at: string;
 }
 
 interface Project {
@@ -104,13 +113,14 @@ function isThisWeek(dateStr: string | null | undefined): boolean {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [tab, setTab] = useState<'leads' | 'properties' | 'projects' | 'chat' | 'survey' | 'submissions'>('leads');
+  const [tab, setTab] = useState<'leads' | 'properties' | 'projects' | 'chat' | 'survey' | 'submissions' | 'brokers'>('leads');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [properties, setProperties] = useState<Prop[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
   const [submissions, setSubmissions] = useState<PropertySubmission[]>([]);
+  const [brokers, setBrokers] = useState<Broker[]>([]);
   const [newMessageAlert, setNewMessageAlert] = useState(0);
   const [propStatusFilter, setPropStatusFilter] = useState<string>('all');
   const [propSort, setPropSort] = useState<'default' | 'price_asc' | 'price_desc'>('default');
@@ -131,6 +141,10 @@ export default function AdminDashboard() {
     fetch('/api/developer-projects?all=1').then((r) => r.json()).then((d) => d.success && setProjects(d.projects));
   }, []);
 
+  const loadBrokers = useCallback(() => {
+    fetch('/api/brokers').then((r) => r.json()).then((d) => d.success && setBrokers(d.brokers));
+  }, []);
+
   const loadConversations = useCallback(() => {
     fetch('/api/chat/conversations').then((r) => r.json()).then((d) => d.success && setConversations(d.conversations));
   }, []);
@@ -147,10 +161,11 @@ export default function AdminDashboard() {
     loadLeads();
     loadProperties();
     loadProjects();
+    loadBrokers();
     loadConversations();
     loadSurveyResponses();
     loadSubmissions();
-  }, [loadLeads, loadProperties, loadProjects, loadConversations, loadSurveyResponses, loadSubmissions]);
+  }, [loadLeads, loadProperties, loadProjects, loadBrokers, loadConversations, loadSurveyResponses, loadSubmissions]);
 
   useEffect(() => {
     const pusher = getPusherClient();
@@ -165,6 +180,17 @@ export default function AdminDashboard() {
   const updateLeadStatus = async (id: number, status: string) => {
     await fetch('/api/leads/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
     loadLeads();
+  };
+
+  const updateBroker = async (id: number, patch: Partial<Broker>) => {
+    await fetch('/api/brokers/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
+    loadBrokers();
+  };
+
+  const deleteBroker = async (id: number, name: string) => {
+    if (!confirm('Remove "' + name + '" from the broker network? This cannot be undone.')) return;
+    await fetch('/api/brokers/' + id, { method: 'DELETE' });
+    loadBrokers();
   };
 
   const deleteLead = async (id: number) => {
@@ -286,6 +312,7 @@ export default function AdminDashboard() {
           <TabBtn active={tab === 'leads'} onClick={() => setTab('leads')}>Leads ({stats.total})</TabBtn>
           <TabBtn active={tab === 'properties'} onClick={() => setTab('properties')}>Properties ({properties.length})</TabBtn>
           <TabBtn active={tab === 'projects'} onClick={() => setTab('projects')}>Developer Projects ({projects.length})</TabBtn>
+          <TabBtn active={tab === 'brokers'} onClick={() => setTab('brokers')}>Brokers ({brokers.length})</TabBtn>
           <TabBtn active={tab === 'chat'} onClick={() => { setTab('chat'); setNewMessageAlert(0); }}>
             Live Chat ({conversations.length}) {newMessageAlert > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] rounded-full px-1.5">{newMessageAlert}</span>}
           </TabBtn>
@@ -582,6 +609,9 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* BROKERS TAB */}
+        {tab === 'brokers' && <BrokersPanel brokers={brokers} onUpdate={updateBroker} onDelete={deleteBroker} onRefresh={loadBrokers} />}
+
         {/* CHAT TAB */}
         {tab === 'chat' && <ChatInbox conversations={conversations} onRefresh={loadConversations} />}
 
@@ -653,6 +683,143 @@ function DetailRow({ label, value }: { label: string; value: string | number | n
     <div>
       <span className="text-stone-500">{label}:</span>{' '}
       <span className="text-stone-700">{value === null || value === undefined || value === '' ? '—' : value}</span>
+    </div>
+  );
+}
+
+function BrokersPanel({ brokers, onUpdate, onDelete, onRefresh }: { brokers: Broker[]; onUpdate: (id: number, patch: Partial<Broker>) => void; onDelete: (id: number, name: string) => void; onRefresh: () => void }) {
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [form, setForm] = useState({ name: '', phone: '', email: '', rera_agent_number: '', notes: '' });
+
+  const submit = async () => {
+    setError('');
+    if (!form.name.trim() || !form.phone.trim() || !form.email.trim()) {
+      setError('Name, phone, and email are required.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch('/api/brokers', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!data.success) { setError(data.message || 'Failed to add broker'); return; }
+      setForm({ name: '', phone: '', email: '', rera_agent_number: '', notes: '' });
+      setShowForm(false);
+      onRefresh();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputClass = "w-full border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400";
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <button
+          onClick={() => setShowForm((s) => !s)}
+          className="bg-orange-500 hover:bg-orange-400 text-white rounded-lg px-4 py-2 text-sm font-bold transition-colors"
+        >
+          {showForm ? 'Cancel' : '+ Invite Broker'}
+        </button>
+        <p className="text-xs text-stone-400 max-w-md">
+          Invite-only network — brokers don&apos;t self-register. They sign in with the same account system as buyers (email or Google); this list just marks who&apos;s a recognized partner.
+        </p>
+      </div>
+
+      {showForm && (
+        <div className="bg-white border border-stone-200 rounded-xl p-5 mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Broker name" className={inputClass} />
+            <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone number" className={inputClass} />
+            <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder="Email (must match how they'll sign in)" className={inputClass} />
+            <input value={form.rera_agent_number} onChange={(e) => setForm((p) => ({ ...p, rera_agent_number: e.target.value }))} placeholder="RERA Agent Reg. No. (optional for now)" className={inputClass} />
+          </div>
+          <textarea value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} placeholder="Notes (optional)" className={inputClass + ' h-16 resize-none mb-3'} />
+          {error && <div className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-3">{error}</div>}
+          <button onClick={submit} disabled={saving} className="bg-stone-900 text-white rounded-lg px-5 py-2 text-sm font-bold hover:bg-stone-800 transition-colors disabled:opacity-50">
+            {saving ? 'Adding...' : 'Add Broker'}
+          </button>
+        </div>
+      )}
+
+      <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wide text-stone-500 border-b border-stone-200 bg-stone-50">
+                <th className="p-3.5">Broker</th>
+                <th className="p-3.5">RERA</th>
+                <th className="p-3.5">MOU</th>
+                <th className="p-3.5">Listings</th>
+                <th className="p-3.5">Status</th>
+                <th className="p-3.5">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {brokers.map((b) => (
+                <tr key={b.id} className="border-b border-stone-200/50 hover:bg-stone-50">
+                  <td className="p-3.5">
+                    <div className="font-medium">{b.name}</div>
+                    <div className="text-xs text-stone-500">{b.email} · {b.phone}</div>
+                  </td>
+                  <td className="p-3.5">
+                    {b.rera_agent_number ? (
+                      <button
+                        onClick={() => onUpdate(b.id, { rera_verified: !b.rera_verified })}
+                        className={'text-xs rounded px-2 py-1 border font-semibold transition-colors ' + (b.rera_verified ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200')}
+                        title={b.rera_agent_number}
+                      >
+                        {b.rera_verified ? '✓ Verified' : 'Unverified'}
+                      </button>
+                    ) : (
+                      <span className="text-xs text-stone-400">No number on file</span>
+                    )}
+                  </td>
+                  <td className="p-3.5">
+                    <button
+                      onClick={() => onUpdate(b.id, { mou_signed: !b.mou_signed })}
+                      className={'text-xs rounded px-2 py-1 border font-semibold transition-colors ' + (b.mou_signed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-stone-100 text-stone-500 border-stone-200')}
+                    >
+                      {b.mou_signed ? '✓ Signed' : 'Not Signed'}
+                    </button>
+                  </td>
+                  <td className="p-3.5 text-stone-600">{b.approved_count} live / {b.submission_count} total</td>
+                  <td className="p-3.5">
+                    <select
+                      value={b.status}
+                      onChange={(e) => onUpdate(b.id, { status: e.target.value as Broker['status'] })}
+                      className="text-xs rounded px-2 py-1.5 border font-semibold bg-transparent border-stone-200 text-stone-600"
+                    >
+                      <option value="invited">Invited</option>
+                      <option value="active">Active</option>
+                      <option value="suspended">Suspended</option>
+                    </select>
+                  </td>
+                  <td className="p-3.5">
+                    <button
+                      onClick={() => onDelete(b.id, b.name)}
+                      className="text-xs bg-red-50 text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-100 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {brokers.length === 0 && (
+          <div className="p-14 text-center">
+            <Users size={28} className="text-stone-300 mx-auto mb-2" />
+            <p className="text-stone-500 text-sm">No brokers in the network yet.</p>
+            <p className="text-stone-400 text-xs mt-1">Click &quot;+ Invite Broker&quot; to add your first partner.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -969,6 +1136,7 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
                     <div className="text-xs text-stone-500 mt-0.5">
                       {[s.bedrooms && `${s.bedrooms} BHK`, s.sqft && `${s.sqft} ${s.size_unit === 'sqyd' ? 'sq.yd' : s.size_unit === 'acres' ? 'acres' : 'sqft'}`, s.floor].filter(Boolean).join(' · ')}
                       {s.lat != null && s.lng != null && <span className="text-emerald-500 ml-2">📍 Location pinned</span>}
+                      {s.brokers && <span className="text-blue-500 ml-2">🤝 via {s.brokers.name}</span>}
                     </div>
                   </div>
                   <span className={'text-[10px] px-2 py-0.5 rounded uppercase font-semibold flex-shrink-0 ' + (
