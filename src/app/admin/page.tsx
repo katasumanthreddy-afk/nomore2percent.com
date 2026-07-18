@@ -1149,11 +1149,12 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
                 </div>
 
                 <div className="text-xs text-stone-500 mt-2">
-                  From <span className="text-stone-800">{s.owner_name}</span> ·{' '}
+                  {s.brokers ? 'Broker contact' : 'From'} <span className="text-stone-800">{s.owner_name}</span> ·{' '}
                   <a href={'https://wa.me/91' + s.owner_phone.replace(/\D/g, '').slice(-10)} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">
                     {s.owner_phone}
                   </a>
                   {s.owner_email ? ` · ${s.owner_email}` : ''}
+                  {s.brokers && <span className="text-amber-500 ml-2">(seller details not shared by broker)</span>}
                 </div>
 
                 {s.description && <div className="text-xs text-stone-500 mt-2 line-clamp-2">{s.description}</div>}

@@ -21,7 +21,6 @@ interface PhotoPreview {
 
 export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId: number; brokerName: string }) {
   const [form, setForm] = useState({
-    owner_name: '', owner_phone: '', owner_email: '',
     title: '', description: '', price: '',
     property_type: 'apartment', listing_type: 'sale',
     area: '', address: '', bedrooms: '', bathrooms: '', sqft: '', size_unit: 'sqft', floor: '', year_built: '',
@@ -93,10 +92,6 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
 
   const submit = async () => {
     setError('');
-    if (!form.owner_name.trim() || !form.owner_phone.trim()) {
-      setError("Please enter the seller's name and phone number.");
-      return;
-    }
     if (!form.area.trim()) {
       setError('Please enter the property area/locality.');
       return;
@@ -163,22 +158,11 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
         <div className="text-center mb-8">
           <h1 className="font-serif text-3xl font-bold text-stone-900 mb-2">Submit a Listing</h1>
           <p className="text-stone-500 text-sm">
-            Submitting as <strong className="text-stone-700">{brokerName}</strong>. We verify every listing before it goes live — just 1% brokerage to the buyer, always.
+            Submitting as <strong className="text-stone-700">{brokerName}</strong>. We verify every listing before it goes live — just 1% brokerage to the buyer, always. You stay the point of contact; we won't ask for your seller's details.
           </p>
         </div>
 
         <div className="bg-white border border-stone-200 rounded-2xl p-6 md:p-8 space-y-6">
-          {/* Seller contact */}
-          <div>
-            <div className="text-sm font-bold text-stone-800 mb-3">Seller Contact Details</div>
-            <p className="text-xs text-stone-400 mb-3">This is the property owner/seller you're representing — not your own details.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><label className={labelClass}>Seller's Name *</label><input value={form.owner_name} onChange={(e) => set('owner_name', e.target.value)} className={inputClass} placeholder="Full name" /></div>
-              <div><label className={labelClass}>Seller's Phone *</label><input value={form.owner_phone} onChange={(e) => set('owner_phone', e.target.value)} className={inputClass} placeholder="+91 seller's number" /></div>
-              <div className="md:col-span-2"><label className={labelClass}>Seller's Email (optional)</label><input value={form.owner_email} onChange={(e) => set('owner_email', e.target.value)} className={inputClass} placeholder="seller@example.com" /></div>
-            </div>
-          </div>
-
           {/* Property details */}
           <div>
             <div className="text-sm font-bold text-stone-800 mb-3">Property Details</div>

@@ -123,7 +123,7 @@ export default async function BrokerPortalPage() {
               <div key={s.id} className="flex items-center justify-between gap-3 px-4 py-3.5">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-stone-800 truncate">{titleCase(s.title) || `${s.property_type} in ${s.area}`}</div>
-                  <div className="text-xs text-stone-500">{s.area} · Seller: {s.owner_name}</div>
+                  <div className="text-xs text-stone-500">{s.area}</div>
                 </div>
                 <span className={`text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border flex-shrink-0 ${STATUS_LABEL[s.status]?.className || ''}`}>
                   {STATUS_LABEL[s.status]?.label || s.status}
