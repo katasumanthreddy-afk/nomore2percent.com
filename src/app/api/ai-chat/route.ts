@@ -237,8 +237,12 @@ export async function POST(req: NextRequest) {
     let propertyResults: any[] = [];
     let handoff = false;
 
-    // 3. Tool-calling loop (max 3 rounds to avoid runaway calls)
-    for (let round = 0; round < 3; round++) {
+    // 3. Tool-calling loop (max 4 rounds — the last is text-only so the
+    // model can't exhaust the budget mid tool-call with nothing to show
+    // for it, which is what was silently stranding visitors before).
+    const MAX_ROUNDS = 4;
+    for (let round = 0; round < MAX_ROUNDS; round++) {
+      const isFinalRound = round === MAX_ROUNDS - 1;
       const res = await fetch(OPENAI_URL, {
         method: 'POST',
         headers: {
@@ -248,7 +252,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           model: MODEL,
           messages: chatMessages,
-          tools: TOOLS,
+          ...(isFinalRound ? {} : { tools: TOOLS }),
           temperature: 0.4,
         }),
       });
@@ -304,6 +308,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, reply: replyText, properties: propertyResults, handoff });
     }
 
+    // If we exhaust all rounds without a final answer, actually hand off —
+    // not just claim to. The frontend switches to "waiting for a human" the
+    // moment it sees handoff:true, so if requestHandoff() isn't called here
+    // too, Sumanth never gets paged and the visitor is left stuck talking to
+    // nobody.
+    await requestHandoff(conversation_id);
     return NextResponse.json({ success: true, reply: "Let me get Sumanth to help with that directly.", properties: propertyResults, handoff: true });
   } catch (err: any) {
     return NextResponse.json({ success: false, message: err.message || 'Something went wrong' }, { status: 500 });
