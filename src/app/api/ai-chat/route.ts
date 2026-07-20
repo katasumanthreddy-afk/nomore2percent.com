@@ -13,14 +13,16 @@ Key facts about nomore2percent:
 - Every deal gets a dedicated broker. Typical response time from enquiry to visit is under 24 hours.
 - The founder/lead broker is Sumanth, reachable on WhatsApp at +91 70132 24895.
 - We also have a Market Survey where visitors can share info about their area (pricing, infrastructure) — link is /market-survey.
+- We collect real resident survey data per locality — infrastructure ratings, growth trends, common concerns, and feedback from actual residents, not just general knowledge.
 
 Your job:
 1. Answer questions about the brokerage model, process, and coverage areas naturally and briefly.
 2. When a visitor describes what they're looking for (area, budget, BHK, buy vs rent), use the search_properties tool to find real matching listings and mention them — don't invent property details.
-3. If a visitor shows genuine interest (asking to be contacted, wants a site visit, or shares urgency) and you have their name and phone number, use the capture_lead tool to save it. Ask for name and phone naturally if you don't have them yet, but don't be pushy — only ask once you sense real interest.
-4. If a visitor explicitly asks to speak to a human, to Sumanth, or seems frustrated / needs something you can't help with, use the request_human_handoff tool immediately.
-5. Keep replies short — 2-4 sentences max, conversational, no walls of text. This is a chat widget, not an essay.
-6. Never make up property details, prices, or availability that didn't come from the search_properties tool results.`;
+3. When a visitor asks what a locality is like to live in, how its infrastructure holds up, or whether it's a good place to invest — use the get_area_insights tool to pull real resident survey data before answering. If no survey data exists yet for that area, say so honestly rather than guessing from general knowledge.
+4. If a visitor shows genuine interest (asking to be contacted, wants a site visit, or shares urgency) and you have their name and phone number, use the capture_lead tool to save it. Ask for name and phone naturally if you don't have them yet, but don't be pushy — only ask once you sense real interest.
+5. If a visitor explicitly asks to speak to a human, to Sumanth, or seems frustrated / needs something you can't help with, use the request_human_handoff tool immediately.
+6. Keep replies short — 2-4 sentences max, conversational, no walls of text. This is a chat widget, not an essay.
+7. Never make up property details, prices, availability, or area characteristics that didn't come from a tool result.`;
 
 const TOOLS = [
   {
@@ -36,6 +38,20 @@ const TOOLS = [
           listing_type: { type: 'string', enum: ['sale', 'rent'] },
           max_price: { type: 'number', description: 'Maximum budget in rupees, e.g. 10000000 for 1 crore' },
         },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_area_insights',
+      description: "Get real resident survey data for a Hyderabad locality — infrastructure ratings, growth trends, common concerns, and resident feedback. Use whenever a visitor asks what an area is like to live in, how the infrastructure is, or whether it's worth investing there. Always prefer this over general knowledge for locality-specific questions.",
+      parameters: {
+        type: 'object',
+        properties: {
+          area: { type: 'string', description: 'Locality name, e.g. Kompally, Gachibowli' },
+        },
+        required: ['area'],
       },
     },
   },
@@ -95,6 +111,54 @@ async function searchProperties(args: any) {
       url: `/properties/${p.id}`,
       image: (p.property_images || []).find((i: any) => i.is_primary)?.storage_path || p.property_images?.[0]?.storage_path || null,
     })),
+  };
+}
+
+async function getAreaInsights(args: any) {
+  const area = args.area;
+  if (!area) return { found: false };
+
+  // Retrieval step for the RAG flow: real resident survey rows filtered by
+  // area. No embeddings/vector search needed — market_survey rows already
+  // have an exact `area` column, so a plain filter *is* the correct
+  // retrieval here rather than an approximation of one.
+  const { data: surveys } = await supabaseAdmin
+    .from('market_survey')
+    .select('rating_roads, rating_water, rating_electricity, rating_drainage_garbage, rating_safety, rating_traffic_parking, rating_public_transport, rating_schools_hospitals, rating_shopping, recommend_score, price_trend_1yr, price_trend_5yr, feedback_best_thing, feedback_govt_improvement, recent_developments_list, biggest_issues_list')
+    .ilike('area', `%${area}%`)
+    .limit(50);
+
+  if (!surveys || surveys.length === 0) {
+    return { found: false, message: `No resident survey data yet for ${area}. Be upfront that this is unverified — don't guess.` };
+  }
+
+  const avg = (key: string) => {
+    const vals = surveys.map((s: any) => s[key]).filter((v: any) => v != null);
+    if (vals.length === 0) return null;
+    return Math.round((vals.reduce((a: number, b: number) => a + b, 0) / vals.length) * 10) / 10;
+  };
+
+  const topUnique = (arrays: (string[] | null)[], limit: number) =>
+    [...new Set(arrays.flat().filter(Boolean) as string[])].slice(0, limit);
+
+  return {
+    found: true,
+    respondent_count: surveys.length,
+    ratings_out_of_5: {
+      roads: avg('rating_roads'),
+      water_supply: avg('rating_water'),
+      electricity: avg('rating_electricity'),
+      drainage_garbage: avg('rating_drainage_garbage'),
+      safety: avg('rating_safety'),
+      traffic_parking: avg('rating_traffic_parking'),
+      public_transport: avg('rating_public_transport'),
+      schools_hospitals: avg('rating_schools_hospitals'),
+      shopping: avg('rating_shopping'),
+    },
+    recommend_score_out_of_10: avg('recommend_score'),
+    recent_developments_mentioned: topUnique(surveys.map((s: any) => s.recent_developments_list), 5),
+    common_concerns: topUnique(surveys.map((s: any) => s.biggest_issues_list), 5),
+    resident_feedback_samples: surveys.map((s: any) => s.feedback_best_thing).filter(Boolean).slice(0, 3),
   };
 }
 
@@ -205,6 +269,8 @@ export async function POST(req: NextRequest) {
           if (call.function.name === 'search_properties') {
             result = await searchProperties(args);
             propertyResults = result.results;
+          } else if (call.function.name === 'get_area_insights') {
+            result = await getAreaInsights(args);
           } else if (call.function.name === 'capture_lead') {
             result = await captureLead(args, conversation_id);
           } else if (call.function.name === 'request_human_handoff') {
