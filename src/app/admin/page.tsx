@@ -1064,8 +1064,28 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
   const [busyId, setBusyId] = useState<number | null>(null);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [rejectNote, setRejectNote] = useState('');
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkRejecting, setBulkRejecting] = useState(false);
+  const [bulkRejectNote, setBulkRejectNote] = useState('');
 
   const filtered = filter === 'all' ? submissions : submissions.filter((s) => s.status === filter);
+  const pendingInView = filtered.filter((s) => s.status === 'pending');
+
+  const toggleSelect = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelected((prev) => {
+      if (pendingInView.every((s) => prev.has(s.id)) && pendingInView.length > 0) return new Set();
+      return new Set(pendingInView.map((s) => s.id));
+    });
+  };
 
   const approve = async (id: number) => {
     setBusyId(id);
@@ -1096,9 +1116,44 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
     }
   };
 
+  const bulkApprove = async () => {
+    if (!confirm(`Approve & publish ${selected.size} selected listing(s)?`)) return;
+    setBulkBusy(true);
+    try {
+      const results = await Promise.allSettled(
+        Array.from(selected).map((id) =>
+          fetch(`/api/property-submissions/${id}/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+        )
+      );
+      const failed = results.filter((r) => r.status === 'rejected').length;
+      if (failed > 0) alert(`${failed} listing(s) failed to publish — check them individually.`);
+      setSelected(new Set());
+      onRefresh();
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkReject = async () => {
+    setBulkBusy(true);
+    try {
+      await Promise.allSettled(
+        Array.from(selected).map((id) =>
+          fetch(`/api/property-submissions/${id}/reject`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ admin_notes: bulkRejectNote || null }) })
+        )
+      );
+      setSelected(new Set());
+      setBulkRejecting(false);
+      setBulkRejectNote('');
+      onRefresh();
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
   return (
     <div>
-      <div className="flex gap-2 mb-4 flex-wrap">
+      <div className="flex gap-2 mb-4 flex-wrap items-center">
         {(['pending', 'approved', 'rejected', 'all'] as const).map((f) => (
           <button
             key={f}
@@ -1111,13 +1166,61 @@ function PropertySubmissions({ submissions, onRefresh }: { submissions: Property
             <span className="ml-1.5 opacity-60">({f === 'all' ? submissions.length : submissions.filter((s) => s.status === f).length})</span>
           </button>
         ))}
+        {pendingInView.length > 0 && (
+          <label className="flex items-center gap-1.5 text-xs text-stone-500 ml-auto cursor-pointer">
+            <input
+              type="checkbox"
+              checked={pendingInView.every((s) => selected.has(s.id))}
+              onChange={toggleSelectAll}
+            />
+            Select all pending
+          </label>
+        )}
       </div>
+
+      {selected.size > 0 && (
+        <div className="sticky top-0 z-10 bg-stone-900 text-white rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-3 flex-wrap shadow-lg">
+          <span className="text-sm font-semibold">{selected.size} selected</span>
+          {bulkRejecting ? (
+            <div className="flex gap-2 items-center flex-1 min-w-[240px]">
+              <input
+                value={bulkRejectNote}
+                onChange={(e) => setBulkRejectNote(e.target.value)}
+                placeholder="Reason for all selected (optional)"
+                className="flex-1 bg-stone-800 border border-stone-700 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-orange-400 text-white placeholder:text-stone-500"
+              />
+              <button onClick={bulkReject} disabled={bulkBusy} className="text-xs bg-red-500 hover:bg-red-600 rounded px-3 py-1.5 font-semibold disabled:opacity-50 whitespace-nowrap">
+                {bulkBusy ? 'Rejecting...' : 'Confirm Reject'}
+              </button>
+              <button onClick={() => { setBulkRejecting(false); setBulkRejectNote(''); }} className="text-xs text-stone-400 hover:text-stone-200">Cancel</button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <button onClick={bulkApprove} disabled={bulkBusy} className="text-xs bg-emerald-500 hover:bg-emerald-600 rounded px-3 py-1.5 font-semibold disabled:opacity-50">
+                {bulkBusy ? 'Publishing...' : `✓ Approve & Publish ${selected.size}`}
+              </button>
+              <button onClick={() => setBulkRejecting(true)} disabled={bulkBusy} className="text-xs bg-stone-700 hover:bg-stone-600 rounded px-3 py-1.5 font-semibold disabled:opacity-50">
+                Reject {selected.size}
+              </button>
+              <button onClick={() => setSelected(new Set())} className="text-xs text-stone-400 hover:text-stone-200">Clear</button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="space-y-3">
         {filtered.map((s) => {
           const cover = s.property_submission_images?.find((i) => i.is_primary) || s.property_submission_images?.[0];
           return (
             <div key={s.id} className="bg-white border border-stone-200 rounded-xl p-4 flex gap-4">
+              {s.status === 'pending' && (
+                <input
+                  type="checkbox"
+                  checked={selected.has(s.id)}
+                  onChange={() => toggleSelect(s.id)}
+                  className="mt-1 flex-shrink-0"
+                />
+              )}
               <div className="w-24 h-24 rounded-lg bg-stone-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-3xl">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
