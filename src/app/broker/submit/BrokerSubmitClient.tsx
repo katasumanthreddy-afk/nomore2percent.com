@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
@@ -19,20 +20,52 @@ interface PhotoPreview {
   previewUrl: string;
 }
 
-export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId: number; brokerName: string }) {
-  const [form, setForm] = useState({
-    title: '', description: '', price: '',
-    property_type: 'apartment', listing_type: 'sale',
-    area: '', address: '', bedrooms: '', bathrooms: '', sqft: '', size_unit: 'sqft', floor: '', year_built: '',
-    lat: null as number | null, lng: null as number | null,
-  });
+interface ExistingPhoto {
+  id: number;
+  storage_path: string;
+  is_primary: boolean;
+}
+
+export interface BrokerFormData {
+  title: string; description: string; price: string;
+  property_type: string; listing_type: string;
+  area: string; address: string; bedrooms: string; bathrooms: string; sqft: string; size_unit: string;
+  floor: string; year_built: string;
+  lat: number | null; lng: number | null;
+}
+
+const emptyForm: BrokerFormData = {
+  title: '', description: '', price: '',
+  property_type: 'apartment', listing_type: 'sale',
+  area: '', address: '', bedrooms: '', bathrooms: '', sqft: '', size_unit: 'sqft', floor: '', year_built: '',
+  lat: null, lng: null,
+};
+
+export default function BrokerSubmitClient({
+  mode = 'create',
+  submissionId,
+  brokerId,
+  brokerName,
+  initialData,
+  initialPhotos,
+}: {
+  mode?: 'create' | 'edit';
+  submissionId?: number;
+  brokerId: number;
+  brokerName: string;
+  initialData?: Partial<BrokerFormData>;
+  initialPhotos?: ExistingPhoto[];
+}) {
+  const router = useRouter();
+  const [form, setForm] = useState<BrokerFormData>({ ...emptyForm, ...initialData });
+  const [existingPhotos, setExistingPhotos] = useState<ExistingPhoto[]>(initialPhotos || []);
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const set = (k: string, v: string) => setForm((prev) => ({ ...prev, [k]: v }));
+  const set = (k: keyof BrokerFormData, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
 
   const handlePropertyTypeChange = (type: string) => {
     setForm((prev) => ({ ...prev, property_type: type, size_unit: defaultSizeUnitForType(type) }));
@@ -67,12 +100,20 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
     });
   };
 
-  const uploadPhotosForSubmission = async (submissionId: number) => {
+  const deleteExistingPhoto = async (imageId: number) => {
+    if (!confirm('Remove this photo?')) return;
+    const res = await fetch(`/api/property-submissions/images/${imageId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) setExistingPhotos((prev) => prev.filter((p) => p.id !== imageId));
+    else alert(data.message || 'Could not remove photo.');
+  };
+
+  const uploadPhotosForSubmission = async (id: number, coverAlreadyExists: boolean) => {
     for (let i = 0; i < photos.length; i++) {
       setUploadProgress(`Uploading photo ${i + 1} of ${photos.length}...`);
       const { file } = photos[i];
       const ext = file.name.split('.').pop();
-      const fileName = `submissions/${submissionId}/${Date.now()}-${i}.${ext}`;
+      const fileName = `submissions/${id}/${Date.now()}-${i}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from('property-images')
@@ -85,7 +126,7 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
       await fetch('/api/property-submissions/images', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ submission_id: submissionId, storage_path: urlData.publicUrl, is_primary: i === 0 }),
+        body: JSON.stringify({ submission_id: id, storage_path: urlData.publicUrl, is_primary: !coverAlreadyExists && i === 0 }),
       });
     }
   };
@@ -99,18 +140,23 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
 
     setSaving(true);
     try {
-      const res = await fetch('/api/property-submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          broker_id: brokerId,
-          bedrooms: form.bedrooms ? parseInt(form.bedrooms) : null,
-          bathrooms: form.bathrooms ? parseInt(form.bathrooms) : null,
-          sqft: form.sqft ? parseFloat(form.sqft) : null,
-          price_num: form.price ? parsePriceNum(form.price) : null,
-        }),
-      });
+      const payload = {
+        ...form,
+        broker_id: brokerId,
+        bedrooms: form.bedrooms ? parseInt(form.bedrooms) : null,
+        bathrooms: form.bathrooms ? parseInt(form.bathrooms) : null,
+        sqft: form.sqft ? parseFloat(form.sqft) : null,
+        price_num: form.price ? parsePriceNum(form.price) : null,
+      };
+
+      const res = await fetch(
+        mode === 'edit' ? `/api/property-submissions/${submissionId}` : '/api/property-submissions',
+        {
+          method: mode === 'edit' ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }
+      );
       const data = await res.json();
 
       if (!data.success) {
@@ -119,9 +165,14 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
         return;
       }
 
-      if (photos.length > 0) await uploadPhotosForSubmission(data.submission.id);
+      const id = mode === 'edit' ? submissionId! : data.submission.id;
+      if (photos.length > 0) await uploadPhotosForSubmission(id, existingPhotos.length > 0);
 
-      setSubmitted(true);
+      if (mode === 'edit') {
+        router.push('/broker');
+      } else {
+        setSubmitted(true);
+      }
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -156,9 +207,13 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
       <div className="max-w-2xl mx-auto px-6 md:px-10 py-12">
         <Link href="/broker" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Your Listings</Link>
         <div className="text-center mb-8">
-          <h1 className="font-serif text-3xl font-bold text-stone-900 mb-2">Submit a Listing</h1>
+          <h1 className="font-serif text-3xl font-bold text-stone-900 mb-2">{mode === 'edit' ? 'Edit Listing' : 'Submit a Listing'}</h1>
           <p className="text-stone-500 text-sm">
-            Submitting as <strong className="text-stone-700">{brokerName}</strong>. We verify every listing before it goes live — just 1% brokerage to the buyer, always. You stay the point of contact; we won't ask for your seller's details.
+            {mode === 'edit' ? (
+              <>Editing as <strong className="text-stone-700">{brokerName}</strong>. You can only edit while it&apos;s still under review.</>
+            ) : (
+              <>Submitting as <strong className="text-stone-700">{brokerName}</strong>. We verify every listing before it goes live — just 1% brokerage to the buyer, always. You stay the point of contact; we won't ask for your seller's details.</>
+            )}
           </p>
         </div>
 
@@ -226,13 +281,29 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
           {/* Photos */}
           <div>
             <div className="text-sm font-bold text-stone-800 mb-3">Photos</div>
+
+            {existingPhotos.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {existingPhotos.map((p) => (
+                  <div key={p.id} className="relative aspect-square rounded-lg overflow-hidden bg-stone-100 group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.storage_path} alt="" className="w-full h-full object-cover" />
+                    <button onClick={() => deleteExistingPhoto(p.id)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <X size={12} />
+                    </button>
+                    {p.is_primary && <span className="absolute bottom-1 left-1 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Cover</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
               className="border-2 border-dashed border-stone-300 rounded-xl p-6 text-center hover:border-orange-300 transition-colors"
             >
               <Upload className="mx-auto text-stone-400 mb-2" size={24} />
-              <p className="text-sm text-stone-500 mb-2">Drag & drop photos here, or</p>
+              <p className="text-sm text-stone-500 mb-2">{existingPhotos.length > 0 ? 'Add more photos, or' : 'Drag & drop photos here, or'}</p>
               <label className="inline-block bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-semibold rounded-lg px-4 py-2 cursor-pointer transition-colors">
                 Choose Files
                 <input type="file" multiple accept="image/*" onChange={handlePhotoSelect} className="hidden" />
@@ -248,7 +319,7 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
                     <button onClick={() => removePhoto(i)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <X size={12} />
                     </button>
-                    {i === 0 && <span className="absolute bottom-1 left-1 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Cover</span>}
+                    {existingPhotos.length === 0 && i === 0 && <span className="absolute bottom-1 left-1 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Cover</span>}
                   </div>
                 ))}
               </div>
@@ -262,11 +333,13 @@ export default function BrokerSubmitClient({ brokerId, brokerName }: { brokerId:
             disabled={saving}
             className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-lg py-3 text-sm font-bold transition-colors"
           >
-            {saving ? (uploadProgress || 'Submitting...') : 'Submit for Review'}
+            {saving ? (uploadProgress || 'Saving...') : mode === 'edit' ? 'Save Changes' : 'Submit for Review'}
           </button>
-          <p className="text-[11px] text-stone-400 text-center -mt-3">
-            We verify every submission before it goes live — usually within 24 hours.
-          </p>
+          {mode === 'create' && (
+            <p className="text-[11px] text-stone-400 text-center -mt-3">
+              We verify every submission before it goes live — usually within 24 hours.
+            </p>
+          )}
         </div>
       </div>
     </div>

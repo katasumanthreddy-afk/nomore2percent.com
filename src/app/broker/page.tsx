@@ -85,21 +85,45 @@ export default async function BrokerPortalPage() {
             <h1 className="font-serif text-2xl font-bold text-stone-900">Welcome, {broker.name}</h1>
             <p className="text-stone-500 text-sm">Broker Partner · nomore2percent</p>
           </div>
-          <Link href="/broker/submit" className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-5 py-2.5 text-sm font-bold transition-colors">
-            + Submit a Listing
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/broker/profile" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors">
+              Profile
+            </Link>
+            <Link href="/broker/submit" className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-5 py-2.5 text-sm font-bold transition-colors">
+              + Submit a Listing
+            </Link>
+          </div>
         </div>
 
         {broker.status === 'invited' && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700 mb-6">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700 mb-4">
             Your account is pending activation. You can submit listings, but reach out if you haven&apos;t heard from us about your MOU yet.
           </div>
         )}
         {pendingMou && (
-          <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 text-sm text-orange-700 mb-6">
+          <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 text-sm text-orange-700 mb-4">
             Reminder: your partnership MOU is still marked as unsigned in our records — contact us if you believe this is outdated.
           </div>
         )}
+
+        {/* How This Works */}
+        <div className="bg-white border border-stone-200 rounded-xl p-5 mb-6">
+          <div className="text-xs font-bold uppercase tracking-wide text-stone-400 mb-3">How This Works</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="flex gap-2.5">
+              <span className="text-lg leading-none">1️⃣</span>
+              <p className="text-stone-600"><strong className="text-stone-800">You submit</strong> — bring us a listing, no seller contact needed. You stay the point of contact.</p>
+            </div>
+            <div className="flex gap-2.5">
+              <span className="text-lg leading-none">2️⃣</span>
+              <p className="text-stone-600"><strong className="text-stone-800">We verify & publish</strong> — usually within 24 hours, then we handle buyer enquiries, visits, and negotiation.</p>
+            </div>
+            <div className="flex gap-2.5">
+              <span className="text-lg leading-none">3️⃣</span>
+              <p className="text-stone-600"><strong className="text-stone-800">You keep your commission</strong> — whatever you've separately agreed with your seller. We only ever charge the buyer, 1%, always.</p>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-3 gap-3 mb-8">
           <div className="bg-white border border-stone-200 rounded-xl p-4 text-center">
@@ -120,14 +144,35 @@ export default async function BrokerPortalPage() {
         {submissions && submissions.length > 0 ? (
           <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
             {submissions.map((s) => (
-              <div key={s.id} className="flex items-center justify-between gap-3 px-4 py-3.5">
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold text-stone-800 truncate">{titleCase(s.title) || `${s.property_type} in ${s.area}`}</div>
-                  <div className="text-xs text-stone-500">{s.area}</div>
+              <div key={s.id} className="px-4 py-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-stone-800 truncate">{titleCase(s.title) || `${s.property_type} in ${s.area}`}</div>
+                    <div className="text-xs text-stone-500">{s.area}</div>
+                  </div>
+                  <span className={`text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border flex-shrink-0 ${STATUS_LABEL[s.status]?.className || ''}`}>
+                    {STATUS_LABEL[s.status]?.label || s.status}
+                  </span>
                 </div>
-                <span className={`text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border flex-shrink-0 ${STATUS_LABEL[s.status]?.className || ''}`}>
-                  {STATUS_LABEL[s.status]?.label || s.status}
-                </span>
+
+                {s.status === 'rejected' && s.admin_notes && (
+                  <div className="mt-2 text-xs bg-red-50 border border-red-100 text-red-600 rounded-lg px-3 py-2">
+                    <strong>Why:</strong> {s.admin_notes}
+                  </div>
+                )}
+
+                <div className="flex gap-3 mt-2">
+                  {s.status === 'pending' && (
+                    <Link href={`/broker/submit/${s.id}`} className="text-xs text-orange-500 font-semibold hover:underline">
+                      Edit Listing →
+                    </Link>
+                  )}
+                  {s.status === 'approved' && s.published_property_id && (
+                    <Link href={`/properties/${s.published_property_id}`} className="text-xs text-emerald-600 font-semibold hover:underline">
+                      View Live Listing →
+                    </Link>
+                  )}
+                </div>
               </div>
             ))}
           </div>
