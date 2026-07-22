@@ -261,7 +261,18 @@ export async function POST(req: NextRequest) {
       const choice = data.choices?.[0];
       const assistantMsg = choice?.message;
 
-      if (!assistantMsg) break;
+      if (!assistantMsg) {
+        // Surface the real reason instead of silently falling through to the
+        // generic handoff message — an invalid/expired API key, billing
+        // issue, or unavailable model would all land here otherwise with no
+        // trace of what actually went wrong.
+        console.error('OpenAI call returned no assistant message.', {
+          status: res.status,
+          error: data.error,
+          round,
+        });
+        break;
+      }
 
       if (assistantMsg.tool_calls?.length) {
         chatMessages.push(assistantMsg);
