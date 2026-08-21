@@ -38,6 +38,16 @@ export default async function InternalDashboard() {
   const { count: propCount } = await supabaseInternalAdmin.from('commercial_properties').select('id', { count: 'exact', head: true });
   const { count: dealCount } = await supabaseInternalAdmin.from('deals').select('id', { count: 'exact', head: true }).not('stage', 'in', '("closed_won","closed_lost")');
 
+  const ninetyDaysOut = new Date();
+  ninetyDaysOut.setDate(ninetyDaysOut.getDate() + 90);
+  const { data: expiringLeases } = await supabaseInternalAdmin
+    .from('commercial_properties')
+    .select('id, title, area, tenant_name, lease_expiry')
+    .eq('deal_type', 'lease')
+    .not('lease_expiry', 'is', null)
+    .lte('lease_expiry', ninetyDaysOut.toISOString().slice(0, 10))
+    .order('lease_expiry', { ascending: true });
+
   return (
     <div className="min-h-screen bg-stone-50">
       <InternalHeader memberName={member.name} role={member.role} />
@@ -55,6 +65,25 @@ export default async function InternalDashboard() {
             <div className="text-xs text-stone-500 mt-1">Open Deals</div>
           </Link>
         </div>
+
+        {expiringLeases && expiringLeases.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
+            <div className="text-xs font-bold uppercase tracking-wide text-amber-700 mb-2">⚠️ Leases Expiring Within 90 Days</div>
+            <div className="space-y-1.5">
+              {expiringLeases.map((p) => {
+                const isPast = new Date(p.lease_expiry) < new Date();
+                return (
+                  <Link key={p.id} href={`/internal/properties/${p.id}`} className="flex items-center justify-between text-sm hover:underline">
+                    <span className="text-stone-800">{p.title} {p.tenant_name && <span className="text-stone-500">— {p.tenant_name}</span>}</span>
+                    <span className={isPast ? 'text-red-600 font-semibold' : 'text-amber-700 font-semibold'}>
+                      {isPast ? 'Expired ' : ''}{new Date(p.lease_expiry).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>

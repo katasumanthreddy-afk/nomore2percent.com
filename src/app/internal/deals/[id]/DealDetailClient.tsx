@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import DealForm from '@/components/internal/DealForm';
+import NotesTimeline from '@/components/internal/NotesTimeline';
 
 interface Deal {
   id: number; deal_name: string; stage: string; client_name: string | null; client_contact: string | null;
@@ -109,10 +110,14 @@ export default function DealDetailClient({ deal, documents }: { deal: Deal; docu
 
       {deal.notes && (
         <div className="mb-6">
-          <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Notes</div>
+          <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Overview</div>
           <p className="text-sm text-stone-600 bg-white border border-stone-200 rounded-xl p-4">{deal.notes}</p>
         </div>
       )}
+
+      <div className="mb-6">
+        <NotesTimeline dealId={deal.id} />
+      </div>
 
       <div>
         <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Documents</div>

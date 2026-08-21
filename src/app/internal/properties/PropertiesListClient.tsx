@@ -10,7 +10,7 @@ const CommercialPropertyMap = dynamic(() => import('@/components/internal/Commer
 });
 
 interface Property {
-  id: number; title: string; area: string | null; lat: number | null; lng: number | null;
+  id: number; title: string; area: string | null; address: string | null; lat: number | null; lng: number | null;
   property_type: string; deal_type: string; status: string;
   price_label: string | null; lease_rate_label: string | null; sqft: number | null;
 }
@@ -27,12 +27,19 @@ export default function PropertiesListClient() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'map'>('list');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetch('/api/internal/properties').then((r) => r.json()).then((d) => { if (d.success) setProperties(d.properties); }).finally(() => setLoading(false));
   }, []);
 
-  const filtered = statusFilter === 'all' ? properties : properties.filter((p) => p.status === statusFilter);
+  const filtered = properties
+    .filter((p) => statusFilter === 'all' || p.status === statusFilter)
+    .filter((p) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return p.title?.toLowerCase().includes(q) || p.area?.toLowerCase().includes(q) || p.address?.toLowerCase().includes(q);
+    });
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
@@ -44,6 +51,12 @@ export default function PropertiesListClient() {
       </div>
 
       <div className="flex items-center gap-2 mb-5 flex-wrap">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search title, area, address..."
+          className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs w-56"
+        />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs">
           <option value="all">All Status</option>
           <option value="available">Available</option>

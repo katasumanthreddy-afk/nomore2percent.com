@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import PropertyForm from '@/components/internal/PropertyForm';
+import NotesTimeline from '@/components/internal/NotesTimeline';
 
 interface Property {
   id: number; title: string; address: string | null; area: string | null;
@@ -127,10 +128,14 @@ export default function PropertyDetailClient({ property, deals, documents }: { p
 
       {property.notes && (
         <div className="mb-6">
-          <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Notes</div>
+          <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Overview</div>
           <p className="text-sm text-stone-600 bg-white border border-stone-200 rounded-xl p-4">{property.notes}</p>
         </div>
       )}
+
+      <div className="mb-6">
+        <NotesTimeline propertyId={property.id} />
+      </div>
 
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">

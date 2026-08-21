@@ -21,24 +21,38 @@ const STAGES = [
 export default function DealsListClient() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetch('/api/internal/deals').then((r) => r.json()).then((d) => { if (d.success) setDeals(d.deals); }).finally(() => setLoading(false));
   }, []);
 
+  const filteredDeals = deals.filter((d) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return d.deal_name?.toLowerCase().includes(q) || d.client_name?.toLowerCase().includes(q) || d.commercial_properties?.title?.toLowerCase().includes(q);
+  });
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <h1 className="font-serif text-2xl font-bold text-stone-900">Deals</h1>
         <Link href="/internal/deals/new" className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 text-sm font-bold transition-colors">+ Add Deal</Link>
       </div>
+
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search deal name, client, or property..."
+        className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs w-72 mb-6"
+      />
 
       {loading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-16 bg-stone-200 rounded-xl animate-pulse" />)}</div>
       ) : (
         <div className="space-y-6">
           {STAGES.map((stage) => {
-            const inStage = deals.filter((d) => d.stage === stage.v);
+            const inStage = filteredDeals.filter((d) => d.stage === stage.v);
             if (inStage.length === 0) return null;
             return (
               <div key={stage.v}>
@@ -60,7 +74,7 @@ export default function DealsListClient() {
               </div>
             );
           })}
-          {deals.length === 0 && <div className="bg-white border border-dashed border-stone-300 rounded-xl p-14 text-center text-sm text-stone-400">No deals yet.</div>}
+          {filteredDeals.length === 0 && <div className="bg-white border border-dashed border-stone-300 rounded-xl p-14 text-center text-sm text-stone-400">{search ? 'No deals match your search.' : 'No deals yet.'}</div>}
         </div>
       )}
     </div>
