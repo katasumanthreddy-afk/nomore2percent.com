@@ -112,6 +112,9 @@ export default function RequirementsListClient() {
           <Link href="/internal/requirements/scouts" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">
             External Scouts
           </Link>
+          <Link href="/internal/requirements/scout-submissions" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">
+            Scout Submissions
+          </Link>
           <Link href="/internal/requirements/bulk-import" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">
             Bulk Import
           </Link>
