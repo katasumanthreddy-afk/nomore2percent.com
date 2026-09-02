@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createInternalServerClient } from '@/lib/supabase-internal-server';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
+import { distanceInMeters } from '@/lib/geo-utils';
 import InternalHeader from '@/components/internal/InternalHeader';
 import PropertyDetailClient from './PropertyDetailClient';
 
@@ -20,10 +21,18 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   const { data: deals } = await supabaseInternalAdmin.from('deals').select('id, deal_name, stage').eq('property_id', id);
   const { data: documents } = await supabaseInternalAdmin.from('documents').select('*').eq('property_id', id).order('created_at', { ascending: false });
 
+  let matchingRequirements: { id: number; title: string; status: string }[] = [];
+  if (property.lat != null && property.lng != null) {
+    const { data: requirements } = await supabaseInternalAdmin.from('site_requirements').select('id, title, status, lat, lng, radius_max_m').neq('status', 'closed');
+    matchingRequirements = (requirements || [])
+      .filter((r) => distanceInMeters(r.lat, r.lng, property.lat, property.lng) <= r.radius_max_m)
+      .map((r) => ({ id: r.id, title: r.title, status: r.status }));
+  }
+
   return (
     <div className="min-h-screen bg-stone-50">
       <InternalHeader memberName={member.name} role={member.role} />
-      <PropertyDetailClient property={property} deals={deals || []} documents={documents || []} />
+      <PropertyDetailClient property={property} deals={deals || []} documents={documents || []} matchingRequirements={matchingRequirements} />
     </div>
   );
 }

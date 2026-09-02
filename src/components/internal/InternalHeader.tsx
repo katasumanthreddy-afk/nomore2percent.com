@@ -26,6 +26,7 @@ export default function InternalHeader({ memberName, role }: { memberName: strin
         </Link>
         <nav className="flex items-center gap-5">
           <Link href="/internal/properties" className={linkClass('/internal/properties')}>Properties</Link>
+          <Link href="/internal/requirements" className={linkClass('/internal/requirements')}>Requirements</Link>
           <Link href="/internal/deals" className={linkClass('/internal/deals')}>Deals</Link>
           {role === 'owner' && <Link href="/internal/team" className={linkClass('/internal/team')}>Team</Link>}
         </nav>

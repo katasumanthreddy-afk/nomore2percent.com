@@ -22,7 +22,7 @@ const STATUS_BADGE: Record<string, string> = {
   off_market: 'bg-red-50 text-red-600 border-red-200',
 };
 
-export default function PropertyDetailClient({ property, deals, documents }: { property: Property; deals: Deal[]; documents: Doc[] }) {
+export default function PropertyDetailClient({ property, deals, documents, matchingRequirements }: { property: Property; deals: Deal[]; documents: Doc[]; matchingRequirements?: { id: number; title: string; status: string }[] }) {
   const [editing, setEditing] = useState(false);
   const [docs, setDocs] = useState(documents);
   const [uploading, setUploading] = useState(false);
@@ -136,6 +136,20 @@ export default function PropertyDetailClient({ property, deals, documents }: { p
       <div className="mb-6">
         <NotesTimeline propertyId={property.id} />
       </div>
+
+      {matchingRequirements && matchingRequirements.length > 0 && (
+        <div className="mb-6">
+          <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Satisfies These Site Requirements</div>
+          <div className="bg-orange-50 border border-orange-200 rounded-xl divide-y divide-orange-100">
+            {matchingRequirements.map((r) => (
+              <Link key={r.id} href={`/internal/requirements/${r.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-orange-100/50 transition-colors text-sm">
+                <span className="font-medium text-stone-800">{r.title}</span>
+                <span className="text-xs text-orange-600 font-semibold capitalize">{r.status}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">

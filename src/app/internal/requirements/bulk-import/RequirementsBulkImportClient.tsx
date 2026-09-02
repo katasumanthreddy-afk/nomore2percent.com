@@ -5,15 +5,16 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { parseCoordList } from '@/lib/parse-coord-list';
 
-export default function BulkImportClient() {
+export default function RequirementsBulkImportClient() {
   const router = useRouter();
   const [text, setText] = useState('');
+  const [radiusMin, setRadiusMin] = useState('500');
+  const [radiusMax, setRadiusMax] = useState('1000');
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
 
   const rows = useMemo(() => parseCoordList(text), [text]);
-
   const validRows = rows.filter((r) => r.valid);
   const invalidRows = rows.filter((r) => !r.valid);
 
@@ -22,15 +23,19 @@ export default function BulkImportClient() {
     if (validRows.length === 0) { setError('No valid coordinates to import.'); return; }
     setImporting(true);
     try {
-      const res = await fetch('/api/internal/properties/bulk', {
+      const res = await fetch('/api/internal/requirements/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ properties: validRows.map((r) => ({ title: r.title, lat: r.lat, lng: r.lng })) }),
+        body: JSON.stringify({
+          requirements: validRows.map((r) => ({ title: r.title, lat: r.lat, lng: r.lng })),
+          radius_min_m: parseInt(radiusMin) || 500,
+          radius_max_m: parseInt(radiusMax) || 1000,
+        }),
       });
       const data = await res.json();
       if (!data.success) { setError(data.message || 'Import failed.'); setImporting(false); return; }
-      setResult(`Added ${data.created} properties.`);
-      setTimeout(() => router.push('/internal/properties'), 1200);
+      setResult(`Added ${data.created} site requirements.`);
+      setTimeout(() => router.push('/internal/requirements'), 1200);
     } catch {
       setError('Something went wrong. Please try again.');
       setImporting(false);
@@ -39,23 +44,35 @@ export default function BulkImportClient() {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
-      <Link href="/internal/properties" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Properties</Link>
-      <h1 className="font-serif text-2xl font-bold text-stone-900 mb-1">Bulk Import from Coordinates</h1>
+      <Link href="/internal/requirements" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Site Requirements</Link>
+      <h1 className="font-serif text-2xl font-bold text-stone-900 mb-1">Bulk Import Site Requirements</h1>
       <p className="text-stone-500 text-sm mb-6">
-        Paste one location per line. Each property gets pinned on the map immediately — you can fill in type, price, and other details afterward from its own page.
+        Paste your list of target locations. Each becomes a search zone on the map — properties you add later are automatically flagged when they fall inside one.
       </p>
 
       <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Min Radius (meters)</label>
+            <input type="number" value={radiusMin} onChange={(e) => setRadiusMin(e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Max Radius (meters)</label>
+            <input type="number" value={radiusMax} onChange={(e) => setRadiusMax(e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400" />
+          </div>
+        </div>
+        <p className="text-[11px] text-stone-400 -mt-2">Applies to every location in this batch — e.g. 500 / 1000 for a 500m–1km search radius. You can adjust per-location afterward if needed.</p>
+
         <div>
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Paste Your List</label>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-orange-400 h-40 font-mono"
-            placeholder={'26. Khaitlapur\nLAT: 17.46884 | LONG: 78.41343\n\n27. Chaitanyapuri\nLAT: 17.37385 | LONG: 78.541406\n\n— or —\n\nKondapur Site, 17.474417, 78.345472'}
+            className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-orange-400 h-48 font-mono"
+            placeholder={'26. Khaitlapur\nLAT: 17.46884 | LONG: 78.41343\n\n27. Chaitanyapuri\nLAT: 17.37385 | LONG: 78.541406'}
           />
           <p className="text-[11px] text-stone-400 mt-1.5">
-            Two formats work: a title line followed by a <code className="bg-stone-100 px-1 rounded">LAT: .. | LONG: ..</code> line (numbering like "26." is stripped automatically), or everything on one line as <code className="bg-stone-100 px-1 rounded">Title, latitude, longitude</code>. Comma or tab separated also works for pasting from a spreadsheet. Decimal degrees only, not DMS format.
+            Title line followed by a <code className="bg-stone-100 px-1 rounded">LAT: .. | LONG: ..</code> line, or everything on one line as <code className="bg-stone-100 px-1 rounded">Title, latitude, longitude</code>. Decimal degrees only.
           </p>
         </div>
 
@@ -89,7 +106,7 @@ export default function BulkImportClient() {
           disabled={importing || validRows.length === 0}
           className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white rounded-lg py-3 text-sm font-bold transition-colors"
         >
-          {importing ? 'Importing...' : `Import ${validRows.length || ''} Propert${validRows.length === 1 ? 'y' : 'ies'}`}
+          {importing ? 'Importing...' : `Import ${validRows.length || ''} Location${validRows.length === 1 ? '' : 's'}`}
         </button>
       </div>
     </div>

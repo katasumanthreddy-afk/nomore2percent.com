@@ -10,21 +10,25 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
   const { id } = await params;
 
-  const { data: property, error } = await supabaseInternalAdmin.from('commercial_properties').select('*').eq('id', id).single();
-  if (error || !property) return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
+  const { data: requirement, error } = await supabaseInternalAdmin
+    .from('site_requirements')
+    .select('*, commercial_properties(id, title, area, status)')
+    .eq('id', id)
+    .single();
+  if (error || !requirement) return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
 
-  const { data: deals } = await supabaseInternalAdmin.from('deals').select('id, deal_name, stage').eq('property_id', id);
-  const { data: documents } = await supabaseInternalAdmin.from('documents').select('*').eq('property_id', id).order('created_at', { ascending: false });
+  const { data: properties } = await supabaseInternalAdmin
+    .from('commercial_properties')
+    .select('id, title, area, status, property_type, deal_type, price_label, lease_rate_label, lat, lng')
+    .not('lat', 'is', null)
+    .not('lng', 'is', null);
 
-  let matchingRequirements: any[] = [];
-  if (property.lat != null && property.lng != null) {
-    const { data: requirements } = await supabaseInternalAdmin.from('site_requirements').select('id, title, status, lat, lng, radius_max_m').neq('status', 'closed');
-    matchingRequirements = (requirements || [])
-      .filter((r) => distanceInMeters(r.lat, r.lng, property.lat, property.lng) <= r.radius_max_m)
-      .map((r) => ({ id: r.id, title: r.title, status: r.status }));
-  }
+  const nearby = (properties || [])
+    .map((p) => ({ ...p, distance_m: Math.round(distanceInMeters(requirement.lat, requirement.lng, p.lat, p.lng)) }))
+    .filter((p) => p.distance_m <= requirement.radius_max_m)
+    .sort((a, b) => a.distance_m - b.distance_m);
 
-  return NextResponse.json({ success: true, property, deals: deals || [], documents: documents || [], matchingRequirements });
+  return NextResponse.json({ success: true, requirement, nearby });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -34,13 +38,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   const { id } = await params;
   const body = await req.json();
-  delete body.created_by;
 
   const { error } = await supabaseInternalAdmin
-    .from('commercial_properties')
+    .from('site_requirements')
     .update({ ...body, updated_at: new Date().toISOString() })
     .eq('id', id);
-
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
@@ -51,7 +53,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ success: false, message: 'Not authorized' }, { status: 403 });
   }
   const { id } = await params;
-  const { error } = await supabaseInternalAdmin.from('commercial_properties').delete().eq('id', id);
+  const { error } = await supabaseInternalAdmin.from('site_requirements').delete().eq('id', id);
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
