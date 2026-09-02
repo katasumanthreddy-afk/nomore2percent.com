@@ -16,6 +16,8 @@ interface Requirement {
   radius_min_m: number; radius_max_m: number; status: string; notes: string | null;
   matched_property_id: number | null;
   commercial_properties: { id: number; title: string } | null;
+  assigned_team_member: { id: number; name: string } | null;
+  assigned_scout: { id: number; name: string } | null;
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -29,6 +31,13 @@ export default function RequirementDetailClient({ requirementId }: { requirement
   const [requirement, setRequirement] = useState<Requirement | null>(null);
   const [nearby, setNearby] = useState<NearbyProperty[]>([]);
   const [loading, setLoading] = useState(true);
+  const [team, setTeam] = useState<{ id: number; name: string }[]>([]);
+  const [scouts, setScouts] = useState<{ id: number; name: string }[]>([]);
+
+  useEffect(() => {
+    fetch('/api/internal/team').then((r) => r.json()).then((d) => d.success && setTeam(d.members.filter((m: any) => m.status === 'active')));
+    fetch('/api/internal/scouts').then((r) => r.json()).then((d) => d.success && setScouts(d.scouts));
+  }, []);
 
   const load = () => {
     fetch(`/api/internal/requirements/${requirementId}`)
@@ -49,6 +58,13 @@ export default function RequirementDetailClient({ requirementId }: { requirement
     await fetch(`/api/internal/requirements/${requirementId}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ matched_property_id: propertyId, status: 'found' }),
+    });
+    load();
+  };
+
+  const assign = async (patch: { assigned_to_team_member_id?: number | null; assigned_to_scout_id?: number | null }) => {
+    await fetch(`/api/internal/requirements/${requirementId}/assign`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
     });
     load();
   };
@@ -82,6 +98,39 @@ export default function RequirementDetailClient({ requirementId }: { requirement
             {s}
           </button>
         ))}
+      </div>
+
+      <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6">
+        <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Assigned To</div>
+        {requirement.assigned_team_member || requirement.assigned_scout ? (
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-stone-800">
+              {requirement.assigned_team_member ? `${requirement.assigned_team_member.name} (Team)` : `${requirement.assigned_scout?.name} (External Scout)`}
+            </div>
+            <button onClick={() => assign({ assigned_to_team_member_id: null, assigned_to_scout_id: null })} className="text-xs text-red-500 hover:text-red-600">Unassign</button>
+          </div>
+        ) : (
+          <p className="text-sm text-stone-400 mb-3">Not yet assigned to anyone.</p>
+        )}
+        <div className="flex gap-2 mt-3">
+          <select
+            onChange={(e) => e.target.value && assign({ assigned_to_team_member_id: parseInt(e.target.value) })}
+            value=""
+            className="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">Assign to team member...</option>
+            {team.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+          <select
+            onChange={(e) => e.target.value && assign({ assigned_to_scout_id: parseInt(e.target.value) })}
+            value=""
+            className="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">Assign to external scout...</option>
+            {scouts.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+        </div>
+        <Link href="/internal/requirements/scouts" className="text-xs text-orange-500 hover:underline mt-2 inline-block">Manage external scouts →</Link>
       </div>
 
       {requirement.commercial_properties && (

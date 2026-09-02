@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data: requirement, error } = await supabaseInternalAdmin
     .from('site_requirements')
-    .select('*, commercial_properties(id, title, area, status)')
+    .select('*, commercial_properties(id, title, area, status), assigned_team_member:team_members!site_requirements_assigned_to_team_member_id_fkey(id, name), assigned_scout:external_scouts!site_requirements_assigned_to_scout_id_fkey(id, name)')
     .eq('id', id)
     .single();
   if (error || !requirement) return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });

@@ -31,7 +31,7 @@ export async function GET() {
     return { ...r, nearby_count: matchCount };
   });
 
-  return NextResponse.json({ success: true, requirements: withMatches });
+  return NextResponse.json({ success: true, requirements: withMatches, currentMemberId: member.id });
 }
 
 export async function POST(req: NextRequest) {

@@ -13,6 +13,7 @@ interface Requirement {
   id: number; title: string; lat: number; lng: number;
   radius_min_m: number; radius_max_m: number; status: string; nearby_count: number;
   commercial_properties: { id: number; title: string } | null;
+  assigned_to_team_member_id: number | null;
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -23,27 +24,45 @@ const STATUS_BADGE: Record<string, string> = {
 
 export default function RequirementsListClient() {
   const [requirements, setRequirements] = useState<Requirement[]>([]);
+  const [currentMemberId, setCurrentMemberId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'map'>('map');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [assignedFilter, setAssignedFilter] = useState<'all' | 'mine'>('all');
 
   useEffect(() => {
-    fetch('/api/internal/requirements').then((r) => r.json()).then((d) => { if (d.success) setRequirements(d.requirements); }).finally(() => setLoading(false));
+    fetch('/api/internal/requirements').then((r) => r.json()).then((d) => {
+      if (d.success) { setRequirements(d.requirements); setCurrentMemberId(d.currentMemberId); }
+    }).finally(() => setLoading(false));
   }, []);
 
-  const filtered = statusFilter === 'all' ? requirements : requirements.filter((r) => r.status === statusFilter);
+  const filtered = requirements
+    .filter((r) => statusFilter === 'all' || r.status === statusFilter)
+    .filter((r) => assignedFilter === 'all' || r.assigned_to_team_member_id === currentMemberId);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
         <h1 className="font-serif text-2xl font-bold text-stone-900">Site Requirements</h1>
         <div className="flex gap-2">
+          <Link href="/internal/requirements/scouts" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">
+            External Scouts
+          </Link>
           <Link href="/internal/requirements/bulk-import" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">
             Bulk Import
           </Link>
         </div>
       </div>
       <p className="text-stone-500 text-sm mb-6">Target locations where you need to find a property — each has a search radius. Properties you add are automatically checked against these.</p>
+
+      <div className="flex gap-2 mb-3">
+        <button onClick={() => setAssignedFilter('all')} className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${assignedFilter === 'all' ? 'bg-orange-500 text-white border-orange-500' : 'border-stone-200 text-stone-500 hover:border-stone-400'}`}>
+          All Requirements
+        </button>
+        <button onClick={() => setAssignedFilter('mine')} className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${assignedFilter === 'mine' ? 'bg-orange-500 text-white border-orange-500' : 'border-stone-200 text-stone-500 hover:border-stone-400'}`}>
+          Assigned to Me
+        </button>
+      </div>
 
       <div className="flex items-center gap-2 mb-5 flex-wrap">
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs">
