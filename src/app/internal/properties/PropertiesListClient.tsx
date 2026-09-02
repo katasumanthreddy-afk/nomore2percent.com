@@ -45,9 +45,14 @@ export default function PropertiesListClient() {
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <h1 className="font-serif text-2xl font-bold text-stone-900">Commercial Properties</h1>
-        <Link href="/internal/properties/new" className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 text-sm font-bold transition-colors">
-          + Add Property
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/internal/properties/bulk-import" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">
+            Bulk Import
+          </Link>
+          <Link href="/internal/properties/new" className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 text-sm font-bold transition-colors">
+            + Add Property
+          </Link>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 mb-5 flex-wrap">
