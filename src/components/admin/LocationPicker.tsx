@@ -1,7 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
+
+// Pans the map whenever lat/lng changes — needed because Map's defaultCenter
+// only applies once on mount. Without this, typing coordinates that are far
+// from the current view would move the marker but leave it off-screen,
+// looking like nothing happened.
+function MapPanner({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap();
+  useEffect(() => {
+    if (map) map.panTo({ lat, lng });
+  }, [map, lat, lng]);
+  return null;
+}
 
 export default function LocationPicker({
   lat,
@@ -50,6 +62,7 @@ export default function LocationPicker({
             }}
           >
             <AdvancedMarker position={position} />
+            {lat != null && lng != null && <MapPanner lat={lat} lng={lng} />}
           </Map>
         </div>
       </APIProvider>

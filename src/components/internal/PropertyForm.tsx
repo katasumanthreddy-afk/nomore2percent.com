@@ -198,6 +198,27 @@ export default function PropertyForm({ mode, propertyId, initialData, initialPho
 
       <div>
         <div className="text-sm font-bold text-stone-800 mb-3">Location</div>
+
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className={labelClass}>Latitude</label>
+            <input
+              type="number" step="0.000001" value={form.lat ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, lat: e.target.value === '' ? null : parseFloat(e.target.value) }))}
+              placeholder="e.g. 17.474417" className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Longitude</label>
+            <input
+              type="number" step="0.000001" value={form.lng ?? ''}
+              onChange={(e) => setForm((p) => ({ ...p, lng: e.target.value === '' ? null : parseFloat(e.target.value) }))}
+              placeholder="e.g. 78.345472" className={inputClass}
+            />
+          </div>
+        </div>
+        <p className="text-[11px] text-stone-400 mb-3">Type coordinates directly if you already have them (from a scout, GPS, etc.), or click the map below to drop a pin — either way keeps the other in sync.</p>
+
         <LocationPicker lat={form.lat} lng={form.lng} defaultCenter={getAreaCoordinates(form.area)} onChange={(lat, lng) => setForm((p) => ({ ...p, lat, lng }))} />
       </div>
 
