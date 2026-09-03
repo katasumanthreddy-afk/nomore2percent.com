@@ -11,13 +11,13 @@ interface NearbyProperty {
   distance_m: number;
 }
 
+interface Assignment { id: number; name: string; type: 'team' | 'scout' }
+
 interface Requirement {
   id: number; title: string; lat: number; lng: number;
   radius_min_m: number; radius_max_m: number; status: string; notes: string | null;
   matched_property_id: number | null;
   commercial_properties: { id: number; title: string } | null;
-  assigned_team_member: { id: number; name: string } | null;
-  assigned_scout: { id: number; name: string } | null;
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -29,6 +29,7 @@ const STATUS_BADGE: Record<string, string> = {
 export default function RequirementDetailClient({ requirementId }: { requirementId: string }) {
   const router = useRouter();
   const [requirement, setRequirement] = useState<Requirement | null>(null);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [nearby, setNearby] = useState<NearbyProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState<{ id: number; name: string }[]>([]);
@@ -42,7 +43,7 @@ export default function RequirementDetailClient({ requirementId }: { requirement
   const load = () => {
     fetch(`/api/internal/requirements/${requirementId}`)
       .then((r) => r.json())
-      .then((d) => { if (d.success) { setRequirement(d.requirement); setNearby(d.nearby); } })
+      .then((d) => { if (d.success) { setRequirement(d.requirement); setNearby(d.nearby); setAssignments(d.assignments || []); } })
       .finally(() => setLoading(false));
   };
   useEffect(load, [requirementId]);
@@ -62,10 +63,15 @@ export default function RequirementDetailClient({ requirementId }: { requirement
     load();
   };
 
-  const assign = async (patch: { assigned_to_team_member_id?: number | null; assigned_to_scout_id?: number | null }) => {
+  const addAssignee = async (patch: { team_member_id?: number; scout_id?: number }) => {
     await fetch(`/api/internal/requirements/${requirementId}/assign`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
     });
+    load();
+  };
+
+  const removeAssignee = async (assignmentId: number) => {
+    await fetch(`/api/internal/requirements/${requirementId}/assign?assignment_id=${assignmentId}`, { method: 'DELETE' });
     load();
   };
 
@@ -101,32 +107,34 @@ export default function RequirementDetailClient({ requirementId }: { requirement
       </div>
 
       <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6">
-        <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Assigned To</div>
-        {requirement.assigned_team_member || requirement.assigned_scout ? (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-stone-800">
-              {requirement.assigned_team_member ? `${requirement.assigned_team_member.name} (Team)` : `${requirement.assigned_scout?.name} (External Scout)`}
-            </div>
-            <button onClick={() => assign({ assigned_to_team_member_id: null, assigned_to_scout_id: null })} className="text-xs text-red-500 hover:text-red-600">Unassign</button>
+        <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Assigned To ({assignments.length})</div>
+        {assignments.length > 0 ? (
+          <div className="space-y-1.5 mb-3">
+            {assignments.map((a) => (
+              <div key={a.id} className="flex items-center justify-between bg-stone-50 rounded-lg px-3 py-2">
+                <span className="text-sm text-stone-800">{a.name} <span className="text-xs text-stone-400">({a.type === 'team' ? 'Team' : 'External Scout'})</span></span>
+                <button onClick={() => removeAssignee(a.id)} className="text-xs text-red-500 hover:text-red-600">Remove</button>
+              </div>
+            ))}
           </div>
         ) : (
           <p className="text-sm text-stone-400 mb-3">Not yet assigned to anyone.</p>
         )}
         <div className="flex gap-2 mt-3">
           <select
-            onChange={(e) => e.target.value && assign({ assigned_to_team_member_id: parseInt(e.target.value) })}
+            onChange={(e) => { if (e.target.value) { addAssignee({ team_member_id: parseInt(e.target.value) }); e.target.value = ''; } }}
             value=""
             className="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="">Assign to team member...</option>
-            {team.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+            <option value="">+ Add team member...</option>
+            {team.filter((m) => !assignments.some((a) => a.type === 'team' && a.name === m.name)).map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
           </select>
           <select
-            onChange={(e) => e.target.value && assign({ assigned_to_scout_id: parseInt(e.target.value) })}
+            onChange={(e) => { if (e.target.value) { addAssignee({ scout_id: parseInt(e.target.value) }); e.target.value = ''; } }}
             value=""
             className="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm"
           >
-            <option value="">Assign to external scout...</option>
+            <option value="">+ Add external scout...</option>
             {scouts.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>

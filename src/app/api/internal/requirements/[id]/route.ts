@@ -12,10 +12,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data: requirement, error } = await supabaseInternalAdmin
     .from('site_requirements')
-    .select('*, commercial_properties(id, title, area, status), assigned_team_member:team_members!site_requirements_assigned_to_team_member_id_fkey(id, name), assigned_scout:external_scouts!site_requirements_assigned_to_scout_id_fkey(id, name)')
+    .select('*, commercial_properties(id, title, area, status)')
     .eq('id', id)
     .single();
   if (error || !requirement) return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
+
+  const { data: rawAssignments } = await supabaseInternalAdmin
+    .from('requirement_assignments')
+    .select('id, team_member_id, scout_id, team_members(id, name), external_scouts(id, name)')
+    .eq('requirement_id', id);
+
+  const assignments = (rawAssignments || []).map((a) => ({
+    id: a.id,
+    name: a.team_member_id ? (a.team_members as any)?.name : (a.external_scouts as any)?.name,
+    type: a.team_member_id ? 'team' : 'scout',
+  }));
 
   const { data: properties } = await supabaseInternalAdmin
     .from('commercial_properties')
@@ -28,7 +39,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     .filter((p) => p.distance_m <= requirement.radius_max_m)
     .sort((a, b) => a.distance_m - b.distance_m);
 
-  return NextResponse.json({ success: true, requirement, nearby });
+  return NextResponse.json({ success: true, requirement, nearby, assignments });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

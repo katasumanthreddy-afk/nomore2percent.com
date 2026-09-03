@@ -23,12 +23,27 @@ export async function GET() {
     .not('lat', 'is', null)
     .not('lng', 'is', null);
 
+  const { data: assignments } = await supabaseInternalAdmin
+    .from('requirement_assignments')
+    .select('id, requirement_id, team_member_id, scout_id, team_members(id, name), external_scouts(id, name)');
+
   const withMatches = (requirements || []).map((r) => {
     const matchCount = (properties || []).filter((p) => {
       const d = distanceInMeters(r.lat, r.lng, p.lat, p.lng);
       return d <= r.radius_max_m;
     }).length;
-    return { ...r, nearby_count: matchCount };
+    const reqAssignments = (assignments || []).filter((a) => a.requirement_id === r.id);
+    const assignedToMe = reqAssignments.some((a) => a.team_member_id === member.id);
+    return {
+      ...r,
+      nearby_count: matchCount,
+      assignments: reqAssignments.map((a) => ({
+        id: a.id,
+        name: a.team_member_id ? (a.team_members as any)?.name : (a.external_scouts as any)?.name,
+        type: a.team_member_id ? 'team' : 'scout',
+      })),
+      assignedToMe,
+    };
   });
 
   return NextResponse.json({ success: true, requirements: withMatches, currentMemberId: member.id });

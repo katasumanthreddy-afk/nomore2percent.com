@@ -13,7 +13,8 @@ interface Requirement {
   id: number; title: string; lat: number; lng: number;
   radius_min_m: number; radius_max_m: number; status: string; nearby_count: number;
   commercial_properties: { id: number; title: string } | null;
-  assigned_to_team_member_id: number | null;
+  assignments: { id: number; name: string; type: 'team' | 'scout' }[];
+  assignedToMe: boolean;
 }
 
 interface TeamMember { id: number; name: string; status: string }
@@ -55,7 +56,7 @@ export default function RequirementsListClient() {
 
   const filtered = requirements
     .filter((r) => statusFilter === 'all' || r.status === statusFilter)
-    .filter((r) => assignedFilter === 'all' || r.assigned_to_team_member_id === currentMemberId);
+    .filter((r) => assignedFilter === 'all' || r.assignedToMe);
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
@@ -84,10 +85,10 @@ export default function RequirementsListClient() {
       const [type, idStr] = assignTarget.split(':');
       const payload = {
         ids: Array.from(selectedIds),
-        ...(type === 'team' ? { assigned_to_team_member_id: parseInt(idStr) } : { assigned_to_scout_id: parseInt(idStr) }),
+        ...(type === 'team' ? { team_member_id: parseInt(idStr) } : { scout_id: parseInt(idStr) }),
       };
       const res = await fetch('/api/internal/requirements/bulk-assign', {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!data.success) { setAssignResult(data.message || 'Failed.'); return; }
@@ -136,7 +137,7 @@ export default function RequirementsListClient() {
               onChange={(e) => setAssignTarget(e.target.value)}
               className="flex-1 bg-stone-800 border border-stone-700 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-orange-400 text-white"
             >
-              <option value="">Assign selected to...</option>
+              <option value="">Add selected to...</option>
               {team.length > 0 && (
                 <optgroup label="Team">
                   {team.map((m) => <option key={`team:${m.id}`} value={`team:${m.id}`}>{m.name}</option>)}
@@ -197,7 +198,10 @@ export default function RequirementsListClient() {
               <Link href={selectMode ? '#' : `/internal/requirements/${r.id}`} onClick={(e) => selectMode && (e.preventDefault(), toggleSelect(r.id))} className="flex items-center justify-between gap-3 flex-1 min-w-0">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-stone-800">{r.title}</div>
-                  <div className="text-xs text-stone-500">{r.radius_min_m}m – {r.radius_max_m}m radius {r.commercial_properties && `· Matched: ${r.commercial_properties.title}`}</div>
+                  <div className="text-xs text-stone-500">
+                    {r.radius_min_m}m – {r.radius_max_m}m radius {r.commercial_properties && `· Matched: ${r.commercial_properties.title}`}
+                    {r.assignments.length > 0 && ` · Assigned: ${r.assignments.map((a) => a.name).join(', ')}`}
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <span className="text-xs font-semibold text-orange-500">{r.nearby_count} nearby</span>

@@ -20,10 +20,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     return NextResponse.json({ success: false, message: 'Invalid or expired link' }, { status: 404 });
   }
 
+  const { data: assignmentRows } = await supabaseInternalAdmin
+    .from('requirement_assignments')
+    .select('requirement_id')
+    .eq('scout_id', scout.id);
+
+  const requirementIds = (assignmentRows || []).map((a) => a.requirement_id);
+  if (requirementIds.length === 0) {
+    return NextResponse.json({ success: true, scoutName: scout.name, requirements: [] });
+  }
+
   const { data: requirements } = await supabaseInternalAdmin
     .from('site_requirements')
     .select('id, title, lat, lng, radius_min_m, radius_max_m, status, notes')
-    .eq('assigned_to_scout_id', scout.id)
+    .in('id', requirementIds)
     .order('created_at', { ascending: false });
 
   return NextResponse.json({ success: true, scoutName: scout.name, requirements: requirements || [] });
