@@ -14,6 +14,7 @@ interface Property {
 }
 interface Deal { id: number; deal_name: string; stage: string }
 interface Doc { id: number; title: string; document_type: string; created_at: string }
+interface Photo { id: number; url: string | null; is_primary: boolean }
 
 const STATUS_BADGE: Record<string, string> = {
   available: 'bg-emerald-50 text-emerald-600 border-emerald-200',
@@ -22,7 +23,7 @@ const STATUS_BADGE: Record<string, string> = {
   off_market: 'bg-red-50 text-red-600 border-red-200',
 };
 
-export default function PropertyDetailClient({ property, deals, documents, matchingRequirements }: { property: Property; deals: Deal[]; documents: Doc[]; matchingRequirements?: { id: number; title: string; status: string }[] }) {
+export default function PropertyDetailClient({ property, deals, documents, matchingRequirements, photos }: { property: Property; deals: Deal[]; documents: Doc[]; matchingRequirements?: { id: number; title: string; status: string }[]; photos?: Photo[] }) {
   const [editing, setEditing] = useState(false);
   const [docs, setDocs] = useState(documents);
   const [uploading, setUploading] = useState(false);
@@ -83,6 +84,7 @@ export default function PropertyDetailClient({ property, deals, documents, match
             cap_rate: property.cap_rate != null ? String(property.cap_rate) : '', tenant_name: property.tenant_name || '',
             lease_expiry: property.lease_expiry || '', status: property.status, notes: property.notes || '',
           }}
+          initialPhotos={photos}
         />
       </div>
     );
@@ -91,6 +93,15 @@ export default function PropertyDetailClient({ property, deals, documents, match
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <Link href="/internal/properties" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Properties</Link>
+
+      {photos && photos.length > 0 && (
+        <div className="grid grid-cols-4 gap-2 mb-6">
+          {photos.map((p) => p.url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={p.id} src={p.url} alt="" className="aspect-square object-cover rounded-lg" />
+          ))}
+        </div>
+      )}
 
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>

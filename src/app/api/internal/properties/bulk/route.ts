@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     lng: r.lng,
     area: r.area || null,
     property_type: 'office',
-    deal_type: 'sale',
+    deal_type: 'lease',
     status: 'available',
     created_by: member.id,
   }));

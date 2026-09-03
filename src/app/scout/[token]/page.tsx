@@ -22,7 +22,7 @@ const STATUS_LABEL: Record<string, { label: string; className: string }> = {
 function SubmitForm({ token, requirement, onDone }: { token: string; requirement: Requirement; onDone: () => void }) {
   const [title, setTitle] = useState('');
   const [address, setAddress] = useState('');
-  const [priceLabel, setPriceLabel] = useState('');
+  const [pricePerSqft, setPricePerSqft] = useState('');
   const [notes, setNotes] = useState('');
   const [lat, setLat] = useState<number | null>(requirement.lat);
   const [lng, setLng] = useState<number | null>(requirement.lng);
@@ -40,7 +40,7 @@ function SubmitForm({ token, requirement, onDone }: { token: string; requirement
       fd.append('requirement_id', String(requirement.id));
       fd.append('title', title);
       fd.append('address', address);
-      fd.append('price_label', priceLabel);
+      fd.append('price_per_sqft', pricePerSqft);
       fd.append('notes', notes);
       if (lat != null) fd.append('lat', String(lat));
       if (lng != null) fd.append('lng', String(lng));
@@ -73,7 +73,10 @@ function SubmitForm({ token, requirement, onDone }: { token: string; requirement
     <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 mt-2 space-y-3">
       <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Property title (e.g. 'Vacant plot near main road')" className={inputClass} />
       <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Address or landmark" className={inputClass} />
-      <input value={priceLabel} onChange={(e) => setPriceLabel(e.target.value)} placeholder="Price (e.g. ₹85 Lakhs or negotiable)" className={inputClass} />
+      <div>
+        <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1 block">Lease Rate (₹ per sq.ft / month)</label>
+        <input value={pricePerSqft} onChange={(e) => setPricePerSqft(e.target.value)} type="number" step="0.5" placeholder="e.g. 65" className={inputClass} />
+      </div>
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anything else worth knowing" className={inputClass + ' h-20 resize-none'} />
 
       <div>

@@ -24,14 +24,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
   const lat = formData.get('lat') as string | null;
   const lng = formData.get('lng') as string | null;
   const address = formData.get('address') as string | null;
-  const price = formData.get('price') as string | null;
-  const priceLabel = formData.get('price_label') as string | null;
+  const pricePerSqft = formData.get('price_per_sqft') as string | null;
   const notes = formData.get('notes') as string | null;
   const files = formData.getAll('photos') as File[];
 
   if (!title?.trim()) {
     return NextResponse.json({ success: false, message: 'Please give this property a short title.' }, { status: 400 });
   }
+
+  // These are commercial leasing properties — price is always quoted as a
+  // per-sqft monthly rate, not a lump sum, so the label is built
+  // consistently here rather than trusting free text from the submission.
+  const rate = pricePerSqft ? parseFloat(pricePerSqft) : null;
+  const priceLabel = rate ? `₹${rate}/sqft/mo` : null;
 
   const { data: submission, error } = await supabaseInternalAdmin
     .from('scout_submissions')
@@ -42,8 +47,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null,
       address: address || null,
-      price: price ? parseFloat(price) : null,
-      price_label: priceLabel || null,
+      price: rate,
+      price_label: priceLabel,
       notes: notes || null,
     }])
     .select()

@@ -26,11 +26,16 @@ const empty: CommercialFormData = {
   status: 'available', notes: '',
 };
 
-export default function PropertyForm({ mode, propertyId, initialData }: { mode: 'create' | 'edit'; propertyId?: number; initialData?: Partial<CommercialFormData> }) {
+interface ExistingPhoto { id: number; url: string | null }
+
+export default function PropertyForm({ mode, propertyId, initialData, initialPhotos }: { mode: 'create' | 'edit'; propertyId?: number; initialData?: Partial<CommercialFormData>; initialPhotos?: ExistingPhoto[] }) {
   const router = useRouter();
   const [form, setForm] = useState<CommercialFormData>({ ...empty, ...initialData });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [existingPhotos, setExistingPhotos] = useState<ExistingPhoto[]>(initialPhotos || []);
+  const [stagedPhotos, setStagedPhotos] = useState<File[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
   const set = (k: keyof CommercialFormData, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
   const inputClass = "w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-orange-400";
@@ -56,12 +61,42 @@ export default function PropertyForm({ mode, propertyId, initialData }: { mode: 
       });
       const data = await res.json();
       if (!data.success) { setError(data.message || 'Something went wrong.'); setSaving(false); return; }
-      router.push(mode === 'edit' ? `/internal/properties/${propertyId}` : `/internal/properties/${data.property.id}`);
+
+      const newPropertyId = mode === 'edit' ? propertyId! : data.property.id;
+
+      if (stagedPhotos.length > 0) {
+        setUploadingPhotos(true);
+        for (let i = 0; i < stagedPhotos.length; i++) {
+          const fd = new FormData();
+          fd.append('photo', stagedPhotos[i]);
+          fd.append('property_id', String(newPropertyId));
+          fd.append('is_primary', String(existingPhotos.length === 0 && i === 0));
+          await fetch('/api/internal/properties/photos', { method: 'POST', body: fd });
+        }
+        setUploadingPhotos(false);
+      }
+
+      router.push(`/internal/properties/${newPropertyId}`);
       router.refresh();
     } catch {
       setError('Something went wrong. Please try again.');
       setSaving(false);
     }
+  };
+
+  const addStagedPhotos = (files: FileList | null) => {
+    if (!files) return;
+    setStagedPhotos((prev) => [...prev, ...Array.from(files)]);
+  };
+
+  const removeStagedPhoto = (idx: number) => {
+    setStagedPhotos((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeExistingPhoto = async (id: number) => {
+    if (!confirm('Remove this photo?')) return;
+    await fetch(`/api/internal/properties/photos?id=${id}`, { method: 'DELETE' });
+    setExistingPhotos((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
@@ -123,6 +158,45 @@ export default function PropertyForm({ mode, propertyId, initialData }: { mode: 
       </div>
 
       <div>
+        <div className="text-sm font-bold text-stone-800 mb-3">Photos</div>
+
+        {existingPhotos.length > 0 && (
+          <div className="grid grid-cols-4 gap-2 mb-3">
+            {existingPhotos.map((p) => (
+              <div key={p.id} className="relative aspect-square rounded-lg overflow-hidden bg-stone-100 group">
+                {p.url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.url} alt="" className="w-full h-full object-cover" />
+                )}
+                <button onClick={() => removeExistingPhoto(p.id)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs">✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {stagedPhotos.length > 0 && (
+          <div className="grid grid-cols-4 gap-2 mb-3">
+            {stagedPhotos.map((f, i) => (
+              <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-stone-100 group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
+                <button onClick={() => removeStagedPhoto(i)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs">✕</button>
+                <span className="absolute bottom-1 left-1 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">New</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="border-2 border-dashed border-stone-300 rounded-xl p-5 text-center hover:border-orange-300 transition-colors">
+          <p className="text-sm text-stone-500 mb-2">Add photos of the property</p>
+          <label className="inline-block bg-stone-100 hover:bg-stone-200 text-stone-700 text-sm font-semibold rounded-lg px-4 py-2 cursor-pointer transition-colors">
+            Choose Files
+            <input type="file" multiple accept="image/*" onChange={(e) => addStagedPhotos(e.target.files)} className="hidden" />
+          </label>
+        </div>
+      </div>
+
+      <div>
         <div className="text-sm font-bold text-stone-800 mb-3">Location</div>
         <LocationPicker lat={form.lat} lng={form.lng} defaultCenter={getAreaCoordinates(form.area)} onChange={(lat, lng) => setForm((p) => ({ ...p, lat, lng }))} />
       </div>
@@ -130,7 +204,7 @@ export default function PropertyForm({ mode, propertyId, initialData }: { mode: 
       {error && <div className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</div>}
 
       <button onClick={submit} disabled={saving} className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-lg py-3 text-sm font-bold transition-colors">
-        {saving ? 'Saving...' : mode === 'edit' ? 'Save Changes' : 'Add Property'}
+        {uploadingPhotos ? 'Uploading photos...' : saving ? 'Saving...' : mode === 'edit' ? 'Save Changes' : 'Add Property'}
       </button>
     </div>
   );

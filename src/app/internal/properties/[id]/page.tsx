@@ -20,6 +20,14 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
 
   const { data: deals } = await supabaseInternalAdmin.from('deals').select('id, deal_name, stage').eq('property_id', id);
   const { data: documents } = await supabaseInternalAdmin.from('documents').select('*').eq('property_id', id).order('created_at', { ascending: false });
+  const { data: rawPhotos } = await supabaseInternalAdmin.from('property_images').select('*').eq('property_id', id).order('is_primary', { ascending: false });
+
+  const photos = await Promise.all(
+    (rawPhotos || []).map(async (p) => {
+      const { data } = await supabaseInternalAdmin.storage.from('commercial-property-photos').createSignedUrl(p.storage_path, 3600);
+      return { id: p.id, url: data?.signedUrl || null, is_primary: p.is_primary };
+    })
+  );
 
   let matchingRequirements: { id: number; title: string; status: string }[] = [];
   if (property.lat != null && property.lng != null) {
@@ -32,7 +40,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
   return (
     <div className="min-h-screen bg-stone-50">
       <InternalHeader memberName={member.name} role={member.role} />
-      <PropertyDetailClient property={property} deals={deals || []} documents={documents || []} matchingRequirements={matchingRequirements} />
+      <PropertyDetailClient property={property} deals={deals || []} documents={documents || []} matchingRequirements={matchingRequirements} photos={photos} />
     </div>
   );
 }

@@ -19,9 +19,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .from('commercial_properties')
     .insert([{
       title: submission.title, lat: submission.lat, lng: submission.lng, address: submission.address,
-      price: submission.price, price_label: submission.price_label,
+      lease_rate: submission.price, lease_rate_label: submission.price_label,
       notes: submission.notes ? `Submitted by scout: ${submission.notes}` : 'Submitted by an external scout.',
-      property_type: 'office', deal_type: 'sale', status: 'available',
+      property_type: 'office', deal_type: 'lease', status: 'available',
       created_by: member.id,
     }])
     .select()
