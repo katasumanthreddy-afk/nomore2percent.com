@@ -105,6 +105,9 @@ export default function RequirementsListClient() {
       <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
         <h1 className="font-serif text-2xl font-bold text-stone-900">Site Requirements</h1>
         <div className="flex gap-2">
+          <Link href="/internal/requirements/matches" className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 text-sm font-bold transition-colors">
+            View Matches
+          </Link>
           {!selectMode && (
             <button onClick={() => setSelectMode(true)} className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">
               Select Multiple
