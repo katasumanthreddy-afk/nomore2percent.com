@@ -2,14 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+const MatchesMap = dynamic(() => import('@/components/internal/MatchesMap'), {
+  ssr: false,
+  loading: () => <div className="h-[600px] rounded-xl bg-stone-200 animate-pulse" />,
+});
 
 interface Match {
   id: number; title: string; area: string | null; status: string; deal_type: string;
-  price_label: string | null; lease_rate_label: string | null; distance_m: number;
+  price_label: string | null; lease_rate_label: string | null; distance_m: number; lat: number; lng: number;
 }
 
 interface RequirementResult {
-  id: number; title: string; radius_max_m: number; status: string;
+  id: number; title: string; lat: number; lng: number; radius_max_m: number; status: string;
   matched_property_id: number | null; matches: Match[];
 }
 
@@ -22,6 +28,7 @@ export default function MatchesClient() {
   const [results, setResults] = useState<RequirementResult[]>([]);
   const [totalMatches, setTotalMatches] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     fetch('/api/internal/requirements/matches')
@@ -34,7 +41,15 @@ export default function MatchesClient() {
     <div className="max-w-4xl mx-auto px-6 py-8">
       <Link href="/internal/requirements" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Site Requirements</Link>
 
-      <h1 className="font-serif text-2xl font-bold text-stone-900 mb-1">Requirement Matches</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+        <h1 className="font-serif text-2xl font-bold text-stone-900">Requirement Matches</h1>
+        {results.length > 0 && (
+          <div className="flex border border-stone-200 rounded-lg overflow-hidden">
+            <button onClick={() => setView('list')} className={`px-3 py-1.5 text-xs font-semibold ${view === 'list' ? 'bg-orange-500 text-white' : 'text-stone-500'}`}>List</button>
+            <button onClick={() => setView('map')} className={`px-3 py-1.5 text-xs font-semibold ${view === 'map' ? 'bg-orange-500 text-white' : 'text-stone-500'}`}>Map</button>
+          </div>
+        )}
+      </div>
       <p className="text-stone-500 text-sm mb-6">
         Every open requirement that currently has a property within its search radius — computed automatically from live coordinates, no manual checking needed. New properties show up here the moment they're added, if they fall in range of anything.
       </p>
@@ -47,33 +62,38 @@ export default function MatchesClient() {
             {results.length} requirement{results.length === 1 ? '' : 's'} with candidates · {totalMatches} total matches
           </div>
 
-          <div className="space-y-4">
-            {results.map((r) => (
-              <div key={r.id} className="bg-white border border-stone-200 rounded-xl overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
-                  <Link href={`/internal/requirements/${r.id}`} className="font-semibold text-stone-800 hover:text-orange-500">{r.title}</Link>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-orange-500">{r.matches.length} match{r.matches.length === 1 ? '' : 'es'}</span>
-                    <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${STATUS_BADGE[r.status] || ''}`}>{r.status}</span>
+          {view === 'map' ? (
+            <MatchesMap results={results} />
+          ) : (
+            <div className="space-y-4">
+              {results.map((r) => (
+                <div key={r.id} className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
+                    <Link href={`/internal/requirements/${r.id}`} className="font-semibold text-stone-800 hover:text-orange-500">{r.title}</Link>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-orange-500">{r.matches.length} match{r.matches.length === 1 ? '' : 'es'}</span>
+                      <span className={`text-[11px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${STATUS_BADGE[r.status] || ''}`}>{r.status}</span>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-stone-50">
+                    {r.matches.map((m) => (
+                      <Link key={m.id} href={`/internal/properties/${m.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-stone-50 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
+                          <span className="text-sm text-stone-700">{m.title}</span>
+                          {r.matched_property_id === m.id && <span className="text-[10px] font-bold text-emerald-600">✓ CONFIRMED MATCH</span>}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-stone-500">{m.deal_type === 'lease' ? m.lease_rate_label : m.price_label}</span>
+                          <span className="font-semibold text-orange-500">{m.distance_m}m</span>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 </div>
-                <div className="divide-y divide-stone-50">
-                  {r.matches.map((m) => (
-                    <Link key={m.id} href={`/internal/properties/${m.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-stone-50 transition-colors">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-stone-700">{m.title}</span>
-                        {r.matched_property_id === m.id && <span className="text-[10px] font-bold text-emerald-600">✓ CONFIRMED MATCH</span>}
-                      </div>
-                      <div className="flex items-center gap-3 text-xs">
-                        <span className="text-stone-500">{m.deal_type === 'lease' ? m.lease_rate_label : m.price_label}</span>
-                        <span className="font-semibold text-orange-500">{m.distance_m}m</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </>
       ) : (
         <div className="bg-white border border-dashed border-stone-300 rounded-xl p-14 text-center text-sm text-stone-400">
