@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
-const UnifiedMap = dynamic(() => import('@/components/internal/UnifiedMap'), {
+const SiteMap = dynamic(() => import('@/components/internal/SiteMap'), {
   ssr: false,
   loading: () => <div className="h-[650px] rounded-xl bg-stone-200 animate-pulse" />,
 });
@@ -15,7 +15,7 @@ export interface Property {
 }
 
 export interface Requirement {
-  id: number; title: string; lat: number; lng: number; status: string;
+  id: number; title: string; lat: number; lng: number; status: string; radius_max_m: number;
 }
 
 export default function UnifiedMapClient() {
@@ -39,6 +39,20 @@ export default function UnifiedMapClient() {
   const visibleProperties = dealTypeFilter === 'lease' ? properties.filter((p) => p.deal_type === 'lease') : properties;
   const selectedRequirement = requirements.find((r) => r.id === selectedRequirementId) || null;
 
+  const highlightPropertyIds = new Set<number>();
+  if (selectedRequirement) {
+    const R = 6371000;
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    for (const p of visibleProperties) {
+      if (p.lat == null || p.lng == null) continue;
+      const dLat = toRad(p.lat - selectedRequirement.lat);
+      const dLng = toRad(p.lng - selectedRequirement.lng);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(selectedRequirement.lat)) * Math.cos(toRad(p.lat)) * Math.sin(dLng / 2) ** 2;
+      const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      if (distance <= radiusMeters) highlightPropertyIds.add(p.id);
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
@@ -55,12 +69,14 @@ export default function UnifiedMapClient() {
           {loading ? (
             <div className="h-[650px] bg-stone-200 rounded-xl animate-pulse" />
           ) : (
-            <UnifiedMap
-              properties={visibleProperties}
+            <SiteMap
+              properties={visibleProperties.filter((p): p is Property & { lat: number; lng: number } => p.lat != null && p.lng != null)}
               requirements={requirements}
-              radiusMeters={radiusMeters}
               selectedRequirementId={selectedRequirementId}
+              adjustableRadiusM={radiusMeters}
+              highlightPropertyIds={highlightPropertyIds}
               onSelectRequirement={setSelectedRequirementId}
+              height="650px"
             />
           )}
         </div>

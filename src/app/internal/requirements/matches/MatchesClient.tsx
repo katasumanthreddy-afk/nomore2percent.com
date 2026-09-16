@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
-const MatchesMap = dynamic(() => import('@/components/internal/MatchesMap'), {
+const SiteMap = dynamic(() => import('@/components/internal/SiteMap'), {
   ssr: false,
   loading: () => <div className="h-[600px] rounded-xl bg-stone-200 animate-pulse" />,
 });
@@ -29,6 +29,11 @@ export default function MatchesClient() {
   const [totalMatches, setTotalMatches] = useState(0);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'map'>('list');
+
+  const matchedPropertiesById: Record<number, Match> = {};
+  results.forEach((r) => r.matches.forEach((m) => { matchedPropertiesById[m.id] = m; }));
+  const matchedProperties = Object.values(matchedPropertiesById);
+  const allMatchedIds = new Set(matchedProperties.map((p) => p.id));
 
   useEffect(() => {
     fetch('/api/internal/requirements/matches')
@@ -63,7 +68,7 @@ export default function MatchesClient() {
           </div>
 
           {view === 'map' ? (
-            <MatchesMap results={results} />
+            <SiteMap properties={matchedProperties} requirements={results} showAllRadiusCircles highlightPropertyIds={allMatchedIds} height="600px" />
           ) : (
             <div className="space-y-4">
               {results.map((r) => (

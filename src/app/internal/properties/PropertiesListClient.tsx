@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
-const CommercialPropertyMap = dynamic(() => import('@/components/internal/CommercialPropertyMap'), {
+const SiteMap = dynamic(() => import('@/components/internal/SiteMap'), {
   ssr: false,
   loading: () => <div className="h-[550px] rounded-xl bg-stone-200 animate-pulse" />,
 });
@@ -78,7 +78,7 @@ export default function PropertiesListClient() {
       {loading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-20 bg-stone-200 rounded-xl animate-pulse" />)}</div>
       ) : view === 'map' ? (
-        <CommercialPropertyMap properties={filtered} />
+        <SiteMap properties={filtered.filter((p): p is Property & { lat: number; lng: number } => p.lat != null && p.lng != null)} height="550px" />
       ) : filtered.length > 0 ? (
         <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
           {filtered.map((p) => (

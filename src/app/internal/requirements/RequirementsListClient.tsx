@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
-const RequirementsMap = dynamic(() => import('@/components/internal/RequirementsMap'), {
+const SiteMap = dynamic(() => import('@/components/internal/SiteMap'), {
   ssr: false,
   loading: () => <div className="h-[600px] rounded-xl bg-stone-200 animate-pulse" />,
 });
@@ -190,7 +190,7 @@ export default function RequirementsListClient() {
       {loading ? (
         <div className="h-[400px] bg-stone-200 rounded-xl animate-pulse" />
       ) : view === 'map' ? (
-        <RequirementsMap requirements={filtered} selectionMode={selectMode} selectedIds={selectedIds} onToggleSelect={toggleSelect} />
+        <SiteMap requirements={filtered} showAllRadiusCircles={!selectMode} selectionMode={selectMode} selectedIds={selectedIds} onToggleSelect={toggleSelect} height="600px" />
       ) : filtered.length > 0 ? (
         <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
           {filtered.map((r) => (
