@@ -19,6 +19,7 @@ interface Requirement {
 
 interface TeamMember { id: number; name: string; status: string }
 interface Scout { id: number; name: string }
+interface Property { id: number; title: string; lat: number; lng: number; deal_type: string; price_label: string | null; lease_rate_label: string | null; area: string | null }
 
 const STATUS_BADGE: Record<string, string> = {
   searching: 'bg-orange-50 text-orange-600 border-orange-200',
@@ -28,6 +29,7 @@ const STATUS_BADGE: Record<string, string> = {
 
 export default function RequirementsListClient() {
   const [requirements, setRequirements] = useState<Requirement[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [currentMemberId, setCurrentMemberId] = useState<number | null>(null);
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [scouts, setScouts] = useState<Scout[]>([]);
@@ -52,6 +54,7 @@ export default function RequirementsListClient() {
   useEffect(() => {
     fetch('/api/internal/team').then((r) => r.json()).then((d) => d.success && setTeam(d.members.filter((m: TeamMember) => m.status === 'active')));
     fetch('/api/internal/scouts').then((r) => r.json()).then((d) => d.success && setScouts(d.scouts));
+    fetch('/api/internal/properties').then((r) => r.json()).then((d) => d.success && setProperties(d.properties.filter((p: any) => p.lat != null && p.lng != null)));
   }, []);
 
   const filtered = requirements
@@ -190,7 +193,7 @@ export default function RequirementsListClient() {
       {loading ? (
         <div className="h-[400px] bg-stone-200 rounded-xl animate-pulse" />
       ) : view === 'map' ? (
-        <SiteMap requirements={filtered} showAllRadiusCircles={!selectMode} selectionMode={selectMode} selectedIds={selectedIds} onToggleSelect={toggleSelect} height="600px" />
+        <SiteMap requirements={filtered} properties={properties} showAllRadiusCircles={!selectMode} selectionMode={selectMode} selectedIds={selectedIds} onToggleSelect={toggleSelect} height="600px" />
       ) : filtered.length > 0 ? (
         <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
           {filtered.map((r) => (

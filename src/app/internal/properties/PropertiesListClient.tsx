@@ -15,6 +15,8 @@ interface Property {
   price_label: string | null; lease_rate_label: string | null; sqft: number | null;
 }
 
+interface Requirement { id: number; title: string; lat: number; lng: number; radius_max_m: number; status: string; nearby_count?: number }
+
 const STATUS_BADGE: Record<string, string> = {
   available: 'bg-emerald-50 text-emerald-600 border-emerald-200',
   under_negotiation: 'bg-amber-50 text-amber-600 border-amber-200',
@@ -24,6 +26,7 @@ const STATUS_BADGE: Record<string, string> = {
 
 export default function PropertiesListClient() {
   const [properties, setProperties] = useState<Property[]>([]);
+  const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'map'>('list');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -31,6 +34,7 @@ export default function PropertiesListClient() {
 
   useEffect(() => {
     fetch('/api/internal/properties').then((r) => r.json()).then((d) => { if (d.success) setProperties(d.properties); }).finally(() => setLoading(false));
+    fetch('/api/internal/requirements').then((r) => r.json()).then((d) => { if (d.success) setRequirements(d.requirements); });
   }, []);
 
   const filtered = properties
@@ -78,7 +82,12 @@ export default function PropertiesListClient() {
       {loading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-20 bg-stone-200 rounded-xl animate-pulse" />)}</div>
       ) : view === 'map' ? (
-        <SiteMap properties={filtered.filter((p): p is Property & { lat: number; lng: number } => p.lat != null && p.lng != null)} height="550px" />
+        <SiteMap
+          properties={filtered.filter((p): p is Property & { lat: number; lng: number } => p.lat != null && p.lng != null)}
+          requirements={requirements}
+          showAllRadiusCircles
+          height="550px"
+        />
       ) : filtered.length > 0 ? (
         <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
           {filtered.map((p) => (

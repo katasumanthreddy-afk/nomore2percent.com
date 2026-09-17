@@ -19,6 +19,9 @@ interface RequirementResult {
   matched_property_id: number | null; matches: Match[];
 }
 
+interface AllProperty { id: number; title: string; lat: number; lng: number; deal_type: string; price_label: string | null; lease_rate_label: string | null; area: string | null }
+interface AllRequirement { id: number; title: string; lat: number; lng: number; radius_max_m: number; status: string }
+
 const STATUS_BADGE: Record<string, string> = {
   searching: 'bg-orange-50 text-orange-600 border-orange-200',
   found: 'bg-emerald-50 text-emerald-600 border-emerald-200',
@@ -29,17 +32,20 @@ export default function MatchesClient() {
   const [totalMatches, setTotalMatches] = useState(0);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'map'>('list');
+  const [allProperties, setAllProperties] = useState<AllProperty[]>([]);
+  const [allRequirements, setAllRequirements] = useState<AllRequirement[]>([]);
 
   const matchedPropertiesById: Record<number, Match> = {};
   results.forEach((r) => r.matches.forEach((m) => { matchedPropertiesById[m.id] = m; }));
-  const matchedProperties = Object.values(matchedPropertiesById);
-  const allMatchedIds = new Set(matchedProperties.map((p) => p.id));
+  const allMatchedIds = new Set(Object.keys(matchedPropertiesById).map(Number));
 
   useEffect(() => {
     fetch('/api/internal/requirements/matches')
       .then((r) => r.json())
       .then((d) => { if (d.success) { setResults(d.results); setTotalMatches(d.totalMatches); } })
       .finally(() => setLoading(false));
+    fetch('/api/internal/properties').then((r) => r.json()).then((d) => d.success && setAllProperties(d.properties.filter((p: any) => p.lat != null && p.lng != null)));
+    fetch('/api/internal/requirements').then((r) => r.json()).then((d) => d.success && setAllRequirements(d.requirements));
   }, []);
 
   return (
@@ -68,7 +74,7 @@ export default function MatchesClient() {
           </div>
 
           {view === 'map' ? (
-            <SiteMap properties={matchedProperties} requirements={results} showAllRadiusCircles highlightPropertyIds={allMatchedIds} height="600px" />
+            <SiteMap properties={allProperties} requirements={allRequirements} showAllRadiusCircles highlightPropertyIds={allMatchedIds} height="600px" />
           ) : (
             <div className="space-y-4">
               {results.map((r) => (
