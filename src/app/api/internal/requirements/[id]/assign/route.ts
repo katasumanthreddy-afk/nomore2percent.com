@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
+import { invalidateCache } from '@/lib/simple-cache';
 
 // POST /api/internal/requirements/[id]/assign — adds one assignee (team
 // member or scout) to a requirement. Does NOT replace existing assignees —
@@ -30,6 +31,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 
+  invalidateCache('internal:requirements:raw');
+
   return NextResponse.json({ success: true });
 }
 
@@ -48,5 +51,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   const { error } = await supabaseInternalAdmin.from('requirement_assignments').delete().eq('id', assignmentId);
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  invalidateCache('internal:requirements:raw');
   return NextResponse.json({ success: true });
 }

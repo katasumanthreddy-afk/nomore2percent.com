@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
 import { distanceInMeters } from '@/lib/geo-utils';
+import { getCached, invalidateCache } from '@/lib/simple-cache';
 
 // GET /api/internal/requirements — list all, each with a live count of how
 // many existing properties currently fall within its search radius.
@@ -11,28 +12,33 @@ export async function GET() {
     return NextResponse.json({ success: false, message: 'Not authorized' }, { status: 403 });
   }
 
-  const { data: requirements, error } = await supabaseInternalAdmin
-    .from('site_requirements')
-    .select('*, commercial_properties(id, title)')
-    .order('created_at', { ascending: false });
-  if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  // Only the raw data is cached — it's identical for everyone. The
+  // "assignedToMe" flag below depends on who's asking, so that part is
+  // always computed fresh per request rather than baked into the cache
+  // (otherwise one person's assignments could leak into someone else's view).
+  const raw = await getCached('internal:requirements:raw', 30_000, async () => {
+    const { data: requirements, error } = await supabaseInternalAdmin
+      .from('site_requirements')
+      .select('*, commercial_properties(id, title)')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
 
-  const { data: properties } = await supabaseInternalAdmin
-    .from('commercial_properties')
-    .select('id, lat, lng')
-    .not('lat', 'is', null)
-    .not('lng', 'is', null);
+    const { data: properties } = await supabaseInternalAdmin
+      .from('commercial_properties')
+      .select('id, lat, lng')
+      .not('lat', 'is', null)
+      .not('lng', 'is', null);
 
-  const { data: assignments } = await supabaseInternalAdmin
-    .from('requirement_assignments')
-    .select('id, requirement_id, team_member_id, scout_id, team_members(id, name), external_scouts(id, name)');
+    const { data: assignments } = await supabaseInternalAdmin
+      .from('requirement_assignments')
+      .select('id, requirement_id, team_member_id, scout_id, team_members(id, name), external_scouts(id, name)');
 
-  const withMatches = (requirements || []).map((r) => {
-    const matchCount = (properties || []).filter((p) => {
-      const d = distanceInMeters(r.lat, r.lng, p.lat, p.lng);
-      return d <= r.radius_max_m;
-    }).length;
-    const reqAssignments = (assignments || []).filter((a) => a.requirement_id === r.id);
+    return { requirements: requirements || [], properties: properties || [], assignments: assignments || [] };
+  });
+
+  const withMatches = raw.requirements.map((r) => {
+    const matchCount = raw.properties.filter((p) => distanceInMeters(r.lat, r.lng, p.lat, p.lng) <= r.radius_max_m).length;
+    const reqAssignments = raw.assignments.filter((a) => a.requirement_id === r.id);
     const assignedToMe = reqAssignments.some((a) => a.team_member_id === member.id);
     return {
       ...r,
@@ -71,5 +77,9 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+
+  invalidateCache('internal:requirements:raw');
+  invalidateCache('internal:requirements:matches');
+
   return NextResponse.json({ success: true, requirement: data });
 }

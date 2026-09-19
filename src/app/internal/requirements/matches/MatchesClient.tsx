@@ -42,10 +42,15 @@ export default function MatchesClient() {
   useEffect(() => {
     fetch('/api/internal/requirements/matches')
       .then((r) => r.json())
-      .then((d) => { if (d.success) { setResults(d.results); setTotalMatches(d.totalMatches); } })
+      .then((d) => {
+        if (d.success) {
+          setResults(d.results);
+          setTotalMatches(d.totalMatches);
+          setAllProperties(d.allProperties.filter((p: any) => p.lat != null && p.lng != null));
+          setAllRequirements(d.allRequirements);
+        }
+      })
       .finally(() => setLoading(false));
-    fetch('/api/internal/properties').then((r) => r.json()).then((d) => d.success && setAllProperties(d.properties.filter((p: any) => p.lat != null && p.lng != null)));
-    fetch('/api/internal/requirements').then((r) => r.json()).then((d) => d.success && setAllRequirements(d.requirements));
   }, []);
 
   return (

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
 import { distanceInMeters } from '@/lib/geo-utils';
+import { invalidateCache } from '@/lib/simple-cache';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const member = await getRequestingTeamMember();
@@ -42,6 +43,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .eq('id', id);
 
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  invalidateCache('internal:properties');
+  invalidateCache('internal:requirements:matches');
   return NextResponse.json({ success: true });
 }
 
@@ -53,5 +56,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const { id } = await params;
   const { error } = await supabaseInternalAdmin.from('commercial_properties').delete().eq('id', id);
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  invalidateCache('internal:properties');
+  invalidateCache('internal:requirements:matches');
   return NextResponse.json({ success: true });
 }

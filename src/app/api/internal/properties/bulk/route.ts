@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
+import { invalidateCache } from '@/lib/simple-cache';
 
 interface BulkRow {
   title: string;
@@ -40,6 +41,9 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabaseInternalAdmin.from('commercial_properties').insert(toInsert).select('id');
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+
+  invalidateCache('internal:properties');
+  invalidateCache('internal:requirements:matches');
 
   return NextResponse.json({ success: true, created: data.length });
 }

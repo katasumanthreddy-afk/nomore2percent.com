@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
+import { invalidateCache } from '@/lib/simple-cache';
 
 // POST /api/internal/requirements/bulk-assign — adds one assignee across
 // several requirements in one action. Additive, not a replacement — any
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
   if (newRows.length > 0) {
     const { error } = await supabaseInternalAdmin.from('requirement_assignments').insert(newRows);
     if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    invalidateCache('internal:requirements:raw');
   }
 
   return NextResponse.json({ success: true, updated: ids.length });
