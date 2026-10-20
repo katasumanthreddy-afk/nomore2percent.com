@@ -4,7 +4,7 @@ import { createInternalServerClient } from '@/lib/supabase-internal-server';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import InternalHeader from '@/components/internal/InternalHeader';
-import { STUCK_AFTER_DAYS, daysSince, stageLabel } from '@/lib/brands-projects';
+import { STUCK_AFTER_DAYS, daysSince, feeSummary, inr, scheduleStatus, stageLabel } from '@/lib/brands-projects';
 
 export default async function InternalDashboard() {
   const supabase = await createInternalServerClient();
@@ -43,10 +43,21 @@ export default async function InternalDashboard() {
   // Tolerates the projects table not existing yet.
   const { data: liveProjects } = await supabaseInternalAdmin
     .from('projects')
-    .select('id, name, stage, stage_changed_at, brands(name)')
+    .select('id, name, stage, stage_changed_at, target_handover, construction_start, construction_progress, brands(name)')
     .not('stage', 'in', '("rent_started","dropped")')
     .order('stage_changed_at', { ascending: true });
   const stuckProjects = (liveProjects || []).filter((p) => daysSince(p.stage_changed_at) > STUCK_AFTER_DAYS);
+  const lateBuilds = (liveProjects || [])
+    .map((p) => ({ ...p, sch: scheduleStatus(p) }))
+    .filter((p) => p.sch.kind === 'late' || p.sch.kind === 'behind');
+
+  // Fees: owners only.
+  const isOwner = member.role === 'owner';
+  const { data: fees } = isOwner
+    ? await supabaseInternalAdmin.from('project_fees').select('status, amount, received_amount, received_at, due_date')
+    : { data: null };
+  const fs = feeSummary(fees || []);
+
   const { count: newLeadCount } = await supabaseInternalAdmin.from('land_leads').select('id', { count: 'exact', head: true }).eq('status', 'new');
 
   const ninetyDaysOut = new Date();
@@ -84,6 +95,28 @@ export default async function InternalDashboard() {
             <div className="text-xs text-stone-500 mt-1">Open Deals</div>
           </Link>
         </div>
+
+        {isOwner && fees && fees.length > 0 && (
+          <Link href="/internal/fees" className="grid grid-cols-3 gap-3 bg-white border border-stone-200 rounded-xl p-4 mb-8 hover:border-orange-300 transition-colors">
+            <div><div className="text-[11px] text-stone-500">Fees received this quarter</div><div className="font-serif text-lg font-bold text-emerald-600">{inr(fs.receivedThisQuarter)}</div></div>
+            <div><div className="text-[11px] text-stone-500">Due to us (invoiced + expected)</div><div className="font-serif text-lg font-bold text-stone-900">{inr(fs.invoiced + fs.expected)}</div></div>
+            <div><div className="text-[11px] text-stone-500">Overdue</div><div className={`font-serif text-lg font-bold ${fs.overdueCount ? 'text-red-600' : 'text-stone-900'}`}>{inr(fs.overdue)}</div></div>
+          </Link>
+        )}
+
+        {lateBuilds.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
+            <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">Construction late or behind schedule</div>
+            <div className="space-y-1.5">
+              {lateBuilds.map((p) => (
+                <Link key={p.id} href={`/internal/projects/${p.id}`} className="flex items-center justify-between text-sm hover:underline">
+                  <span className="text-stone-800">{p.name}</span>
+                  <span className={p.sch.kind === 'late' ? 'text-red-700 font-semibold' : 'text-amber-800 font-semibold'}>{p.sch.label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {stuckProjects.length > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8">

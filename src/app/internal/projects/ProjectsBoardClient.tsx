@@ -2,17 +2,18 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { PROJECT_STAGES, STUCK_AFTER_DAYS, daysSince } from '@/lib/brands-projects';
+import { PROJECT_STAGES, STUCK_AFTER_DAYS, daysSince, scheduleStatus } from '@/lib/brands-projects';
 
 interface Project {
   id: number; name: string; stage: string; stage_changed_at: string; locality: string | null;
   builtup_sqft: number | null; rent_per_sqft: number | null; target_handover: string | null;
+  construction_start: string | null; construction_progress: number | null;
   brands: { id: number; name: string } | null;
   team_members: { id: number; name: string } | null;
   stage_done: number; stage_total: number;
 }
 
-export default function ProjectsBoardClient({ myId }: { myId: number }) {
+export default function ProjectsBoardClient({ myId, isOwner }: { myId: number; isOwner: boolean }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -53,7 +54,10 @@ export default function ProjectsBoardClient({ myId }: { myId: number }) {
             <h1 className="font-serif text-2xl font-bold text-stone-900">Projects</h1>
             <p className="text-sm text-stone-500 mt-1">Landowner + brand + site, from first interest to rent.</p>
           </div>
-          <Link href="/internal/projects/new" className="px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600">+ New project</Link>
+          <div className="flex gap-2">
+            {isOwner && <Link href="/internal/fees" className="px-4 py-2 rounded-lg border border-stone-300 bg-white text-stone-700 text-sm font-semibold">Fees</Link>}
+            <Link href="/internal/projects/new" className="px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600">+ New project</Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-5 max-w-2xl">
@@ -111,6 +115,11 @@ export default function ProjectsBoardClient({ myId }: { myId: number }) {
                             <span className="text-stone-400">{p.stage_total ? `${p.stage_done}/${p.stage_total} done` : ''}</span>
                             <span className={stuck ? 'text-red-600 font-semibold' : 'text-stone-400'}>{days}d in stage</span>
                           </div>
+                          {(() => {
+                            const sch = scheduleStatus(p);
+                            if (sch.kind !== 'late' && sch.kind !== 'behind') return null;
+                            return <div className={`text-[11px] font-semibold mt-1 ${sch.kind === 'late' ? 'text-red-600' : 'text-amber-700'}`}>{sch.kind === 'late' ? 'Late: ' : 'Behind: '}{sch.label}</div>;
+                          })()}
                           {p.team_members && <div className="text-[11px] text-stone-400 mt-0.5">→ {p.team_members.name}</div>}
                         </Link>
                       );

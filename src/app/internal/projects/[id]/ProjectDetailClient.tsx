@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import NotesTimeline from '@/components/internal/NotesTimeline';
+import ConstructionCard from '@/components/internal/ConstructionCard';
+import FeesCard from '@/components/internal/FeesCard';
 import { PROJECT_STAGES, STUCK_AFTER_DAYS, daysSince, stageIndex, stageLabel } from '@/lib/brands-projects';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -239,6 +241,8 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
             </div>
           </div>
 
+          {(stageIndex(project.stage) >= stageIndex('construction_contract') || project.builder_name || project.construction_progress > 0) && <ConstructionCard project={project} onSaved={patch} />}
+
           <div className="bg-white border border-stone-200 rounded-xl p-5">
             <div className="text-sm font-bold text-stone-800 mb-3">Documents</div>
             <div className="divide-y divide-stone-100 mb-3">
@@ -299,6 +303,8 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
               </>
             )}
           </div>
+
+          {isOwner && <FeesCard project={project} />}
 
           <div className="bg-white border border-stone-200 rounded-xl p-5">
             <div className="text-sm font-bold text-stone-800 mb-2">Linked</div>

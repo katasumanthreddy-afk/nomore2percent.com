@@ -7,7 +7,7 @@ export default async function ProjectsPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <InternalHeader memberName={member.name} role={member.role} />
-      <ProjectsBoardClient myId={member.id} />
+      <ProjectsBoardClient myId={member.id} isOwner={member.role === 'owner'} />
     </div>
   );
 }

@@ -181,11 +181,12 @@ export function specLine(b: { min_land_sq_yds?: number | null; min_builtup_sqft?
 
 // Columns a project form may write.
 const PROJECT_TEXT = ['name', 'landowner_name', 'landowner_phone', 'locality', 'notes', 'target_handover', 'stage', 'dropped_reason'];
-const PROJECT_NUM = ['brand_id', 'requirement_id', 'property_id', 'land_lead_id', 'land_sq_yds', 'builtup_sqft', 'rent_per_sqft', 'lease_years', 'assigned_to'];
+const PROJECT_TEXT_EXTRA = ['builder_name', 'builder_phone', 'construction_funded_by', 'construction_start'];
+const PROJECT_NUM = ['brand_id', 'requirement_id', 'property_id', 'land_lead_id', 'land_sq_yds', 'builtup_sqft', 'rent_per_sqft', 'lease_years', 'assigned_to', 'contract_value', 'construction_progress'];
 
 export function cleanProjectBody(body: Record<string, unknown>) {
   const out: Record<string, unknown> = {};
-  for (const k of [...PROJECT_TEXT, ...PROJECT_NUM]) {
+  for (const k of [...PROJECT_TEXT, ...PROJECT_TEXT_EXTRA, ...PROJECT_NUM]) {
     if (!(k in body)) continue;
     const v = body[k];
     if (v === '' || v === null || v === undefined) { out[k] = null; continue; }
@@ -196,5 +197,114 @@ export function cleanProjectBody(body: Record<string, unknown>) {
       out[k] = typeof v === 'string' ? v.trim() : v;
     }
   }
+  if (typeof out.construction_progress === 'number') {
+    out.construction_progress = Math.max(0, Math.min(100, Math.round(out.construction_progress)));
+  }
+  if (out.construction_funded_by && !['landowner', 'loan', 'brand', 'mixed', 'other'].includes(String(out.construction_funded_by))) {
+    out.construction_funded_by = null;
+  }
   return out;
+}
+
+// ── Construction ─────────────────────────────────────────────
+
+export const FUNDED_BY: { value: string; label: string }[] = [
+  { value: 'landowner', label: 'Landowner (own funds)' },
+  { value: 'loan', label: 'Landowner (bank loan)' },
+  { value: 'brand', label: 'Brand' },
+  { value: 'mixed', label: 'Mixed' },
+  { value: 'other', label: 'Other' },
+];
+
+// Stages where construction is (or should be) under way, and after.
+const BUILD_STAGES = ['construction', 'handover'];
+const AFTER_BUILD = ['lease_registered', 'rent_started'];
+
+export interface ScheduleStatus { kind: 'none' | 'on_track' | 'behind' | 'late' | 'done'; expected: number | null; label: string }
+
+// "late": target handover has passed and the site isn't handed over.
+// "behind": actual progress trails a straight-line schedule from start to
+// target by more than 15 points. A simple yardstick, not a Gantt chart.
+export function scheduleStatus(p: {
+  stage: string; construction_start?: string | null; target_handover?: string | null; construction_progress?: number | null;
+}, now = Date.now()): ScheduleStatus {
+  const progress = p.construction_progress ?? 0;
+  if (AFTER_BUILD.includes(p.stage) || progress >= 100) return { kind: 'done', expected: null, label: 'Built' };
+  if (!p.target_handover) return { kind: 'none', expected: null, label: 'No target date' };
+  const target = Date.parse(p.target_handover);
+  if (now > target + 86_400_000 && p.stage !== 'dropped') {
+    const days = Math.floor((now - target) / 86_400_000);
+    return { kind: 'late', expected: 100, label: `${days}d past handover date` };
+  }
+  if (!BUILD_STAGES.includes(p.stage) || !p.construction_start) return { kind: 'none', expected: null, label: 'Not started' };
+  const start = Date.parse(p.construction_start);
+  if (target <= start) return { kind: 'none', expected: null, label: 'Check dates' };
+  const expected = Math.max(0, Math.min(100, Math.round(((now - start) / (target - start)) * 100)));
+  if (progress + 15 < expected) return { kind: 'behind', expected, label: `${progress}% done, ~${expected}% expected` };
+  return { kind: 'on_track', expected, label: `${progress}% done, on track` };
+}
+
+// ── Fees ─────────────────────────────────────────────────────
+
+export const FEE_TYPES: { value: string; label: string }[] = [
+  { value: 'brokerage', label: 'Lease brokerage' },
+  { value: 'construction_mgmt', label: 'Construction management' },
+  { value: 'permissions', label: 'Permissions / liaison' },
+  { value: 'other', label: 'Other' },
+];
+export const FEE_PAYERS: { value: string; label: string }[] = [
+  { value: 'landowner', label: 'Landowner' },
+  { value: 'brand', label: 'Brand' },
+  { value: 'builder', label: 'Builder' },
+  { value: 'other', label: 'Other' },
+];
+export const FEE_BASES: { value: string; label: string }[] = [
+  { value: 'fixed', label: 'Fixed amount' },
+  { value: 'months_rent', label: 'Months of rent' },
+  { value: 'percent_contract', label: '% of construction contract' },
+];
+export const FEE_STATUSES: { value: string; label: string; badge: string }[] = [
+  { value: 'expected', label: 'Expected', badge: 'bg-sky-50 text-sky-700 border-sky-200' },
+  { value: 'invoiced', label: 'Invoiced', badge: 'bg-amber-50 text-amber-700 border-amber-200' },
+  { value: 'received', label: 'Received', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'written_off', label: 'Written off', badge: 'bg-stone-100 text-stone-500 border-stone-200' },
+];
+
+export function monthlyRent(p: { rent_per_sqft?: number | null; builtup_sqft?: number | null }): number | null {
+  return p.rent_per_sqft && p.builtup_sqft ? Number(p.rent_per_sqft) * Number(p.builtup_sqft) : null;
+}
+
+// Suggested amount from the basis; null when the project lacks the numbers.
+export function suggestFee(basis: string, basisValue: number | null, p: { rent_per_sqft?: number | null; builtup_sqft?: number | null; contract_value?: number | null }): number | null {
+  if (basisValue == null || !Number.isFinite(basisValue)) return null;
+  if (basis === 'months_rent') { const m = monthlyRent(p); return m ? Math.round(m * basisValue) : null; }
+  if (basis === 'percent_contract') return p.contract_value ? Math.round(Number(p.contract_value) * basisValue / 100) : null;
+  return null;
+}
+
+export function isOverdue(f: { status: string; due_date?: string | null }, now = Date.now()) {
+  return (f.status === 'expected' || f.status === 'invoiced') && !!f.due_date && Date.parse(f.due_date) + 86_400_000 < now;
+}
+
+export function inr(n: number | null | undefined): string {
+  if (n == null) return '–';
+  const v = Number(n);
+  if (Math.abs(v) >= 1e7) return `₹${(v / 1e7).toFixed(2)} Cr`;
+  if (Math.abs(v) >= 1e5) return `₹${(v / 1e5).toFixed(2)} L`;
+  return `₹${Math.round(v).toLocaleString('en-IN')}`;
+}
+
+// Totals for the fees page and dashboard. Quarter boundaries (Jan/Apr/Jul/Oct)
+// are the same for calendar and Indian fiscal quarters.
+export function feeSummary(fees: { status: string; amount: number; received_amount?: number | null; received_at?: string | null; due_date?: string | null }[], now = new Date()) {
+  const qStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1).getTime();
+  let receivedThisQuarter = 0, invoiced = 0, expected = 0, overdue = 0, overdueCount = 0;
+  for (const f of fees) {
+    const amt = Number(f.amount) || 0;
+    if (f.status === 'received' && f.received_at && Date.parse(f.received_at) >= qStart) receivedThisQuarter += Number(f.received_amount ?? amt);
+    if (f.status === 'invoiced') invoiced += amt;
+    if (f.status === 'expected') expected += amt;
+    if (isOverdue(f, now.getTime())) { overdue += amt; overdueCount++; }
+  }
+  return { receivedThisQuarter, invoiced, expected, overdue, overdueCount };
 }
