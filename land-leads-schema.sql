@@ -3,7 +3,7 @@
 -- quick-commerce / logistics brands. nomore2percent is the bridge: brand
 -- matching, construction contract, permissions, lease registration.
 -- Run in the INTERNAL Supabase project (nomore2percent-internal,
--- ref jehlvcoawairegxaplfi) → SQL Editor. Safe to re-run.
+-- ref jehlvcoawairegxaplfi) → SQL Editor, AFTER internal-base-schema.sql. Safe to re-run.
 -- ============================================================
 
 create table if not exists land_leads (
