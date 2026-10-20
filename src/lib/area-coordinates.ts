@@ -39,7 +39,12 @@ export const AREA_COORDINATES: Record<string, [number, number]> = {
 export const HYDERABAD_CENTER: [number, number] = [17.4239, 78.4483];
 
 export function getAreaCoordinates(area: string): [number, number] {
-  return AREA_COORDINATES[area] || HYDERABAD_CENTER;
+  if (AREA_COORDINATES[area]) return AREA_COORDINATES[area];
+  // Case/space-insensitive fallback so free-typed localities ("kompally ")
+  // still centre the map correctly.
+  const key = (area || '').trim().toLowerCase();
+  const match = Object.keys(AREA_COORDINATES).find((k) => k.toLowerCase() === key);
+  return match ? AREA_COORDINATES[match] : HYDERABAD_CENTER;
 }
 
 /** Resolves the coordinates to actually plot for a property: its own precise
