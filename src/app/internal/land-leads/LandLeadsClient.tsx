@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { LEAD_STATUSES, formatSize } from '@/lib/land-leads';
+import { CONSTRUCTION_INTEREST, LEAD_STATUSES, formatSize } from '@/lib/land-leads';
 
 const SiteMap = dynamic(() => import('@/components/internal/SiteMap'), {
   ssr: false,
@@ -14,7 +14,7 @@ export interface LandLead {
   id: number; created_at: string; owner_name: string; phone: string; relation: string;
   locality: string; address: string | null; lat: number | null; lng: number | null;
   size_sq_yds: number; road_width_ft: number | null; land_type: string | null; title_status: string | null;
-  expected_rent_monthly: number | null; status: string; form_language: string;
+  expected_rent_monthly: number | null; status: string; form_language: string; construction_interest: string | null;
   utm_source: string | null; utm_campaign: string | null; utm_content: string | null;
   nearest_requirement_m: number | null; converted_property_id: number | null;
   team_members: { id: number; name: string } | null;
@@ -40,6 +40,7 @@ export default function LandLeadsClient({ myId }: { myId: number }) {
   const [error, setError] = useState('');
   const [status, setStatus] = useState<string>('open');
   const [mine, setMine] = useState(false);
+  const [buildersOnly, setBuildersOnly] = useState(false);
   const [sort, setSort] = useState<Sort>('newest');
   const [q, setQ] = useState('');
   const [view, setView] = useState<'list' | 'map'>('list');
@@ -62,12 +63,13 @@ export default function LandLeadsClient({ myId }: { myId: number }) {
     const list = leads.filter((l) =>
       (status === 'all' || (status === 'open' ? !['signed', 'rejected'].includes(l.status) : l.status === status))
       && (!mine || l.team_members?.id === myId)
+      && (!buildersOnly || l.construction_interest === 'yes' || l.construction_interest === 'maybe')
       && (!term || [l.owner_name, l.phone, l.locality, l.address].some((v) => v?.toLowerCase().includes(term))));
     return [...list].sort((a, b) =>
       sort === 'largest' ? b.size_sq_yds - a.size_sq_yds
       : sort === 'nearest' ? (a.nearest_requirement_m ?? Infinity) - (b.nearest_requirement_m ?? Infinity)
       : +new Date(b.created_at) - +new Date(a.created_at));
-  }, [leads, status, mine, sort, q, myId]);
+  }, [leads, status, mine, buildersOnly, sort, q, myId]);
 
   const totalSqYds = filtered.reduce((s, l) => s + Number(l.size_sq_yds), 0);
   const inRadius = filtered.filter((l) => nearBadge(l)?.inRadius).length;
@@ -80,7 +82,7 @@ export default function LandLeadsClient({ myId }: { myId: number }) {
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
           <h1 className="font-serif text-2xl font-bold text-stone-900">Land Leads</h1>
-          <p className="text-sm text-stone-500 mt-1">Landowners (500+ sq yds) from the lease campaign · <a href="/lease-your-land" target="_blank" className="text-orange-500 hover:underline">public form ↗</a></p>
+          <p className="text-sm text-stone-500 mt-1">Landowners (500+ sq yds) to match with quick-commerce brands · <a href="/lease-your-land" target="_blank" className="text-orange-500 hover:underline">public form ↗</a></p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => setView('list')} className={chip(view === 'list')}>List</button>
@@ -109,6 +111,7 @@ export default function LandLeadsClient({ myId }: { myId: number }) {
           <option value="largest">Largest first</option>
           <option value="nearest">Closest to a requirement</option>
         </select>
+        <button onClick={() => setBuildersOnly((b) => !b)} className={chip(buildersOnly)}>Open to building</button>
         <button onClick={() => setMine((m) => !m)} className={chip(mine)}>Assigned to me</button>
       </div>
 
@@ -146,6 +149,7 @@ export default function LandLeadsClient({ myId }: { myId: number }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold text-stone-900">{formatSize(Number(l.size_sq_yds))} · {l.locality}</span>
                     <span className={`text-[11px] font-semibold border rounded-full px-2 py-0.5 ${badge(l.status)}`}>{statusLabel(l.status)}</span>
+                    {l.construction_interest && CONSTRUCTION_INTEREST[l.construction_interest] && <span className={`text-[11px] font-semibold border rounded-full px-2 py-0.5 ${CONSTRUCTION_INTEREST[l.construction_interest].badge}`}>{CONSTRUCTION_INTEREST[l.construction_interest].label}</span>}
                     {l.converted_property_id && <span className="text-[11px] font-semibold border rounded-full px-2 py-0.5 bg-stone-900 text-white border-stone-900">In Properties</span>}
                   </div>
                   <div className="text-sm text-stone-600 mt-0.5 truncate">{l.owner_name} ({l.relation}) · {l.phone}</div>

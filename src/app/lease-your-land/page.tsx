@@ -3,12 +3,12 @@ import { Suspense } from 'react';
 import LeaseLandClient from './LeaseLandClient';
 
 export const metadata: Metadata = {
-  title: 'Lease Your Land, Earn Monthly Rent | nomore2percent',
+  title: 'Build for Quick-Commerce Brands on Your Land | nomore2percent',
   description:
-    'Own 500 sq yds or more anywhere in Hyderabad? Lease it long-term for warehouses and delivery hubs. Monthly rent, the land stays in your name. Free evaluation.',
+    'Own 500 sq yds or more in Hyderabad? Build a dark store or warehouse for a quick-commerce brand. We find the brand and handle the construction contract, permissions and lease registration.',
   openGraph: {
-    title: 'Your land can earn rent every month, without selling it',
-    description: 'Hyderabad landowners with 500+ sq yds: long-term lease for warehouses and delivery hubs. Free evaluation in 48 hours.',
+    title: 'Quick-commerce brands need space. Build on your land, we bring the brand.',
+    description: 'Hyderabad landowners with 500+ sq yds: we match you with quick-commerce brands and manage construction, permissions and lease registration end to end.',
   },
 };
 

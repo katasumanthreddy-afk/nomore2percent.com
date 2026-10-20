@@ -28,6 +28,12 @@ export const LEAD_STATUSES: { value: string; label: string; badge: string }[] = 
   { value: 'rejected', label: 'Rejected', badge: 'bg-stone-100 text-stone-500 border-stone-200' },
 ];
 
+export const CONSTRUCTION_INTEREST: Record<string, { label: string; badge: string }> = {
+  yes: { label: 'Ready to build', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  maybe: { label: 'Build: needs details', badge: 'bg-amber-50 text-amber-700 border-amber-200' },
+  no: { label: 'Land only', badge: 'bg-stone-100 text-stone-500 border-stone-200' },
+};
+
 export function formatSize(sqYds: number): string {
   if (sqYds >= 4840) return `${(sqYds / 4840).toFixed(sqYds % 4840 === 0 ? 0 : 2)} acres`;
   return `${Math.round(sqYds).toLocaleString('en-IN')} sq yds`;

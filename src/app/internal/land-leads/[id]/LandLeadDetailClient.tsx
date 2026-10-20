@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import NotesTimeline from '@/components/internal/NotesTimeline';
-import { LAND_TYPES, LEAD_STATUSES, formatSize } from '@/lib/land-leads';
+import { CONSTRUCTION_INTEREST, LAND_TYPES, LEAD_STATUSES, formatSize } from '@/lib/land-leads';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface Props {
@@ -59,7 +59,7 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
     }
   };
 
-  const waText = encodeURIComponent(`Namaste ${lead.owner_name} garu, this is from nomore2percent about your ${formatSize(Number(lead.size_sq_yds))} land in ${lead.locality} for long-term lease. Is this a good time to talk?`);
+  const waText = encodeURIComponent(`Namaste ${lead.owner_name} garu, this is from nomore2percent about your ${formatSize(Number(lead.size_sq_yds))} land in ${lead.locality} and building for a quick-commerce brand. Is this a good time to talk?`);
   const mapsUrl = lead.lat != null ? `https://www.google.com/maps/search/?api=1&query=${lead.lat},${lead.lng}` : null;
 
   const row = (label: string, value: React.ReactNode) => value ? (
@@ -108,6 +108,7 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
             {row('Road width', lead.road_width_ft ? `${lead.road_width_ft} ft` : null)}
             {row('Land type', LAND_TYPES.find((t) => t.value === lead.land_type)?.en)}
             {row('Title', TITLE[lead.title_status])}
+            {row('Open to constructing', CONSTRUCTION_INTEREST[lead.construction_interest]?.label)}
             {row('Current use', lead.current_use)}
             {row('Expected rent', lead.expected_rent_monthly ? `₹${Number(lead.expected_rent_monthly).toLocaleString('en-IN')}/month` : null)}
             {row('Preferred lease', lead.lease_years_preferred ? `${lead.lease_years_preferred}+ years` : null)}

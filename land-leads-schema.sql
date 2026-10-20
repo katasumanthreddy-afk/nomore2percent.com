@@ -1,5 +1,7 @@
 -- ============================================================
--- Land sourcing campaign: landowners offering 500+ sq yds on long-term lease
+-- Land sourcing campaign: landowners with 500+ sq yds who can build for
+-- quick-commerce / logistics brands. nomore2percent is the bridge: brand
+-- matching, construction contract, permissions, lease registration.
 -- Run in the INTERNAL Supabase project (nomore2percent-internal,
 -- ref jehlvcoawairegxaplfi) → SQL Editor. Safe to re-run.
 -- ============================================================
@@ -31,6 +33,8 @@ create table if not exists land_leads (
                            check (land_type in ('open_plot', 'hmda_layout', 'dtcp_layout', 'gp_layout', 'agricultural', 'other')),
   title_status           text
                            check (title_status in ('clear', 'in_progress', 'not_sure')),
+  construction_interest  text
+                           check (construction_interest in ('yes', 'maybe', 'no')),
   current_use            text,
   expected_rent_monthly  numeric,
   lease_years_preferred  integer,
@@ -58,6 +62,10 @@ create table if not exists land_leads (
 create index if not exists land_leads_status_idx   on land_leads (status, created_at desc);
 create index if not exists land_leads_phone_idx    on land_leads (phone);
 create index if not exists land_leads_assigned_idx on land_leads (assigned_to);
+
+-- For anyone who already ran an earlier version of this file.
+alter table land_leads add column if not exists construction_interest text
+  check (construction_interest in ('yes', 'maybe', 'no'));
 
 create table if not exists land_lead_images (
   id            bigserial primary key,

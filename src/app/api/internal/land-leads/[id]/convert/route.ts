@@ -27,6 +27,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     lead.road_width_ft ? `Road: ${lead.road_width_ft} ft.` : null,
     lead.land_type ? `Land type: ${lead.land_type}.` : null,
     lead.title_status ? `Title: ${lead.title_status}.` : null,
+    lead.construction_interest ? `Open to constructing: ${lead.construction_interest}.` : null,
     lead.expected_rent_monthly ? `Owner expects ₹${Number(lead.expected_rent_monthly).toLocaleString('en-IN')}/month.` : null,
     lead.notes ? `Owner notes: ${lead.notes}` : null,
   ].filter(Boolean).join('\n');

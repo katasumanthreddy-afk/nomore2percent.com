@@ -3,7 +3,9 @@ import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import { distanceInMeters } from '@/lib/geo-utils';
 import { LAND_TYPES, MIN_SQ_YDS, SQ_YDS_PER_UNIT, toSqYds } from '@/lib/land-leads';
 
-// POST /api/land-leads — public form on /lease-your-land.
+// POST /api/land-leads — public form on /lease-your-land (landowners who
+// could build for a quick-commerce / logistics brand; we broker the match,
+// construction contract, permissions and lease registration).
 // Intentionally no login: landowners arrive from ads. Writes go straight into
 // the INTERNAL database through the service role, so the browser never gets
 // internal credentials. Guarded by validation, a honeypot field and a
@@ -104,6 +106,7 @@ export async function POST(req: NextRequest) {
       road_width_ft: num(formData.get('road_width_ft')) != null ? Math.round(num(formData.get('road_width_ft'))!) : null,
       land_type: oneOf(str(formData.get('land_type')), LAND_TYPES.map((t) => t.value)),
       title_status: oneOf(str(formData.get('title_status')), ['clear', 'in_progress', 'not_sure']),
+      construction_interest: oneOf(str(formData.get('construction_interest')), ['yes', 'maybe', 'no']),
       current_use: str(formData.get('current_use'), 200),
       expected_rent_monthly: num(formData.get('expected_rent_monthly')),
       lease_years_preferred: num(formData.get('lease_years_preferred')) != null ? Math.round(num(formData.get('lease_years_preferred'))!) : null,
