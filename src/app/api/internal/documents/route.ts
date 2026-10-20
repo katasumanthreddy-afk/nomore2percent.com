@@ -17,13 +17,14 @@ export async function POST(req: NextRequest) {
   const documentType = (formData.get('document_type') as string) || 'other';
   const propertyId = formData.get('property_id') as string | null;
   const dealId = formData.get('deal_id') as string | null;
+  const projectId = formData.get('project_id') as string | null;
 
   if (!file || !title) {
     return NextResponse.json({ success: false, message: 'File and title are required' }, { status: 400 });
   }
 
   const ext = file.name.split('.').pop();
-  const path = `${propertyId ? `property-${propertyId}` : `deal-${dealId}`}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+  const path = `${propertyId ? `property-${propertyId}` : projectId ? `project-${projectId}` : `deal-${dealId}`}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   const { error: uploadError } = await supabaseInternalAdmin.storage
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
     .from('documents')
     .insert([{
       title, storage_path: path, document_type: documentType,
-      property_id: propertyId || null, deal_id: dealId || null,
+      property_id: propertyId || null, deal_id: dealId || null, project_id: projectId || null,
       uploaded_by: member.id,
     }])
     .select()

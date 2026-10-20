@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
   const rows: BulkRow[] = body.requirements;
   const radiusMin = body.radius_min_m ?? 500;
   const radiusMax = body.radius_max_m ?? 1000;
+  const brandId = body.brand_id ? Number(body.brand_id) : null;
   if (!Array.isArray(rows) || rows.length === 0) {
     return NextResponse.json({ success: false, message: 'No locations provided' }, { status: 400 });
   }
@@ -23,6 +24,7 @@ export async function POST(req: NextRequest) {
     title: r.title || `Site (${r.lat}, ${r.lng})`,
     lat: r.lat, lng: r.lng,
     radius_min_m: radiusMin, radius_max_m: radiusMax,
+    brand_id: brandId,
     created_by: member.id,
   }));
 

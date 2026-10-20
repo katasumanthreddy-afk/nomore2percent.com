@@ -19,7 +19,7 @@ export async function GET() {
   const raw = await getCached('internal:requirements:raw', 30_000, async () => {
     const { data: requirements, error } = await supabaseInternalAdmin
       .from('site_requirements')
-      .select('*, commercial_properties(id, title)')
+      .select('*, commercial_properties(id, title), brands(id, name)')
       .order('created_at', { ascending: false });
     if (error) throw error;
 
@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
       title: body.title, lat: body.lat, lng: body.lng,
       radius_min_m: body.radius_min_m ?? 500, radius_max_m: body.radius_max_m ?? 1000,
       notes: body.notes || null, created_by: member.id,
+      brand_id: body.brand_id ? Number(body.brand_id) : null,
     }])
     .select()
     .single();

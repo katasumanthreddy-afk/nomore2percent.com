@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { createInternalServerClient } from '@/lib/supabase-internal-server';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
@@ -15,7 +16,7 @@ export default async function RequirementsBulkImportPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <InternalHeader memberName={member.name} role={member.role} />
-      <RequirementsBulkImportClient />
+      <Suspense><RequirementsBulkImportClient /></Suspense>
     </div>
   );
 }

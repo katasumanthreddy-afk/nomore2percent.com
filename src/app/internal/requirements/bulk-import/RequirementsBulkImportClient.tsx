@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { parseCoordList } from '@/lib/parse-coord-list';
 
@@ -10,6 +10,12 @@ export default function RequirementsBulkImportClient() {
   const [text, setText] = useState('');
   const [radiusMin, setRadiusMin] = useState('500');
   const [radiusMax, setRadiusMax] = useState('1000');
+  const params = useSearchParams();
+  const [brandId, setBrandId] = useState(params.get('brand_id') || '');
+  const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
+  useEffect(() => {
+    fetch('/api/internal/brands').then((r) => r.json()).then((d) => d.success && setBrands(d.brands));
+  }, []);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
@@ -30,6 +36,7 @@ export default function RequirementsBulkImportClient() {
           requirements: validRows.map((r) => ({ title: r.title, lat: r.lat, lng: r.lng })),
           radius_min_m: parseInt(radiusMin) || 500,
           radius_max_m: parseInt(radiusMax) || 1000,
+          brand_id: brandId || null,
         }),
       });
       const data = await res.json();
@@ -51,6 +58,13 @@ export default function RequirementsBulkImportClient() {
       </p>
 
       <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-4">
+        <div>
+          <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Brand these locations are for</label>
+          <select value={brandId} onChange={(e) => setBrandId(e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white">
+            <option value="">No brand / not decided</option>
+            {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Min Radius (meters)</label>

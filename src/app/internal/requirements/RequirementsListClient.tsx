@@ -13,6 +13,7 @@ interface Requirement {
   id: number; title: string; lat: number; lng: number;
   radius_min_m: number; radius_max_m: number; status: string; nearby_count: number;
   commercial_properties: { id: number; title: string } | null;
+  brands: { id: number; name: string } | null;
   assignments: { id: number; name: string; type: 'team' | 'scout' }[];
   assignedToMe: boolean;
 }
@@ -36,6 +37,7 @@ export default function RequirementsListClient() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'map'>('map');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [brandFilter, setBrandFilter] = useState('all');
   const [assignedFilter, setAssignedFilter] = useState<'all' | 'mine'>('all');
 
   const [selectMode, setSelectMode] = useState(false);
@@ -59,6 +61,7 @@ export default function RequirementsListClient() {
 
   const filtered = requirements
     .filter((r) => statusFilter === 'all' || r.status === statusFilter)
+    .filter((r) => brandFilter === 'all' || (brandFilter === 'none' ? !r.brands : String(r.brands?.id) === brandFilter))
     .filter((r) => assignedFilter === 'all' || r.assignedToMe);
 
   const toggleSelect = (id: number) => {
@@ -184,6 +187,13 @@ export default function RequirementsListClient() {
           <option value="found">Found</option>
           <option value="closed">Closed</option>
         </select>
+        <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs">
+          <option value="all">All brands</option>
+          {[...new Map(requirements.filter((r) => r.brands).map((r) => [r.brands!.id, r.brands!.name])).entries()]
+            .sort((a, b) => a[1].localeCompare(b[1]))
+            .map(([id, name]) => <option key={id} value={String(id)}>{name}</option>)}
+          <option value="none">No brand</option>
+        </select>
         <div className="flex border border-stone-200 rounded-lg overflow-hidden ml-auto">
           <button onClick={() => setView('list')} className={`px-3 py-1.5 text-xs font-semibold ${view === 'list' ? 'bg-orange-500 text-white' : 'text-stone-500'}`}>List</button>
           <button onClick={() => setView('map')} className={`px-3 py-1.5 text-xs font-semibold ${view === 'map' ? 'bg-orange-500 text-white' : 'text-stone-500'}`}>Map</button>
@@ -203,7 +213,10 @@ export default function RequirementsListClient() {
               )}
               <Link href={selectMode ? '#' : `/internal/requirements/${r.id}`} onClick={(e) => selectMode && (e.preventDefault(), toggleSelect(r.id))} className="flex items-center justify-between gap-3 flex-1 min-w-0">
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-stone-800">{r.title}</div>
+                  <div className="text-sm font-semibold text-stone-800">
+                    {r.title}
+                    {r.brands && <span className="ml-2 text-[11px] font-semibold border border-stone-200 bg-stone-50 text-stone-600 rounded-full px-2 py-0.5 align-middle">{r.brands.name}</span>}
+                  </div>
                   <div className="text-xs text-stone-500">
                     {r.radius_min_m}m – {r.radius_max_m}m radius {r.commercial_properties && `· Matched: ${r.commercial_properties.title}`}
                     {r.assignments.length > 0 && ` · Assigned: ${r.assignments.map((a) => a.name).join(', ')}`}
