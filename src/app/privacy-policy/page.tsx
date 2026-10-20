@@ -31,7 +31,7 @@ export default function PrivacyPolicyPage() {
           </section>
           <section>
             <h2 className="font-semibold text-stone-800 text-base mb-2">4. Cookies</h2>
-            <p>We use minimal cookies for session management (login state for our admin panel) and basic analytics. We do not use advertising or tracking cookies.</p>
+            <p>We use cookies for session management (login state), basic analytics (Google Analytics) and advertising measurement (the Meta Pixel). The Meta Pixel tells Meta when someone who saw one of our ads visits our pages or submits an enquiry, so we can see which ads work and show them to relevant people. We do not send your name or phone number to Meta. You can block these cookies in your browser settings or manage ad preferences in your Facebook and Instagram account settings.</p>
           </section>
           <section>
             <h2 className="font-semibold text-stone-800 text-base mb-2">5. Your Rights</h2>
