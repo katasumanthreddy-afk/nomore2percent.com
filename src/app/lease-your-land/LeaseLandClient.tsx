@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import { getAreaCoordinates } from '@/lib/area-coordinates';
 import { LAND_TYPES, MIN_SQ_YDS, toSqYds } from '@/lib/land-leads';
 import { compressImage } from '@/lib/compress-image';
+import { trackPixel } from '@/components/MetaPixel';
 import { CheckCircle2, ShieldCheck, Landmark, Truck, HardHat, FileSignature, Upload, X, MapPin, Phone } from 'lucide-react';
 
 const LocationPicker = dynamic(() => import('@/components/admin/LocationPicker'), {
@@ -191,6 +192,15 @@ export default function LeaseLandClient() {
       const data = await res.json().catch(() => ({ success: false }));
       if (!data.success) { setError(data.message || 'Something went wrong. Please WhatsApp us.'); return; }
       setDone(true);
+      // Ad conversion. Duplicates (same phone within 10 min) aren't counted twice.
+      if (!data.duplicate) {
+        trackPixel('Lead', {
+          content_name: 'land-for-brands',
+          content_category: form.construction_interest || 'unknown',
+          ...(Number.isFinite(sizeNum) ? { land_sq_yds: Math.round(toSqYds(sizeNum, form.size_unit)) } : {}),
+          form_language: lang,
+        });
+      }
       window.scrollTo({ top: document.getElementById('lead-form')?.offsetTop ?? 0, behavior: 'smooth' });
     } catch {
       setError('Network problem. Please try again or WhatsApp us.');
@@ -228,7 +238,7 @@ export default function LeaseLandClient() {
           <p className="text-stone-300 mt-5 max-w-2xl text-base md:text-lg leading-relaxed">{t.sub}</p>
           <div className="flex flex-wrap gap-3 mt-8">
             <a href="#lead-form" className="inline-flex items-center px-5 py-3 rounded-lg bg-orange-400 text-stone-900 font-bold text-sm hover:bg-orange-300 transition-colors">{t.cta}</a>
-            <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-stone-600 text-white font-bold text-sm hover:border-stone-400 transition-colors">
+            <a href={waLink} onClick={() => trackPixel('Contact', { content_name: 'land-whatsapp' })} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 rounded-lg border border-stone-600 text-white font-bold text-sm hover:border-stone-400 transition-colors">
               <Phone size={15} /> {t.wa}
             </a>
           </div>

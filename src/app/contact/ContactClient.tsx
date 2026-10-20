@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Header from '@/components/Header';
+import { trackPixel } from '@/components/MetaPixel';
 
 export default function ContactClient() {
   const [name, setName] = useState('');
@@ -26,7 +27,7 @@ export default function ContactClient() {
         body: JSON.stringify({ name, phone, email: email || undefined, message: message || undefined, source: 'contact-page' }),
       });
       const data = await res.json();
-      if (data.success) setSent(true);
+      if (data.success) { setSent(true); trackPixel('Lead', { content_name: 'contact-form' }); }
       else setError(data.message || 'Something went wrong. Please try again.');
     } catch {
       setError('Could not send. Please try WhatsApp instead.');

@@ -4,6 +4,7 @@ import "./globals.css";
 import LiveChatWidget from "@/components/LiveChatWidget";
 import Footer from "@/components/Footer";
 import InstallPWA from "@/components/InstallPWA";
+import MetaPixel from "@/components/MetaPixel";
 
 export const viewport: Viewport = {
   themeColor: '#fb923c',
@@ -68,6 +69,8 @@ export default function RootLayout({
             </Script>
           </>
         )}
+        {/* Meta Pixel: public pages only, only when NEXT_PUBLIC_META_PIXEL_ID is set */}
+        <MetaPixel />
         {children}
         {/* Footer mounted globally so it appears on every page */}
         <Footer />
