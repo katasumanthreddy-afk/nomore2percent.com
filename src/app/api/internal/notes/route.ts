@@ -13,14 +13,16 @@ export async function GET(req: NextRequest) {
   const propertyId = searchParams.get('property_id');
   const dealId = searchParams.get('deal_id');
   const landLeadId = searchParams.get('land_lead_id');
-  if (!propertyId && !dealId && !landLeadId) {
-    return NextResponse.json({ success: false, message: 'property_id, deal_id or land_lead_id required' }, { status: 400 });
+  const projectId = searchParams.get('project_id');
+  if (!propertyId && !dealId && !landLeadId && !projectId) {
+    return NextResponse.json({ success: false, message: 'property_id, deal_id, land_lead_id or project_id required' }, { status: 400 });
   }
 
   let query = supabaseInternalAdmin.from('activity_notes').select('*, team_members(id, name)').order('created_at', { ascending: false });
   query = propertyId ? query.eq('property_id', propertyId)
     : dealId ? query.eq('deal_id', dealId)
-    : query.eq('land_lead_id', landLeadId!);
+    : landLeadId ? query.eq('land_lead_id', landLeadId)
+    : query.eq('project_id', projectId!);
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
@@ -36,14 +38,14 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { note, property_id, deal_id, land_lead_id } = body;
-  if (!note?.trim() || (!property_id && !deal_id && !land_lead_id)) {
-    return NextResponse.json({ success: false, message: 'Note text and a property_id, deal_id or land_lead_id are required' }, { status: 400 });
+  const { note, property_id, deal_id, land_lead_id, project_id } = body;
+  if (!note?.trim() || (!property_id && !deal_id && !land_lead_id && !project_id)) {
+    return NextResponse.json({ success: false, message: 'Note text and a property_id, deal_id, land_lead_id or project_id are required' }, { status: 400 });
   }
 
   const { data, error } = await supabaseInternalAdmin
     .from('activity_notes')
-    .insert([{ note: note.trim(), property_id: property_id || null, deal_id: deal_id || null, land_lead_id: land_lead_id || null, created_by: member.id }])
+    .insert([{ note: note.trim(), property_id: property_id || null, deal_id: deal_id || null, land_lead_id: land_lead_id || null, project_id: project_id || null, created_by: member.id }])
     .select('*, team_members(id, name)')
     .single();
 

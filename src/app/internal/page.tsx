@@ -4,6 +4,7 @@ import { createInternalServerClient } from '@/lib/supabase-internal-server';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import InternalHeader from '@/components/internal/InternalHeader';
+import { STUCK_AFTER_DAYS, daysSince, stageLabel } from '@/lib/brands-projects';
 
 export default async function InternalDashboard() {
   const supabase = await createInternalServerClient();
@@ -38,6 +39,16 @@ export default async function InternalDashboard() {
   const { count: propCount } = await supabaseInternalAdmin.from('commercial_properties').select('id', { count: 'exact', head: true });
   const { count: dealCount } = await supabaseInternalAdmin.from('deals').select('id', { count: 'exact', head: true }).not('stage', 'in', '("closed_won","closed_lost")');
 
+  // Projects: live count + stuck ones (older than 14 days in their stage).
+  // Tolerates the projects table not existing yet.
+  const { data: liveProjects } = await supabaseInternalAdmin
+    .from('projects')
+    .select('id, name, stage, stage_changed_at, brands(name)')
+    .not('stage', 'in', '("rent_started","dropped")')
+    .order('stage_changed_at', { ascending: true });
+  const stuckProjects = (liveProjects || []).filter((p) => daysSince(p.stage_changed_at) > STUCK_AFTER_DAYS);
+  const { count: newLeadCount } = await supabaseInternalAdmin.from('land_leads').select('id', { count: 'exact', head: true }).eq('status', 'new');
+
   const ninetyDaysOut = new Date();
   ninetyDaysOut.setDate(ninetyDaysOut.getDate() + 90);
   const { data: expiringLeases } = await supabaseInternalAdmin
@@ -55,7 +66,15 @@ export default async function InternalDashboard() {
         <h1 className="font-serif text-2xl font-bold text-stone-900 mb-1">Welcome, {member.name.split(' ')[0]}</h1>
         <p className="text-stone-500 text-sm mb-6 capitalize">{member.role}</p>
 
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+          <Link href="/internal/projects" className="bg-white border border-stone-200 rounded-xl p-5 hover:border-orange-300 transition-colors">
+            <div className="font-serif text-2xl font-bold text-stone-900">{liveProjects?.length ?? 0}</div>
+            <div className="text-xs text-stone-500 mt-1">Live Projects</div>
+          </Link>
+          <Link href="/internal/land-leads" className="bg-white border border-stone-200 rounded-xl p-5 hover:border-orange-300 transition-colors">
+            <div className={`font-serif text-2xl font-bold ${newLeadCount ? 'text-orange-500' : 'text-stone-900'}`}>{newLeadCount ?? 0}</div>
+            <div className="text-xs text-stone-500 mt-1">New Land Leads to call</div>
+          </Link>
           <Link href="/internal/properties" className="bg-white border border-stone-200 rounded-xl p-5 hover:border-orange-300 transition-colors">
             <div className="font-serif text-2xl font-bold text-stone-900">{propCount ?? 0}</div>
             <div className="text-xs text-stone-500 mt-1">Commercial Properties</div>
@@ -65,6 +84,20 @@ export default async function InternalDashboard() {
             <div className="text-xs text-stone-500 mt-1">Open Deals</div>
           </Link>
         </div>
+
+        {stuckProjects.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8">
+            <div className="text-xs font-bold uppercase tracking-wide text-red-700 mb-2">Projects stuck more than {STUCK_AFTER_DAYS} days</div>
+            <div className="space-y-1.5">
+              {stuckProjects.map((p) => (
+                <Link key={p.id} href={`/internal/projects/${p.id}`} className="flex items-center justify-between text-sm hover:underline">
+                  <span className="text-stone-800">{p.name}</span>
+                  <span className="text-red-700 font-semibold">{stageLabel(p.stage)} · {daysSince(p.stage_changed_at)}d</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {expiringLeases && expiringLeases.length > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">

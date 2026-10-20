@@ -152,6 +152,7 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
                 {team.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
             </div>
+            <Link href={`/internal/projects/new?land_lead_id=${lead.id}${nearby[0] && nearby[0].distance_m <= nearby[0].radius_max_m ? `&requirement_id=${nearby[0].id}` : ''}`} className="block text-center w-full py-2.5 rounded-lg border border-orange-300 text-orange-600 text-sm font-semibold hover:bg-orange-50">Start project</Link>
             {lead.converted_property_id ? (
               <Link href={`/internal/properties/${lead.converted_property_id}`} className="block text-center w-full py-2.5 rounded-lg bg-stone-900 text-white text-sm font-semibold">View in Properties →</Link>
             ) : (
