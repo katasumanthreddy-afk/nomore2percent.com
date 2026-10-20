@@ -4,17 +4,17 @@ import { useEffect, useState } from 'react';
 
 interface Note { id: number; note: string; created_at: string; team_members: { id: number; name: string } | null }
 
-export default function NotesTimeline({ propertyId, dealId }: { propertyId?: number; dealId?: number }) {
+export default function NotesTimeline({ propertyId, dealId, landLeadId }: { propertyId?: number; dealId?: number; landLeadId?: number }) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [newNote, setNewNote] = useState('');
   const [posting, setPosting] = useState(false);
 
   const load = () => {
-    const qs = propertyId ? `property_id=${propertyId}` : `deal_id=${dealId}`;
+    const qs = propertyId ? `property_id=${propertyId}` : dealId ? `deal_id=${dealId}` : `land_lead_id=${landLeadId}`;
     fetch(`/api/internal/notes?${qs}`).then((r) => r.json()).then((d) => { if (d.success) setNotes(d.notes); }).finally(() => setLoading(false));
   };
-  useEffect(load, [propertyId, dealId]);
+  useEffect(load, [propertyId, dealId, landLeadId]);
 
   const post = async () => {
     if (!newNote.trim()) return;
@@ -23,7 +23,7 @@ export default function NotesTimeline({ propertyId, dealId }: { propertyId?: num
       const res = await fetch('/api/internal/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ note: newNote, property_id: propertyId, deal_id: dealId }),
+        body: JSON.stringify({ note: newNote, property_id: propertyId, deal_id: dealId, land_lead_id: landLeadId }),
       });
       const data = await res.json();
       if (data.success) { setNotes((prev) => [data.note, ...prev]); setNewNote(''); }

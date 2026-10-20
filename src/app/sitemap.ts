@@ -13,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/market-survey`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/property-valuation`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/list-your-property`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${BASE_URL}/lease-your-land`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE_URL}/blog`, changeFrequency: 'weekly', priority: 0.6 },
     { url: `${BASE_URL}/blog/why-hyderabad-buyers-deserve-better-than-2-percent`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/blog/rera-telangana-guide-hyderabad-home-buyers`, changeFrequency: 'monthly', priority: 0.5 },
