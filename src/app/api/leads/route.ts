@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // POST /api/leads — submit a new lead (used by enquiry forms, WhatsApp CTAs, etc.)
 export async function POST(req: NextRequest) {
@@ -33,6 +34,8 @@ export async function POST(req: NextRequest) {
 
 // GET /api/leads — list all leads (used by admin dashboard)
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { data, error } = await supabaseAdmin
       .from('leads')

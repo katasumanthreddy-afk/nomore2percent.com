@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // PATCH /api/brokers/[id] — admin only, update status/details/verification
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { id } = await params;
     const body = await req.json();
@@ -21,6 +24,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 // DELETE /api/brokers/[id]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { id } = await params;
     const { error } = await supabaseAdmin.from('brokers').delete().eq('id', id);

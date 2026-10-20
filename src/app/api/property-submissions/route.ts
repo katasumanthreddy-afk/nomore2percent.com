@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // POST /api/property-submissions — public endpoint, owners (or partner brokers) submit a property for review
 export async function POST(req: NextRequest) {
@@ -66,6 +67,8 @@ export async function POST(req: NextRequest) {
 
 // GET /api/property-submissions — admin only, lists all submissions with their images
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { data, error } = await supabaseAdmin
       .from('property_submissions')

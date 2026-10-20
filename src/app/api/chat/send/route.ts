@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { pusherServer } from '@/lib/pusher-server';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // POST /api/chat/send — sends a message and broadcasts it to the conversation's
 // Pusher channel so both the visitor's browser and Sumanth's admin inbox update
@@ -14,6 +15,12 @@ export async function POST(req: NextRequest) {
     }
     if (!['visitor', 'admin'].includes(sender)) {
       return NextResponse.json({ success: false, message: 'Invalid sender' }, { status: 400 });
+    }
+    // Only a logged-in admin may post as "admin" — otherwise anyone could
+    // impersonate Sumanth in a visitor's chat.
+    if (sender === 'admin') {
+      const denied = await requireAdmin();
+      if (denied) return denied;
     }
 
     // 1. Save message to database

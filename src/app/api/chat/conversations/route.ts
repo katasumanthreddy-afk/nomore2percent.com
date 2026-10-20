@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // POST /api/chat/conversations — start a new chat conversation for a visitor
 export async function POST(req: NextRequest) {
@@ -22,6 +23,8 @@ export async function POST(req: NextRequest) {
 
 // GET /api/chat/conversations — list all conversations (admin inbox view)
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { data, error } = await supabaseAdmin
       .from('chat_conversations')

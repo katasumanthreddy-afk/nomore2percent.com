@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // GET /api/brokers — admin only, lists all brokers with their submission counts
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { data: brokers, error } = await supabaseAdmin
       .from('brokers')
@@ -30,6 +33,8 @@ export async function GET() {
 
 // POST /api/brokers — admin only, adds/invites a new broker
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const body = await req.json();
     const { name, phone, email, rera_agent_number, notes } = body;

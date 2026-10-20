@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { parseAmount } from '@/lib/parse-amount';
+import { requireAdmin } from '@/lib/admin-guard';
 
 export async function POST(req: NextRequest) {
   try {
@@ -92,6 +93,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { data, error } = await supabaseAdmin
       .from('market_survey')

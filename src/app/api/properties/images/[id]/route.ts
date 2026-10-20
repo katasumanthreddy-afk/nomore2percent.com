@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // DELETE /api/properties/images/[id] — remove a single photo from a property
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { id } = await params;
     const { error } = await supabaseAdmin.from('property_images').delete().eq('id', id);
@@ -16,6 +19,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 // PATCH /api/properties/images/[id] — set this photo as the primary/cover image
 // (unsets is_primary on every other photo for the same property first)
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { id } = await params;
 

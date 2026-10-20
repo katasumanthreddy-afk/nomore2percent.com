@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { supabase } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // GET /api/properties — public endpoint, returns active listings with images
 // Used by the marketplace frontend (no auth needed — RLS only exposes active properties)
@@ -31,6 +32,8 @@ export async function GET() {
 // POST /api/properties — admin only, creates a new listing
 // (In production, wrap this with a session check — see src/lib/auth.ts)
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const body = await req.json();
     const {
