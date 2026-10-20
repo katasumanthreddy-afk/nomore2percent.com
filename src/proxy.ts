@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
+import { ADMIN_COOKIE, verifyAdminSessionToken } from '@/lib/admin-auth';
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -9,8 +10,8 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
   if (pathname.startsWith('/admin')) {
-    const session = req.cookies.get('n2p_admin_session');
-    if (!session) {
+    const valid = await verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value);
+    if (!valid) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
     }
     return NextResponse.next();

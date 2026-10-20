@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // GET /api/developer-projects/[id] — single project with images, for the detail page
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -27,6 +28,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // PATCH /api/developer-projects/[id] — admin update (status, featured, is_active, or any field)
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { id } = await params;
     const body = await req.json();
@@ -45,6 +48,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 // DELETE /api/developer-projects/[id]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { id } = await params;
     const { error } = await supabaseAdmin.from('developer_projects').delete().eq('id', id);

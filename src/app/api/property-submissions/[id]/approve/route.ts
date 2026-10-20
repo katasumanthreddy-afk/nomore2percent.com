@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { requireAdmin } from '@/lib/admin-guard';
 
 // POST /api/property-submissions/[id]/approve — admin only.
 // Copies a submission into the live `properties` table (status: active),
 // carries its photos over into `property_images`, and marks the submission
 // as approved with a reference to the published property.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   try {
     const { id } = await params;
 
