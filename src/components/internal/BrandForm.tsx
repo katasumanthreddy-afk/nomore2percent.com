@@ -17,8 +17,8 @@ export function toFormValues(brand?: any): Values {
   return v;
 }
 
-export default function BrandForm({ initial, submitLabel, onSubmit, onCancel }: {
-  initial?: any; submitLabel: string;
+export default function BrandForm({ initial, submitLabel, onSubmit, onCancel, extra }: {
+  initial?: any; submitLabel: string; extra?: React.ReactNode;
   onSubmit: (values: Values) => Promise<string | null>; // returns an error message or null
   onCancel?: () => void;
 }) {
@@ -98,6 +98,8 @@ export default function BrandForm({ initial, submitLabel, onSubmit, onCancel }: 
         <label className={labelClass}>Notes</label>
         <textarea value={v.notes} onChange={(e) => set('notes', e.target.value)} className={inputClass + ' h-24 resize-none'} placeholder="Relationship history, decision process, who signs" />
       </div>
+
+      {extra}
 
       {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
       <div className="flex gap-2">

@@ -1,20 +1,57 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import BrandForm from '@/components/internal/BrandForm';
+import BulkSitesInput, { type BulkSitesValue } from '@/components/internal/BulkSitesInput';
 import { BRAND_CATEGORIES, BRAND_STATUSES, STUCK_AFTER_DAYS, daysSince, specLine, stageLabel } from '@/lib/brands-projects';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export default function BrandDetailClient({ brandId, isOwner }: { brandId: string; isOwner: boolean }) {
+function describeResult(r?: string) {
+  if (!r) return null;
+  if (r === 'failed') return { ok: false, text: "The brand was created but the sites couldn't be saved. Add them below." };
+  const [c, s] = r.split('-').map(Number);
+  if (!Number.isFinite(c)) return null;
+  return { ok: true, text: `${c} site${c === 1 ? '' : 's'} added${s ? `, ${s} skipped as duplicates` : ''}.` };
+}
+
+export default function BrandDetailClient({ brandId, isOwner, sitesResult }: { brandId: string; isOwner: boolean; sitesResult?: string }) {
   const router = useRouter();
   const [brand, setBrand] = useState<any>(null);
   const [requirements, setRequirements] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [banner, setBanner] = useState(describeResult(sitesResult));
+  const [adding, setAdding] = useState(false);
+  const [bulk, setBulk] = useState<BulkSitesValue | null>(null);
+  const [saving, setSaving] = useState(false);
+  const onBulk = useCallback((v: BulkSitesValue) => setBulk(v), []);
+
+  const addSites = async () => {
+    if (!bulk?.rows.length) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/internal/requirements/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brand_id: Number(brandId),
+          requirements: bulk.rows.map((r) => ({ title: r.title, lat: r.lat, lng: r.lng })),
+          radius_min_m: bulk.radius_min_m, radius_max_m: bulk.radius_max_m,
+          priority: bulk.priority, target_date: bulk.target_date || null,
+        }),
+      });
+      const d = await res.json();
+      if (!d.success) { setBanner({ ok: false, text: d.message || 'Could not add sites.' }); return; }
+      setBanner(describeResult(`${d.created}-${d.skipped}`));
+      setAdding(false); setBulk(null);
+      load();
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const load = () => {
     fetch(`/api/internal/brands/${brandId}`).then((r) => r.json())
@@ -78,15 +115,33 @@ export default function BrandDetailClient({ brandId, isOwner }: { brandId: strin
         </div>
       </div>
 
+      {banner && (
+        <div className={`flex items-center justify-between gap-3 text-sm rounded-lg px-4 py-2.5 mb-5 border ${banner.ok ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-700'}`}>
+          <span>{banner.text}</span>
+          <button onClick={() => setBanner(null)} className="text-xs opacity-60 hover:opacity-100" aria-label="Dismiss">✕</button>
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
           <div className="bg-white border border-stone-200 rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm font-bold text-stone-800">Site requirements ({requirements.length})</div>
-              <Link href={`/internal/requirements/bulk-import?brand_id=${brand.id}`} className="text-xs text-orange-500 font-semibold hover:underline">+ Import locations</Link>
+              {!adding && <button onClick={() => setAdding(true)} className="text-xs text-orange-500 font-semibold hover:underline">+ Add sites in bulk</button>}
             </div>
-            {requirements.length === 0 ? (
-              <p className="text-sm text-stone-400">None yet. Open a site requirement and pick this brand, or import a list of locations for it.</p>
+            {adding && (
+              <div className="bg-stone-50 border border-dashed border-stone-300 rounded-xl p-4 mb-4">
+                <BulkSitesInput onChange={onBulk} compact />
+                <div className="flex gap-2 mt-3">
+                  <button onClick={addSites} disabled={saving || !bulk?.rows.length} className="text-xs bg-orange-500 text-white rounded-lg px-4 py-2 font-semibold disabled:opacity-40">
+                    {saving ? 'Adding…' : `Add ${bulk?.rows.length || ''} site${bulk?.rows.length === 1 ? '' : 's'} to ${brand.name}`}
+                  </button>
+                  <button onClick={() => { setAdding(false); setBulk(null); }} className="text-xs border border-stone-200 rounded-lg px-4 py-2 font-semibold text-stone-600 bg-white">Cancel</button>
+                </div>
+              </div>
+            )}
+            {requirements.length === 0 && !adding ? (
+              <p className="text-sm text-stone-400">None yet. Click &quot;Add sites in bulk&quot; and paste this brand&apos;s locations.</p>
             ) : (
               <ul className="divide-y divide-stone-100">
                 {requirements.map((r) => (
