@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
+import { scoutLinkState } from '@/lib/scout-links';
 
 // GET /api/scout-view/[token] — intentionally has NO team-member auth check.
 // The unguessable token itself is the access control, since external
@@ -12,11 +13,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
 
   const { data: scout, error: scoutError } = await supabaseInternalAdmin
     .from('external_scouts')
-    .select('id, name')
+    .select('id, name, expires_at, revoked_at')
     .eq('access_token', token)
     .maybeSingle();
 
-  if (scoutError || !scout) {
+  if (scoutError || !scout || scoutLinkState(scout) !== 'active') {
     return NextResponse.json({ success: false, message: 'Invalid or expired link' }, { status: 404 });
   }
 

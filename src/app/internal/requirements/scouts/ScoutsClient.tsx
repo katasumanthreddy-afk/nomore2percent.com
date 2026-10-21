@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { scoutLinkState } from '@/lib/scout-links';
 
-interface Scout { id: number; name: string; phone: string | null; access_token: string; assigned_count: number }
+interface Scout { id: number; name: string; phone: string | null; access_token: string; assigned_count: number; expires_at: string | null; revoked_at: string | null }
 
 export default function ScoutsClient() {
   const [scouts, setScouts] = useState<Scout[]>([]);
@@ -41,6 +42,16 @@ export default function ScoutsClient() {
   const remove = async (id: number, name: string) => {
     if (!confirm(`Remove "${name}"? Their link will stop working.`)) return;
     await fetch(`/api/internal/scouts/${id}`, { method: 'DELETE' });
+    load();
+  };
+
+  const act = async (s: Scout, action: 'revoke' | 'renew' | 'new_link') => {
+    const msg = action === 'revoke' ? `Turn off ${s.name}'s link now? You can renew it later.`
+      : action === 'new_link' ? `Give ${s.name} a new link? The current link stops working; send them the new one.` : null;
+    if (msg && !confirm(msg)) return;
+    const res = await fetch(`/api/internal/scouts/${s.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) });
+    const d = await res.json();
+    if (!d.success) { alert(d.message); return; }
     load();
   };
 
@@ -88,11 +99,28 @@ export default function ScoutsClient() {
               <div>
                 <div className="text-sm font-semibold text-stone-800">{s.name}</div>
                 <div className="text-xs text-stone-500">{s.phone || 'No phone on file'} · {s.assigned_count} assigned</div>
+                {(() => {
+                  const st = scoutLinkState(s);
+                  const until = s.expires_at ? new Date(s.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+                  return (
+                    <div className={`text-[11px] mt-0.5 font-semibold ${st === 'active' ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {st === 'active' ? (until ? `Link active until ${until}` : 'Link active, no expiry') : st === 'expired' ? `Link expired ${until}` : 'Link turned off'}
+                    </div>
+                  );
+                })()}
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <button onClick={() => copyLink(s)} className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg px-3 py-1.5 font-semibold transition-colors">
-                  {copiedId === s.id ? '✓ Copied' : 'Copy WhatsApp Message'}
-                </button>
+              <div className="flex flex-wrap items-center justify-end gap-2 flex-shrink-0">
+                {scoutLinkState(s) === 'active' ? (
+                  <>
+                    <button onClick={() => copyLink(s)} className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg px-3 py-1.5 font-semibold transition-colors">
+                      {copiedId === s.id ? '✓ Copied' : 'Copy WhatsApp Message'}
+                    </button>
+                    <button onClick={() => act(s, 'revoke')} className="text-xs text-stone-500 hover:text-red-600 font-semibold px-1">Turn off</button>
+                  </>
+                ) : (
+                  <button onClick={() => act(s, 'renew')} className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg px-3 py-1.5 font-semibold">Renew 90 days</button>
+                )}
+                <button onClick={() => act(s, 'new_link')} className="text-xs text-stone-500 hover:text-stone-800 font-semibold px-1" title="Use if the link was shared with someone it shouldn't be">New link</button>
                 <button onClick={() => remove(s.id, s.name)} className="text-xs bg-red-50 text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-100 transition-colors">
                   Remove
                 </button>

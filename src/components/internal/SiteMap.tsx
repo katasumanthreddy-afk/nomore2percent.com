@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
 import Link from 'next/link';
 
@@ -8,6 +8,9 @@ export interface SiteMapProperty {
   id: number; title: string; lat: number; lng: number;
   area?: string | null; deal_type: string; status?: string;
   price_label?: string | null; lease_rate_label?: string | null;
+  // Optional ready-made photo (e.g. land leads). Otherwise, for commercial
+  // properties, the cover photo is fetched when the pin is opened.
+  photo_url?: string | null;
 }
 
 export interface SiteMapRequirement {
@@ -90,6 +93,20 @@ export default function SiteMap({
   const activeReq = activeMarker?.type === 'req' ? requirements.find((r) => r.id === activeMarker.id) : null;
   const activeProp = activeMarker?.type === 'prop' ? properties.find((p) => p.id === activeMarker.id) : null;
 
+  // Cover photo for the opened property pin (cached per id for this session).
+  const [covers, setCovers] = useState<Record<number, { url: string | null; count: number }>>({});
+  const fetchCovers = propertyHref(0) === '/internal/properties/0';
+  useEffect(() => {
+    if (!activeProp || activeProp.photo_url !== undefined || !fetchCovers || covers[activeProp.id]) return;
+    let cancelled = false;
+    fetch(`/api/internal/properties/${activeProp.id}/cover`).then((r) => r.json())
+      .then((d) => { if (!cancelled && d.success) setCovers((c) => ({ ...c, [activeProp.id]: { url: d.url, count: d.count } })); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [activeProp, fetchCovers, covers]);
+  const activePhoto = activeProp ? (activeProp.photo_url !== undefined ? activeProp.photo_url : covers[activeProp.id]?.url) : null;
+  const activePhotoCount = activeProp ? covers[activeProp.id]?.count : undefined;
+
   const handleReqClick = (id: number) => {
     if (selectionMode && onToggleSelect) onToggleSelect(id);
     else if (onSelectRequirement) onSelectRequirement(id);
@@ -160,10 +177,19 @@ export default function SiteMap({
           </Link>
         )}
         {!selectionMode && activeProp && (
-          <Link href={propertyHref(activeProp.id)} className="absolute bottom-4 left-4 z-20 w-64 bg-white rounded-xl shadow-xl border border-stone-200 p-3 hover:border-emerald-300 transition-colors">
+          <Link href={propertyHref(activeProp.id)} className="absolute bottom-4 left-4 z-20 w-64 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden hover:border-emerald-300 transition-colors">
+            {activePhoto && (
+              <div className="relative h-32 bg-stone-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={activePhoto} alt="" className="w-full h-full object-cover" />
+                {activePhotoCount != null && activePhotoCount > 1 && <span className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] font-semibold rounded px-1.5 py-0.5">{activePhotoCount} photos</span>}
+              </div>
+            )}
+            <div className="p-3">
             <div className="text-sm font-bold text-stone-900">{activeProp.title}</div>
             <div className="text-xs text-stone-500 capitalize mb-1">{activeProp.area} {activeProp.deal_type && `· ${activeProp.deal_type}`}</div>
             <div className="text-xs font-semibold text-orange-500">{activeProp.deal_type === 'lease' ? activeProp.lease_rate_label : activeProp.price_label}</div>
+            </div>
           </Link>
         )}
       </div>
