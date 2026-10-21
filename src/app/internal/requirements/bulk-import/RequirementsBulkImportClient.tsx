@@ -41,7 +41,7 @@ export default function RequirementsBulkImportClient() {
       });
       const data = await res.json();
       if (!data.success) { setError(data.message || 'Import failed.'); setImporting(false); return; }
-      setResult(`Added ${data.created} site requirements.`);
+      setResult(`Added ${data.created} site requirement${data.created === 1 ? '' : 's'}${data.skipped ? `, skipped ${data.skipped} already on file` : ''}.`);
       setTimeout(() => router.push('/internal/requirements'), 1200);
     } catch {
       setError('Something went wrong. Please try again.');
@@ -103,7 +103,7 @@ export default function RequirementsBulkImportClient() {
                     <tr key={i} className={`border-b border-stone-100 last:border-0 ${!r.valid ? 'bg-red-50' : ''}`}>
                       <td className="px-3 py-1.5 text-stone-400 w-6">{r.valid ? '✓' : '✕'}</td>
                       <td className="px-3 py-1.5 text-stone-700">{r.title || <span className="text-stone-400 italic">Untitled</span>}</td>
-                      <td className="px-3 py-1.5 text-stone-500 font-mono">{r.valid ? `${r.lat}, ${r.lng}` : r.raw}</td>
+                      <td className="px-3 py-1.5 text-stone-500 font-mono">{r.valid ? `${r.lat}, ${r.lng}` : <span className="text-red-600 font-sans">{r.error || r.raw}</span>}</td>
                     </tr>
                   ))}
                 </tbody>
