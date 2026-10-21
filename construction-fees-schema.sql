@@ -67,4 +67,15 @@ insert into storage.buckets (id, name, public)
 values ('project-photos', 'project-photos', false)
 on conflict (id) do nothing;
 
+
+-- Explicit Data API grants. From 30 Oct 2026 Supabase no longer grants
+-- access to new tables automatically. These tables are only used by the
+-- server (service role), so only service_role gets access.
+grant select, insert, update, delete on table public.construction_updates to service_role;
+grant usage, select on sequence public.construction_updates_id_seq to service_role;
+grant select, insert, update, delete on table public.construction_update_photos to service_role;
+grant usage, select on sequence public.construction_update_photos_id_seq to service_role;
+grant select, insert, update, delete on table public.project_fees to service_role;
+grant usage, select on sequence public.project_fees_id_seq to service_role;
+
 NOTIFY pgrst, 'reload schema';

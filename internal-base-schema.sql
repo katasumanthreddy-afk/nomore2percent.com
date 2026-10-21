@@ -34,4 +34,13 @@ insert into storage.buckets (id, name, public)
 values ('internal-documents', 'internal-documents', false)
 on conflict (id) do nothing;
 
+
+-- Explicit Data API grants. From 30 Oct 2026 Supabase no longer grants
+-- access to new tables automatically. These tables are only used by the
+-- server (service role), so only service_role gets access.
+grant select, insert, update, delete on table public.activity_notes to service_role;
+grant usage, select on sequence public.activity_notes_id_seq to service_role;
+grant select, insert, update, delete on table public.documents to service_role;
+grant usage, select on sequence public.documents_id_seq to service_role;
+
 NOTIFY pgrst, 'reload schema';

@@ -101,4 +101,15 @@ alter table brands                  enable row level security;
 alter table projects                enable row level security;
 alter table project_checklist_items enable row level security;
 
+
+-- Explicit Data API grants. From 30 Oct 2026 Supabase no longer grants
+-- access to new tables automatically. These tables are only used by the
+-- server (service role), so only service_role gets access.
+grant select, insert, update, delete on table public.brands to service_role;
+grant usage, select on sequence public.brands_id_seq to service_role;
+grant select, insert, update, delete on table public.projects to service_role;
+grant usage, select on sequence public.projects_id_seq to service_role;
+grant select, insert, update, delete on table public.project_checklist_items to service_role;
+grant usage, select on sequence public.project_checklist_items_id_seq to service_role;
+
 NOTIFY pgrst, 'reload schema';
