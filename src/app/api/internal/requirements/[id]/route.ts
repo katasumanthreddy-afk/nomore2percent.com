@@ -39,7 +39,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data: properties } = await supabaseInternalAdmin
     .from('commercial_properties')
-    .select('id, title, area, status, property_type, deal_type, price_label, lease_rate_label, lat, lng, sqft')
+    .select('id, title, area, status, property_type, deal_type, price_label, lease_rate_label, lat, lng, sqft, land_sq_yds, road_width_ft')
     .not('lat', 'is', null)
     .not('lng', 'is', null);
 
@@ -50,9 +50,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     .map((p) => ({
       ...p,
       fit: checkFit(spec, {
-        land_sq_yds: p.property_type === 'land' && p.sqft != null ? Number(p.sqft) / 9 : null,
+        land_sq_yds: p.land_sq_yds != null ? Number(p.land_sq_yds) : p.property_type === 'land' && p.sqft != null ? Number(p.sqft) / 9 : null,
         builtup_sqft: p.property_type !== 'land' && p.sqft != null ? Number(p.sqft) : null,
-        road_width_ft: null,
+        road_width_ft: p.road_width_ft ?? null,
       }),
     }));
 

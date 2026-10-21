@@ -4,9 +4,10 @@ import { createInternalServerClient } from '@/lib/supabase-internal-server';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import InternalHeader from '@/components/internal/InternalHeader';
-import { STUCK_AFTER_DAYS, daysSince, feeSummary, inr, scheduleStatus, stageLabel } from '@/lib/brands-projects';
+import { feeSummary, inr } from '@/lib/brands-projects';
+import { GROUP_LABEL, buildToday, requestTime, type Group } from '@/lib/today';
 
-export default async function InternalDashboard() {
+export default async function InternalDashboard({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const supabase = await createInternalServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/internal/login');
@@ -34,155 +35,157 @@ export default async function InternalDashboard() {
     );
   }
 
-  const { data: properties } = await supabaseInternalAdmin.from('commercial_properties').select('id, title, status, area, property_type, deal_type, created_at').order('created_at', { ascending: false }).limit(6);
-  const { data: deals } = await supabaseInternalAdmin.from('deals').select('id, deal_name, stage, value, expected_close_date, created_at').order('created_at', { ascending: false }).limit(6);
-  const { count: propCount } = await supabaseInternalAdmin.from('commercial_properties').select('id', { count: 'exact', head: true });
-  const { count: dealCount } = await supabaseInternalAdmin.from('deals').select('id', { count: 'exact', head: true }).not('stage', 'in', '("closed_won","closed_lost")');
-
-  // Projects: live count + stuck ones (older than 14 days in their stage).
-  // Tolerates the projects table not existing yet.
-  const { data: liveProjects } = await supabaseInternalAdmin
-    .from('projects')
-    .select('id, name, stage, stage_changed_at, target_handover, construction_start, construction_progress, brands(name)')
-    .not('stage', 'in', '("rent_started","dropped")')
-    .order('stage_changed_at', { ascending: true });
-  const stuckProjects = (liveProjects || []).filter((p) => daysSince(p.stage_changed_at) > STUCK_AFTER_DAYS);
-  const lateBuilds = (liveProjects || [])
-    .map((p) => ({ ...p, sch: scheduleStatus(p) }))
-    .filter((p) => p.sch.kind === 'late' || p.sch.kind === 'behind');
-
-  // Fees: owners only.
   const isOwner = member.role === 'owner';
-  const { data: fees } = isOwner
-    ? await supabaseInternalAdmin.from('project_fees').select('status, amount, received_amount, received_at, due_date')
-    : { data: null };
-  const fs = feeSummary(fees || []);
+  const sp = await searchParams;
+  const showAll = sp.view === 'all';
+  const now = requestTime();
 
-  const { count: newLeadCount } = await supabaseInternalAdmin.from('land_leads').select('id', { count: 'exact', head: true }).eq('status', 'new');
+  // Everything below tolerates a table not existing yet (data comes back null).
+  const db = supabaseInternalAdmin;
+  const [
+    { data: leads }, { data: projects }, { data: openItems }, { data: reqs }, { data: assignments },
+    { data: props }, { data: feeRows }, { data: scouts }, { data: expiringLeases },
+    { count: propCount }, { count: openReqCount },
+  ] = await Promise.all([
+    db.from('land_leads').select('id, owner_name, locality, size_sq_yds, status, created_at, updated_at, assigned_to, construction_interest, lat, lng').neq('status', 'signed'),
+    db.from('projects').select('id, name, stage, stage_changed_at, assigned_to, target_handover, construction_start, construction_progress').not('stage', 'in', '("rent_started","dropped")'),
+    db.from('project_checklist_items').select('project_id, stage, label, sort').eq('done', false).order('sort'),
+    db.from('site_requirements').select('id, title, status, lat, lng, radius_max_m, priority, target_date, brands(name)').eq('status', 'searching'),
+    db.from('requirement_assignments').select('requirement_id, team_member_id').not('team_member_id', 'is', null),
+    db.from('commercial_properties').select('lat, lng').not('lat', 'is', null),
+    isOwner ? db.from('project_fees').select('id, project_id, amount, received_amount, received_at, status, due_date, projects(name)') : Promise.resolve({ data: null }),
+    db.from('external_scouts').select('id, name, expires_at, revoked_at'),
+    db.from('commercial_properties').select('id, title, tenant_name, lease_expiry').eq('deal_type', 'lease').not('lease_expiry', 'is', null)
+      .lte('lease_expiry', new Date(now + 90 * 86_400_000).toISOString().slice(0, 10)).order('lease_expiry'),
+    db.from('commercial_properties').select('id', { count: 'exact', head: true }),
+    db.from('site_requirements').select('id', { count: 'exact', head: true }).eq('status', 'searching'),
+  ]);
 
-  const ninetyDaysOut = new Date();
-  ninetyDaysOut.setDate(ninetyDaysOut.getDate() + 90);
-  const { data: expiringLeases } = await supabaseInternalAdmin
-    .from('commercial_properties')
-    .select('id, title, area, tenant_name, lease_expiry')
-    .eq('deal_type', 'lease')
-    .not('lease_expiry', 'is', null)
-    .lte('lease_expiry', ninetyDaysOut.toISOString().slice(0, 10))
-    .order('lease_expiry', { ascending: true });
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const all = buildToday({
+    me: member.id, isOwner, now,
+    leads: leads || [],
+    projects: projects || [],
+    openItems: openItems || [],
+    requirements: (reqs || []).map((r: any) => ({
+      ...r, brand_name: r.brands?.name ?? null,
+      assignee_ids: (assignments || []).filter((a) => a.requirement_id === r.id).map((a) => a.team_member_id as number),
+    })),
+    properties: props || [],
+    fees: (feeRows || []).map((f: any) => ({ ...f, project_name: f.projects?.name ?? `Project #${f.project_id}` })),
+    scouts: scouts || [],
+  });
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  const items = showAll ? all : all.filter((i) => i.mine);
+  const urgentCount = items.filter((i) => i.urgency === 'urgent').length;
+  const groups = (Object.keys(GROUP_LABEL) as Group[]).map((g) => ({ g, rows: items.filter((i) => i.group === g) })).filter((x) => x.rows.length);
+  const fs = feeSummary(feeRows || []);
+  const newLeads = (leads || []).filter((l) => l.status === 'new').length;
+
+  const greeting = (() => {
+    const h = Number(new Intl.DateTimeFormat('en-IN', { hour: 'numeric', hour12: false, timeZone: 'Asia/Kolkata' }).format(new Date()));
+    return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  })();
+  const dot: Record<string, string> = { urgent: 'bg-red-500', soon: 'bg-amber-400', normal: 'bg-stone-300' };
 
   return (
     <div className="min-h-screen bg-stone-50">
       <InternalHeader memberName={member.name} role={member.role} />
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        <h1 className="font-serif text-2xl font-bold text-stone-900 mb-1">Welcome, {member.name.split(' ')[0]}</h1>
-        <p className="text-stone-500 text-sm mb-6 capitalize">{member.role}</p>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          <Link href="/internal/projects" className="bg-white border border-stone-200 rounded-xl p-5 hover:border-orange-300 transition-colors">
-            <div className="font-serif text-2xl font-bold text-stone-900">{liveProjects?.length ?? 0}</div>
-            <div className="text-xs text-stone-500 mt-1">Live Projects</div>
-          </Link>
-          <Link href="/internal/land-leads" className="bg-white border border-stone-200 rounded-xl p-5 hover:border-orange-300 transition-colors">
-            <div className={`font-serif text-2xl font-bold ${newLeadCount ? 'text-orange-500' : 'text-stone-900'}`}>{newLeadCount ?? 0}</div>
-            <div className="text-xs text-stone-500 mt-1">New Land Leads to call</div>
-          </Link>
-          <Link href="/internal/properties" className="bg-white border border-stone-200 rounded-xl p-5 hover:border-orange-300 transition-colors">
-            <div className="font-serif text-2xl font-bold text-stone-900">{propCount ?? 0}</div>
-            <div className="text-xs text-stone-500 mt-1">Commercial Properties</div>
-          </Link>
-          <Link href="/internal/deals" className="bg-white border border-stone-200 rounded-xl p-5 hover:border-orange-300 transition-colors">
-            <div className="font-serif text-2xl font-bold text-stone-900">{dealCount ?? 0}</div>
-            <div className="text-xs text-stone-500 mt-1">Open Deals</div>
-          </Link>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
+          <div>
+            <h1 className="font-serif text-2xl font-bold text-stone-900">{greeting}, {member.name.split(' ')[0]}</h1>
+            <p className="text-stone-500 text-sm mt-1">
+              {items.length === 0 ? 'Nothing needs you right now.' : `${items.length} thing${items.length > 1 ? 's' : ''} need${items.length > 1 ? '' : 's'} attention${urgentCount ? `, ${urgentCount} urgent` : ''}.`}
+            </p>
+          </div>
+          <div className="inline-flex rounded-lg border border-stone-200 bg-white p-0.5 text-xs font-semibold">
+            <Link href="/internal" className={`px-3 py-1.5 rounded-md ${!showAll ? 'bg-orange-500 text-white' : 'text-stone-500'}`}>Mine + unassigned</Link>
+            <Link href="/internal?view=all" className={`px-3 py-1.5 rounded-md ${showAll ? 'bg-orange-500 text-white' : 'text-stone-500'}`}>Everyone</Link>
+          </div>
         </div>
 
-        {isOwner && fees && fees.length > 0 && (
-          <Link href="/internal/fees" className="grid grid-cols-3 gap-3 bg-white border border-stone-200 rounded-xl p-4 mb-8 hover:border-orange-300 transition-colors">
-            <div><div className="text-[11px] text-stone-500">Fees received this quarter</div><div className="font-serif text-lg font-bold text-emerald-600">{inr(fs.receivedThisQuarter)}</div></div>
-            <div><div className="text-[11px] text-stone-500">Due to us (invoiced + expected)</div><div className="font-serif text-lg font-bold text-stone-900">{inr(fs.invoiced + fs.expected)}</div></div>
-            <div><div className="text-[11px] text-stone-500">Overdue</div><div className={`font-serif text-lg font-bold ${fs.overdueCount ? 'text-red-600' : 'text-stone-900'}`}>{inr(fs.overdue)}</div></div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+          <Link href="/internal/land-leads" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
+            <div className={`font-serif text-2xl font-bold ${newLeads ? 'text-orange-500' : 'text-stone-900'}`}>{newLeads}</div>
+            <div className="text-xs text-stone-500 mt-0.5">New land leads</div>
           </Link>
-        )}
+          <Link href="/internal/projects" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
+            <div className="font-serif text-2xl font-bold text-stone-900">{projects?.length ?? 0}</div>
+            <div className="text-xs text-stone-500 mt-0.5">Live projects</div>
+          </Link>
+          <Link href="/internal/requirements" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
+            <div className="font-serif text-2xl font-bold text-stone-900">{openReqCount ?? 0}</div>
+            <div className="text-xs text-stone-500 mt-0.5">Sites still searching</div>
+          </Link>
+          {isOwner && feeRows ? (
+            <Link href="/internal/fees" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
+              <div className="font-serif text-2xl font-bold text-emerald-600">{inr(fs.receivedThisQuarter)}</div>
+              <div className="text-xs text-stone-500 mt-0.5">Fees this quarter{fs.overdueCount ? <span className="text-red-600 font-semibold"> · {inr(fs.overdue)} overdue</span> : null}</div>
+            </Link>
+          ) : (
+            <Link href="/internal/properties" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
+              <div className="font-serif text-2xl font-bold text-stone-900">{propCount ?? 0}</div>
+              <div className="text-xs text-stone-500 mt-0.5">Properties</div>
+            </Link>
+          )}
+        </div>
 
-        {lateBuilds.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
-            <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">Construction late or behind schedule</div>
-            <div className="space-y-1.5">
-              {lateBuilds.map((p) => (
-                <Link key={p.id} href={`/internal/projects/${p.id}`} className="flex items-center justify-between text-sm hover:underline">
-                  <span className="text-stone-800">{p.name}</span>
-                  <span className={p.sch.kind === 'late' ? 'text-red-700 font-semibold' : 'text-amber-800 font-semibold'}>{p.sch.label}</span>
-                </Link>
-              ))}
-            </div>
+        {groups.length === 0 ? (
+          <div className="bg-white border border-dashed border-stone-300 rounded-xl p-10 text-center">
+            <div className="font-serif text-lg font-bold text-stone-800">All clear</div>
+            <p className="text-sm text-stone-500 mt-1">No calls waiting, no stuck projects, nothing overdue.{!showAll ? ' Switch to Everyone to see the whole team.' : ''}</p>
           </div>
-        )}
-
-        {stuckProjects.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8">
-            <div className="text-xs font-bold uppercase tracking-wide text-red-700 mb-2">Projects stuck more than {STUCK_AFTER_DAYS} days</div>
-            <div className="space-y-1.5">
-              {stuckProjects.map((p) => (
-                <Link key={p.id} href={`/internal/projects/${p.id}`} className="flex items-center justify-between text-sm hover:underline">
-                  <span className="text-stone-800">{p.name}</span>
-                  <span className="text-red-700 font-semibold">{stageLabel(p.stage)} · {daysSince(p.stage_changed_at)}d</span>
-                </Link>
-              ))}
-            </div>
+        ) : (
+          <div className="space-y-6">
+            {groups.map(({ g, rows }) => (
+              <section key={g}>
+                <h2 className="text-xs font-bold uppercase tracking-wide text-stone-500 mb-2">{GROUP_LABEL[g]} <span className="text-stone-400">({rows.length})</span></h2>
+                <ul className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+                  {rows.map((i) => (
+                    <li key={i.key}>
+                      <Link href={i.href} className="flex items-start gap-3 px-4 py-3 hover:bg-stone-50 transition-colors">
+                        <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${dot[i.urgency]}`} aria-label={i.urgency} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-stone-800">{i.title}</span>
+                          <span className="block text-xs text-stone-500 truncate">{i.detail}</span>
+                        </span>
+                        {!i.mine && <span className="text-[10px] text-stone-400 flex-shrink-0 mt-1">assigned</span>}
+                        <span className="text-stone-300 flex-shrink-0">›</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
           </div>
         )}
 
         {expiringLeases && expiringLeases.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
-            <div className="text-xs font-bold uppercase tracking-wide text-amber-700 mb-2">⚠️ Leases Expiring Within 90 Days</div>
-            <div className="space-y-1.5">
+          <section className="mt-6">
+            <h2 className="text-xs font-bold uppercase tracking-wide text-stone-500 mb-2">Existing leases expiring within 90 days</h2>
+            <ul className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
               {expiringLeases.map((p) => {
-                const isPast = new Date(p.lease_expiry) < new Date();
+                const isPast = new Date(p.lease_expiry).getTime() < now;
                 return (
-                  <Link key={p.id} href={`/internal/properties/${p.id}`} className="flex items-center justify-between text-sm hover:underline">
-                    <span className="text-stone-800">{p.title} {p.tenant_name && <span className="text-stone-500">— {p.tenant_name}</span>}</span>
-                    <span className={isPast ? 'text-red-600 font-semibold' : 'text-amber-700 font-semibold'}>
-                      {isPast ? 'Expired ' : ''}{new Date(p.lease_expiry).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </span>
-                  </Link>
+                  <li key={p.id}>
+                    <Link href={`/internal/properties/${p.id}`} className="flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-stone-50">
+                      <span className="text-stone-800">{p.title}{p.tenant_name && <span className="text-stone-500"> · {p.tenant_name}</span>}</span>
+                      <span className={isPast ? 'text-red-600 font-semibold' : 'text-amber-700 font-semibold'}>{isPast ? 'Expired ' : ''}{new Date(p.lease_expiry).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </Link>
+                  </li>
                 );
               })}
-            </div>
-          </div>
+            </ul>
+          </section>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-serif text-lg font-bold text-stone-900">Recent Properties</h2>
-              <Link href="/internal/properties/new" className="text-xs text-orange-500 font-semibold hover:underline">+ Add</Link>
-            </div>
-            <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
-              {(properties || []).map((p) => (
-                <Link key={p.id} href={`/internal/properties/${p.id}`} className="block px-4 py-3 hover:bg-stone-50 transition-colors">
-                  <div className="text-sm font-semibold text-stone-800">{p.title}</div>
-                  <div className="text-xs text-stone-500 capitalize">{p.area} · {p.property_type} · {p.deal_type} · {p.status?.replace('_', ' ')}</div>
-                </Link>
-              ))}
-              {(!properties || properties.length === 0) && <div className="px-4 py-8 text-center text-sm text-stone-400">No properties yet.</div>}
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-serif text-lg font-bold text-stone-900">Recent Deals</h2>
-              <Link href="/internal/deals/new" className="text-xs text-orange-500 font-semibold hover:underline">+ Add</Link>
-            </div>
-            <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
-              {(deals || []).map((d) => (
-                <Link key={d.id} href={`/internal/deals/${d.id}`} className="block px-4 py-3 hover:bg-stone-50 transition-colors">
-                  <div className="text-sm font-semibold text-stone-800">{d.deal_name}</div>
-                  <div className="text-xs text-stone-500 capitalize">{d.stage?.replace('_', ' ')} {d.value ? `· ₹${Number(d.value).toLocaleString('en-IN')}` : ''}</div>
-                </Link>
-              ))}
-              {(!deals || deals.length === 0) && <div className="px-4 py-8 text-center text-sm text-stone-400">No deals yet.</div>}
-            </div>
-          </div>
+        <div className="flex flex-wrap gap-2 mt-8 text-xs font-semibold">
+          <Link href="/internal/projects/new" className="px-3 py-2 rounded-lg bg-white border border-stone-200 text-stone-600 hover:border-orange-300">+ Project</Link>
+          <Link href="/internal/brands/new" className="px-3 py-2 rounded-lg bg-white border border-stone-200 text-stone-600 hover:border-orange-300">+ Brand</Link>
+          <Link href="/internal/properties/new" className="px-3 py-2 rounded-lg bg-white border border-stone-200 text-stone-600 hover:border-orange-300">+ Property</Link>
+          <Link href="/internal/requirements/bulk-import" className="px-3 py-2 rounded-lg bg-white border border-stone-200 text-stone-600 hover:border-orange-300">Import site locations</Link>
+          <Link href="/internal/deals" className="px-3 py-2 rounded-lg bg-white border border-stone-200 text-stone-600 hover:border-orange-300">Deals</Link>
         </div>
       </div>
     </div>

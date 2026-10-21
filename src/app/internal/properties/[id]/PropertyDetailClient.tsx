@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import PropertyForm from '@/components/internal/PropertyForm';
 import NotesTimeline from '@/components/internal/NotesTimeline';
+import { CONSTRUCTION_INTEREST, LAND_TYPES, formatSize } from '@/lib/land-leads';
 
 interface Property {
   id: number; title: string; address: string | null; area: string | null;
@@ -11,7 +12,11 @@ interface Property {
   price: number | null; price_label: string | null; lease_rate: number | null; lease_rate_label: string | null;
   sqft: number | null; zoning: string | null; cap_rate: number | null; tenant_name: string | null; lease_expiry: string | null;
   notes: string | null; lat: number | null; lng: number | null;
+  land_sq_yds?: number | null; road_width_ft?: number | null; frontage_ft?: number | null; land_type?: string | null;
+  title_status?: string | null; construction_interest?: string | null; owner_name?: string | null; owner_phone?: string | null;
 }
+
+const TITLE_LABEL: Record<string, string> = { clear: 'Clear', in_progress: 'Work pending', not_sure: 'Not sure' };
 interface Deal { id: number; deal_name: string; stage: string }
 interface Doc { id: number; title: string; document_type: string; created_at: string }
 interface Photo { id: number; url: string | null; is_primary: boolean }
@@ -83,6 +88,12 @@ export default function PropertyDetailClient({ property, deals, documents, match
             sqft: property.sqft != null ? String(property.sqft) : '', zoning: property.zoning || '',
             cap_rate: property.cap_rate != null ? String(property.cap_rate) : '', tenant_name: property.tenant_name || '',
             lease_expiry: property.lease_expiry || '', status: property.status, notes: property.notes || '',
+            land_sq_yds: property.land_sq_yds != null ? String(property.land_sq_yds) : property.property_type === 'land' && property.sqft ? String(Math.round(Number(property.sqft) / 9)) : '',
+            road_width_ft: property.road_width_ft != null ? String(property.road_width_ft) : '',
+            frontage_ft: property.frontage_ft != null ? String(property.frontage_ft) : '',
+            land_type: property.land_type || '', title_status: property.title_status || '',
+            construction_interest: property.construction_interest || '',
+            owner_name: property.owner_name || '', owner_phone: property.owner_phone || '',
           }}
           initialPhotos={photos}
         />
@@ -117,18 +128,35 @@ export default function PropertyDetailClient({ property, deals, documents, match
           <div className="font-serif font-bold text-orange-500">{property.deal_type === 'lease' ? (property.lease_rate_label || '—') : (property.price_label || '—')}</div>
         </div>
         <div className="bg-white border border-stone-200 rounded-xl p-4">
-          <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">Sqft</div>
-          <div className="font-serif font-bold text-stone-800">{property.sqft || '—'}</div>
+          <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">{property.property_type === 'land' ? 'Land' : 'Sqft'}</div>
+          <div className="font-serif font-bold text-stone-800">{property.property_type === 'land' ? (property.land_sq_yds ? formatSize(Number(property.land_sq_yds)) : property.sqft ? formatSize(Number(property.sqft) / 9) : '—') : (property.sqft || '—')}</div>
         </div>
         <div className="bg-white border border-stone-200 rounded-xl p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">Status</div>
           <span className={`text-[11px] font-bold uppercase px-2 py-1 rounded-full border ${STATUS_BADGE[property.status] || ''}`}>{property.status?.replace('_', ' ')}</span>
         </div>
         <div className="bg-white border border-stone-200 rounded-xl p-4">
-          <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">Zoning</div>
-          <div className="font-serif font-bold text-stone-800">{property.zoning || '—'}</div>
+          <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">{property.property_type === 'land' ? 'Road' : 'Zoning'}</div>
+          <div className="font-serif font-bold text-stone-800">{property.property_type === 'land' ? (property.road_width_ft ? `${property.road_width_ft} ft` : '—') : (property.zoning || '—')}</div>
         </div>
       </div>
+
+      {property.property_type === 'land' && (
+        <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6 text-sm grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div><div className="text-xs text-stone-400">Land</div><div className="font-semibold text-stone-800">{property.land_sq_yds ? formatSize(Number(property.land_sq_yds)) : property.sqft ? formatSize(Number(property.sqft) / 9) : '—'}</div></div>
+          <div><div className="text-xs text-stone-400">Approach road</div><div className="font-semibold text-stone-800">{property.road_width_ft ? `${property.road_width_ft} ft` : '—'}</div></div>
+          <div><div className="text-xs text-stone-400">Frontage</div><div className="font-semibold text-stone-800">{property.frontage_ft ? `${property.frontage_ft} ft` : '—'}</div></div>
+          <div><div className="text-xs text-stone-400">Land type</div><div className="font-semibold text-stone-800">{LAND_TYPES.find((t) => t.value === property.land_type)?.en || '—'}</div></div>
+          <div><div className="text-xs text-stone-400">Title</div><div className="font-semibold text-stone-800">{property.title_status ? TITLE_LABEL[property.title_status] : '—'}</div></div>
+          <div><div className="text-xs text-stone-400">Owner will build</div><div className="font-semibold text-stone-800">{property.construction_interest ? CONSTRUCTION_INTEREST[property.construction_interest]?.label : '—'}</div></div>
+          {(property.owner_name || property.owner_phone) && (
+            <div className="col-span-2 md:col-span-3 flex items-center justify-between gap-3 border-t border-stone-100 pt-3">
+              <div><span className="text-xs text-stone-400">Owner </span><span className="font-semibold text-stone-800">{property.owner_name}</span>{property.owner_phone && <span className="text-stone-500"> · {property.owner_phone}</span>}</div>
+              {property.owner_phone && <a href={`tel:${property.owner_phone}`} className="text-xs bg-stone-900 text-white rounded-lg px-3 py-1.5 font-semibold">Call owner</a>}
+            </div>
+          )}
+        </div>
+      )}
 
       {property.deal_type === 'lease' && (property.tenant_name || property.lease_expiry) && (
         <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6 text-sm">

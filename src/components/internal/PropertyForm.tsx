@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { getAreaCoordinates } from '@/lib/area-coordinates';
+import { CONSTRUCTION_INTEREST, LAND_TYPES } from '@/lib/land-leads';
 
 const LocationPicker = dynamic(() => import('@/components/admin/LocationPicker'), {
   ssr: false,
@@ -16,6 +17,9 @@ export interface CommercialFormData {
   price: string; price_label: string; lease_rate: string; lease_rate_label: string;
   sqft: string; zoning: string; cap_rate: string; tenant_name: string; lease_expiry: string;
   status: string; notes: string;
+  // Land-only fields
+  land_sq_yds: string; road_width_ft: string; frontage_ft: string; land_type: string;
+  title_status: string; construction_interest: string; owner_name: string; owner_phone: string;
 }
 
 const empty: CommercialFormData = {
@@ -24,7 +28,11 @@ const empty: CommercialFormData = {
   price: '', price_label: '', lease_rate: '', lease_rate_label: '',
   sqft: '', zoning: '', cap_rate: '', tenant_name: '', lease_expiry: '',
   status: 'available', notes: '',
+  land_sq_yds: '', road_width_ft: '', frontage_ft: '', land_type: '',
+  title_status: '', construction_interest: '', owner_name: '', owner_phone: '',
 };
+
+const num = (v: string) => (v.trim() === '' ? null : Number.isFinite(parseFloat(v)) ? parseFloat(v) : null);
 
 interface ExistingPhoto { id: number; url: string | null }
 
@@ -46,13 +54,25 @@ export default function PropertyForm({ mode, propertyId, initialData, initialPho
     if (!form.title.trim()) { setError('Property title is required.'); return; }
     setSaving(true);
     try {
+      const isLand = form.property_type === 'land';
+      const landSqYds = num(form.land_sq_yds);
       const payload = {
         ...form,
-        price: form.price ? parseFloat(form.price) : null,
-        lease_rate: form.lease_rate ? parseFloat(form.lease_rate) : null,
-        sqft: form.sqft ? parseFloat(form.sqft) : null,
-        cap_rate: form.cap_rate ? parseFloat(form.cap_rate) : null,
+        price: num(form.price),
+        lease_rate: num(form.lease_rate),
+        // For land, sqft is derived from sq yds so older sqft-based views stay right.
+        sqft: isLand ? (landSqYds != null ? Math.round(landSqYds * 9) : null) : num(form.sqft),
+        cap_rate: isLand ? null : num(form.cap_rate),
         lease_expiry: form.lease_expiry || null,
+        land_sq_yds: isLand ? landSqYds : null,
+        road_width_ft: num(form.road_width_ft),
+        frontage_ft: num(form.frontage_ft),
+        land_type: isLand ? form.land_type || null : null,
+        title_status: form.title_status || null,
+        construction_interest: isLand ? form.construction_interest || null : null,
+        owner_name: form.owner_name.trim() || null,
+        owner_phone: form.owner_phone.trim() || null,
+        zoning: form.zoning || null,
       };
       const res = await fetch(mode === 'edit' ? `/api/internal/properties/${propertyId}` : '/api/internal/properties', {
         method: mode === 'edit' ? 'PATCH' : 'POST',
@@ -104,10 +124,10 @@ export default function PropertyForm({ mode, propertyId, initialData, initialPho
       <div>
         <div className="text-sm font-bold text-stone-800 mb-3">Property Details</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2"><label className={labelClass}>Title *</label><input value={form.title} onChange={(e) => set('title', e.target.value)} className={inputClass} placeholder="e.g. Grade-A Office Space, HITEC City" /></div>
+          <div className="md:col-span-2"><label className={labelClass}>Title *</label><input value={form.title} onChange={(e) => set('title', e.target.value)} className={inputClass} placeholder={form.property_type === 'land' ? 'e.g. 1,200 sq yds on 40 ft road, Kompally' : 'e.g. Grade-A Office Space, HITEC City'} /></div>
           <div>
             <label className={labelClass}>Property Type</label>
-            <select value={form.property_type} onChange={(e) => set('property_type', e.target.value)} className={inputClass}>
+            <select value={form.property_type} onChange={(e) => { const v = e.target.value; setForm((p) => ({ ...p, property_type: v, deal_type: v === 'land' && mode === 'create' ? 'lease' : p.deal_type })); }} className={inputClass}>
               <option value="office">Office</option>
               <option value="retail">Retail</option>
               <option value="warehouse">Warehouse</option>
@@ -125,6 +145,50 @@ export default function PropertyForm({ mode, propertyId, initialData, initialPho
           </div>
           <div><label className={labelClass}>Area / Locality</label><input value={form.area} onChange={(e) => set('area', e.target.value)} className={inputClass} placeholder="e.g. Gachibowli" /></div>
           <div><label className={labelClass}>Address</label><input value={form.address} onChange={(e) => set('address', e.target.value)} className={inputClass} /></div>
+          {form.property_type === 'land' ? (
+            <>
+              <div><label className={labelClass}>Land size (sq yds)</label><input type="number" value={form.land_sq_yds} onChange={(e) => set('land_sq_yds', e.target.value)} className={inputClass} placeholder="e.g. 1200" /></div>
+              <div>
+                <label className={labelClass}>Land type</label>
+                <select value={form.land_type} onChange={(e) => set('land_type', e.target.value)} className={inputClass}>
+                  <option value="">Not known</option>
+                  {LAND_TYPES.map((t) => <option key={t.value} value={t.value}>{t.en}</option>)}
+                </select>
+              </div>
+              <div><label className={labelClass}>Approach road (ft)</label><input type="number" value={form.road_width_ft} onChange={(e) => set('road_width_ft', e.target.value)} className={inputClass} placeholder="e.g. 40" /></div>
+              <div><label className={labelClass}>Frontage (ft)</label><input type="number" value={form.frontage_ft} onChange={(e) => set('frontage_ft', e.target.value)} className={inputClass} placeholder="e.g. 60" /></div>
+              <div>
+                <label className={labelClass}>Title</label>
+                <select value={form.title_status} onChange={(e) => set('title_status', e.target.value)} className={inputClass}>
+                  <option value="">Not checked</option>
+                  <option value="clear">Clear, documents ready</option>
+                  <option value="in_progress">Some work pending</option>
+                  <option value="not_sure">Not sure</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Owner will build?</label>
+                <select value={form.construction_interest} onChange={(e) => set('construction_interest', e.target.value)} className={inputClass}>
+                  <option value="">Not asked</option>
+                  {Object.entries(CONSTRUCTION_INTEREST).map(([v, o]) => <option key={v} value={v}>{o.label}</option>)}
+                </select>
+              </div>
+              <div><label className={labelClass}>Owner name</label><input value={form.owner_name} onChange={(e) => set('owner_name', e.target.value)} className={inputClass} /></div>
+              <div><label className={labelClass}>Owner phone</label><input inputMode="tel" value={form.owner_phone} onChange={(e) => set('owner_phone', e.target.value)} className={inputClass} /></div>
+              {form.deal_type === 'lease' ? (
+                <>
+                  <div><label className={labelClass}>Owner&apos;s rent ask (₹/month)</label><input type="number" value={form.lease_rate} onChange={(e) => set('lease_rate', e.target.value)} className={inputClass} /></div>
+                  <div><label className={labelClass}>Rent label (display)</label><input value={form.lease_rate_label} onChange={(e) => set('lease_rate_label', e.target.value)} className={inputClass} placeholder="e.g. ₹1.5 L/mo (owner ask)" /></div>
+                </>
+              ) : (
+                <>
+                  <div><label className={labelClass}>Price (₹)</label><input type="number" value={form.price} onChange={(e) => set('price', e.target.value)} className={inputClass} /></div>
+                  <div><label className={labelClass}>Price label (display)</label><input value={form.price_label} onChange={(e) => set('price_label', e.target.value)} className={inputClass} placeholder="e.g. ₹4.2 Cr" /></div>
+                </>
+              )}
+            </>
+          ) : (
+          <>
           <div><label className={labelClass}>Sqft</label><input type="number" value={form.sqft} onChange={(e) => set('sqft', e.target.value)} className={inputClass} /></div>
           <div><label className={labelClass}>Zoning</label><input value={form.zoning} onChange={(e) => set('zoning', e.target.value)} className={inputClass} placeholder="e.g. Commercial" /></div>
 
@@ -141,6 +205,8 @@ export default function PropertyForm({ mode, propertyId, initialData, initialPho
               <div><label className={labelClass}>Current Tenant</label><input value={form.tenant_name} onChange={(e) => set('tenant_name', e.target.value)} className={inputClass} /></div>
               <div><label className={labelClass}>Lease Expiry</label><input type="date" value={form.lease_expiry} onChange={(e) => set('lease_expiry', e.target.value)} className={inputClass} /></div>
             </>
+          )}
+          </>
           )}
 
           <div>

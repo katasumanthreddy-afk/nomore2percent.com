@@ -126,6 +126,7 @@ export default function LandLeadsClient({ myId }: { myId: number }) {
             id: l.id, title: `${l.owner_name} · ${formatSize(Number(l.size_sq_yds))}`, lat: l.lat!, lng: l.lng!,
             area: l.locality, deal_type: 'lease', status: l.status,
             lease_rate_label: l.expected_rent_monthly ? `₹${Number(l.expected_rent_monthly).toLocaleString('en-IN')}/mo ask` : null,
+            photo_url: l.cover_url,
           }))}
           propertyHref={(id) => `/internal/land-leads/${id}`}
         />
