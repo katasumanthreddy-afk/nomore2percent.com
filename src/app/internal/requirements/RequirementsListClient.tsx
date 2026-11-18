@@ -83,6 +83,26 @@ export default function RequirementsListClient() {
     setAssignResult('');
   };
 
+  const [deleting, setDeleting] = useState(false);
+  const bulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} site requirement${selectedIds.size === 1 ? '' : 's'}? Their scout assignments go too. This can't be undone.`)) return;
+    setDeleting(true);
+    setAssignResult('');
+    try {
+      const res = await fetch('/api/internal/requirements/bulk', {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      });
+      const data = await res.json();
+      if (!data.success) { setAssignResult(data.message || 'Failed.'); return; }
+      setAssignResult(`Deleted ${data.deleted} site${data.deleted === 1 ? '' : 's'}.`);
+      load();
+      setTimeout(exitSelectMode, 1200);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const bulkAssign = async () => {
     if (!assignTarget || selectedIds.size === 0) return;
     setAssigning(true);
@@ -164,6 +184,13 @@ export default function RequirementsListClient() {
               className="text-xs bg-orange-500 hover:bg-orange-600 disabled:opacity-40 rounded-lg px-4 py-1.5 font-semibold whitespace-nowrap"
             >
               {assigning ? 'Assigning...' : `Assign ${selectedIds.size || ''}`}
+            </button>
+            <button
+              onClick={bulkDelete}
+              disabled={deleting || selectedIds.size === 0}
+              className="text-xs border border-red-500/60 text-red-300 hover:bg-red-600 hover:text-white disabled:opacity-40 rounded-lg px-3 py-1.5 font-semibold whitespace-nowrap"
+            >
+              {deleting ? 'Deleting...' : `Delete ${selectedIds.size || ''}`}
             </button>
             <button onClick={exitSelectMode} className="text-xs text-stone-400 hover:text-white">Cancel</button>
           </div>

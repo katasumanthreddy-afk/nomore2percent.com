@@ -120,6 +120,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ success: false, message: 'Not authorized' }, { status: 403 });
   }
   const { id } = await params;
+  await supabaseInternalAdmin.from('requirement_assignments').delete().eq('requirement_id', id);
   const { error } = await supabaseInternalAdmin.from('site_requirements').delete().eq('id', id);
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   invalidateCache('internal:requirements:raw');
