@@ -312,12 +312,12 @@ function SiteCard({ site, data, onPick, onDeleted }: { site: MapSite; data: MapD
       <div className="flex items-center gap-1.5 mt-3">
         <Link href={`/internal/requirements/${site.id}`} className="inline-flex items-center gap-1 rounded-md bg-orange-500 hover:bg-orange-600 px-2.5 py-1 text-[11px] font-semibold text-white">Open <ArrowUpRight className="w-3 h-3" /></Link>
         <PinActions nowrap point={site} label={`Site: ${site.title}${site.brand_name ? ` (${site.brand_name})` : ''}`} />
-        {!confirming && (
-          <button onClick={() => setConfirming(true)} className="ml-auto w-7 h-7 flex-shrink-0 rounded-md border border-stone-200 hover:border-red-300 hover:bg-red-50 flex items-center justify-center" aria-label="Delete site" title="Delete site">
-            <Trash2 className="w-3.5 h-3.5 text-stone-500" />
-          </button>
-        )}
       </div>
+      {!confirming && (
+        <button onClick={() => setConfirming(true)} className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 hover:text-red-600" aria-label="Delete site">
+          <Trash2 className="w-3.5 h-3.5" /> Delete site
+        </button>
+      )}
       {confirming && (
         <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-2.5">
           <p className="text-xs text-red-800">Delete <span className="font-semibold">{site.title}</span>? Its scout assignments go too. Linked projects and land leads are kept.</p>
