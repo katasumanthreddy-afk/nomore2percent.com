@@ -45,6 +45,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   invalidateCache('internal:properties');
   invalidateCache('internal:requirements:matches');
+  invalidateCache('internal:map:data');
   return NextResponse.json({ success: true });
 }
 
@@ -58,5 +59,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   invalidateCache('internal:properties');
   invalidateCache('internal:requirements:matches');
+  invalidateCache('internal:map:data');
   return NextResponse.json({ success: true });
 }

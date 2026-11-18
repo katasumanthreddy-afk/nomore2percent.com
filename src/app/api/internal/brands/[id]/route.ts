@@ -52,6 +52,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // Brand specs feed requirement matching.
   invalidateCache('internal:requirements:raw');
   invalidateCache('internal:requirements:matches');
+  invalidateCache('internal:map:data');
   return NextResponse.json({ success: true, brand: data });
 }
 
@@ -67,5 +68,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   invalidateCache('internal:requirements:raw');
   invalidateCache('internal:requirements:matches');
+  invalidateCache('internal:map:data');
   return NextResponse.json({ success: true });
 }

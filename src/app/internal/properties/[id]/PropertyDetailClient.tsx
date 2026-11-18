@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import LocationStrip from '@/components/internal/LocationStrip';
 import Link from 'next/link';
 import PropertyForm from '@/components/internal/PropertyForm';
 import NotesTimeline from '@/components/internal/NotesTimeline';
@@ -118,6 +119,7 @@ export default function PropertyDetailClient({ property, deals, documents, match
         <div>
           <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{property.title}</h1>
           <p className="text-stone-500 text-sm capitalize">{property.area} · {property.property_type} · {property.deal_type}</p>
+          <LocationStrip lat={property.lat} lng={property.lng} kind="properties" id={property.id} label={property.title} className="mt-3" />
         </div>
         <button onClick={() => setEditing(true)} className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex-shrink-0">Edit</button>
       </div>

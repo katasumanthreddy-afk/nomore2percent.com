@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import LocationStrip from '@/components/internal/LocationStrip';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import NotesTimeline from '@/components/internal/NotesTimeline';
@@ -60,7 +61,6 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
   };
 
   const waText = encodeURIComponent(`Namaste ${lead.owner_name} garu, this is from nomore2percent about your ${formatSize(Number(lead.size_sq_yds))} land in ${lead.locality} and building for a quick-commerce brand. Is this a good time to talk?`);
-  const mapsUrl = lead.lat != null ? `https://www.google.com/maps/search/?api=1&query=${lead.lat},${lead.lng}` : null;
 
   const row = (label: string, value: React.ReactNode) => value ? (
     <div className="flex justify-between gap-4 py-2 border-b border-stone-100 last:border-0 text-sm">
@@ -83,9 +83,9 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
         <div className="flex flex-wrap gap-2">
           <a href={`tel:+91${lead.phone}`} className="px-3.5 py-2 rounded-lg bg-stone-900 text-white text-sm font-semibold">Call</a>
           <a href={`https://wa.me/91${lead.phone}?text=${waText}`} target="_blank" rel="noopener noreferrer" className="px-3.5 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">WhatsApp</a>
-          {mapsUrl && <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="px-3.5 py-2 rounded-lg border border-stone-300 text-stone-700 text-sm font-semibold bg-white">Open in Maps</a>}
         </div>
       </div>
+      <LocationStrip lat={lead.lat} lng={lead.lng} kind="leads" id={lead.id} label={`Land: ${formatSize(Number(lead.size_sq_yds))} at ${lead.locality}`} className="-mt-3 mb-5" />
 
       <div className="grid lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">

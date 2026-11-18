@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
 
   invalidateCache('internal:requirements:raw');
   invalidateCache('internal:requirements:matches');
+  invalidateCache('internal:map:data');
 
   return NextResponse.json({ success: true, created, skipped });
 }

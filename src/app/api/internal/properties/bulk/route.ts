@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
 
   invalidateCache('internal:properties');
   invalidateCache('internal:requirements:matches');
+  invalidateCache('internal:map:data');
 
   return NextResponse.json({ success: true, created: data.length });
 }
