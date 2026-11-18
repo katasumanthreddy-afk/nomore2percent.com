@@ -1,18 +1,11 @@
 import { redirect } from 'next/navigation';
-import { createInternalServerClient } from '@/lib/supabase-internal-server';
-import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
+import { requireInternalMember } from '@/lib/require-internal-member';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
-import InternalHeader from '@/components/internal/InternalHeader';
 import DealDetailClient from './DealDetailClient';
 
 export default async function DealDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createInternalServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect(`/internal/login?next=/internal/deals/${id}`);
-
-  const member = await getRequestingTeamMember();
-  if (!member || member.status !== 'active') redirect('/internal');
+  await requireInternalMember(`/internal/deals/${id}`);
 
   const { data: deal } = await supabaseInternalAdmin
     .from('deals')
@@ -25,7 +18,6 @@ export default async function DealDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <InternalHeader memberName={member.name} role={member.role} />
       <DealDetailClient deal={deal} documents={documents || []} />
     </div>
   );

@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import InternalHeader from '@/components/internal/InternalHeader';
 import { requireInternalMember } from '@/lib/require-internal-member';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import NewProjectClient from './NewProjectClient';
@@ -47,7 +46,6 @@ export default async function NewProjectPage({ searchParams }: { searchParams: P
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <InternalHeader memberName={member.name} role={member.role} />
       <Suspense>
         <NewProjectClient prefill={prefill} brands={brands || []} requirements={requirements || []} team={team || []} myId={member.id} />
       </Suspense>

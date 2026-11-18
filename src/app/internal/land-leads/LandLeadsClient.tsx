@@ -81,7 +81,7 @@ export default function LandLeadsClient({ myId }: { myId: number }) {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-stone-900">Land Leads</h1>
+          <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">Land Leads</h1>
           <p className="text-sm text-stone-500 mt-1">Landowners (500+ sq yds) to match with quick-commerce brands · <a href="/lease-your-land" target="_blank" className="text-orange-500 hover:underline">public form ↗</a></p>
         </div>
         <div className="flex gap-2">
@@ -91,9 +91,9 @@ export default function LandLeadsClient({ myId }: { myId: number }) {
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">Leads shown</div><div className="font-serif text-2xl font-bold text-stone-900">{filtered.length}</div></div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">Total land</div><div className="font-serif text-2xl font-bold text-stone-900">{formatSize(totalSqYds)}</div></div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">Inside a requirement radius</div><div className="font-serif text-2xl font-bold text-emerald-600">{inRadius}</div></div>
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">Leads shown</div><div className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{filtered.length}</div></div>
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">Total land</div><div className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{formatSize(totalSqYds)}</div></div>
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">Inside a requirement radius</div><div className="text-xl sm:text-2xl tracking-tight font-semibold text-emerald-600">{inRadius}</div></div>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-2 mb-3 [scrollbar-width:none]">
@@ -139,8 +139,8 @@ export default function LandLeadsClient({ myId }: { myId: number }) {
           {filtered.map((l) => {
             const near = nearBadge(l);
             return (
-              <Link key={l.id} href={`/internal/land-leads/${l.id}`} className="flex gap-4 bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
-                <div className="w-20 h-20 rounded-lg bg-stone-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-[10px] text-stone-400">
+              <Link key={l.id} href={`/internal/land-leads/${l.id}`} className="flex gap-4 bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 hover:border-orange-300 transition-colors">
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-stone-100 flex-shrink-0 overflow-hidden items-center justify-center text-[10px] text-stone-400 ${l.cover_url ? 'flex' : 'hidden sm:flex'}`}>
                   {l.cover_url
                     // eslint-disable-next-line @next/next/no-img-element
                     ? <img src={l.cover_url} alt="" className="w-full h-full object-cover" />

@@ -54,7 +54,7 @@ export default function NotesTimeline({ propertyId, dealId, landLeadId, projectI
       ) : notes.length > 0 ? (
         <div className="space-y-2">
           {notes.map((n) => (
-            <div key={n.id} className="bg-white border border-stone-200 rounded-xl px-4 py-2.5">
+            <div key={n.id} className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] px-4 py-2.5">
               <p className="text-sm text-stone-700">{n.note}</p>
               <p className="text-[11px] text-stone-400 mt-1">
                 {n.team_members?.name || 'Unknown'} · {new Date(n.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}

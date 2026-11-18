@@ -139,7 +139,7 @@ export default function RequirementDetailClient({ requirementId }: { requirement
       <Link href="/internal/requirements" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Site Requirements</Link>
 
       <div className="flex items-start justify-between gap-4 mb-2">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">{requirement.title}</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{requirement.title}</h1>
         <button onClick={remove} className="text-xs text-red-500 hover:text-red-600 flex-shrink-0">Delete</button>
       </div>
       <p className="text-stone-500 text-sm mb-6">Search radius: {requirement.radius_min_m}m – {requirement.radius_max_m}m</p>
@@ -156,7 +156,7 @@ export default function RequirementDetailClient({ requirementId }: { requirement
         ))}
       </div>
 
-      <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6">
+      <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Brand & spec</div>
           {!editSpec && <button onClick={openSpecEditor} className="text-xs text-orange-500 font-semibold hover:underline">Edit</button>}
@@ -199,7 +199,7 @@ export default function RequirementDetailClient({ requirementId }: { requirement
       </div>
 
       {projects.length > 0 && (
-        <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 mb-6">
           <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Projects for this site</div>
           {projects.map((p) => (
             <Link key={p.id} href={`/internal/projects/${p.id}`} className="flex justify-between text-sm py-1 hover:text-orange-600">
@@ -209,7 +209,7 @@ export default function RequirementDetailClient({ requirementId }: { requirement
         </div>
       )}
 
-      <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6">
+      <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 mb-6">
         <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Assigned To ({assignments.length})</div>
         {assignments.length > 0 ? (
           <div className="space-y-1.5 mb-3">
@@ -257,7 +257,7 @@ export default function RequirementDetailClient({ requirementId }: { requirement
         Properties Within Range ({nearby.length})
       </div>
       {nearby.length > 0 ? (
-        <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
           {nearby.map((p) => (
             <div key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
               <div className="min-w-0">
@@ -288,7 +288,7 @@ export default function RequirementDetailClient({ requirementId }: { requirement
         Landowner leads nearby ({nearbyLeads.length})
       </div>
       {nearbyLeads.length > 0 ? (
-        <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
           {nearbyLeads.map((l) => (
             <div key={l.id} className="px-4 py-3">
               <div className="flex items-center justify-between gap-3">

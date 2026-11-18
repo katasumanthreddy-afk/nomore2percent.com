@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
+import { invalidatePrefix } from '@/lib/simple-cache';
 
 export async function GET() {
   const member = await getRequestingTeamMember();
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabaseInternalAdmin
     .from('team_members')
-    .insert([{ name, email: email.toLowerCase().trim(), role: role || 'employee', status: 'active' }])
+    .insert([{ name: String(name).trim(), email: String(email).toLowerCase().trim(), role: ['owner', 'partner', 'employee'].includes(role) ? role : 'employee', status: 'active' }])
     .select()
     .single();
 
@@ -39,5 +40,6 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
+  invalidatePrefix('internal:member:');
   return NextResponse.json({ success: true, member: data });
 }

@@ -34,7 +34,9 @@ export default function TeamClient({ currentMemberId }: { currentMemberId: numbe
   };
 
   const updateMember = async (id: number, patch: Partial<Member>) => {
-    await fetch(`/api/internal/team/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
+    const res = await fetch(`/api/internal/team/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
+    const d = await res.json().catch(() => ({ success: false }));
+    if (!d.success) alert(d.message || 'Could not update this team member.');
     load();
   };
 
@@ -51,14 +53,14 @@ export default function TeamClient({ currentMemberId }: { currentMemberId: numbe
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">Team & Partners</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">Team & Partners</h1>
         <button onClick={() => setShowForm((s) => !s)} className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 text-sm font-bold transition-colors">
           {showForm ? 'Cancel' : '+ Add Person'}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-white border border-stone-200 rounded-xl p-5 mb-6">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className={inputClass} />
             <input value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} placeholder="Email (must match sign-in)" className={inputClass} />
@@ -78,7 +80,7 @@ export default function TeamClient({ currentMemberId }: { currentMemberId: numbe
       {loading ? (
         <div className="h-40 bg-stone-200 rounded-xl animate-pulse" />
       ) : (
-        <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
           {members.map((m) => (
             <div key={m.id} className="flex items-center justify-between gap-3 px-4 py-3.5">
               <div>

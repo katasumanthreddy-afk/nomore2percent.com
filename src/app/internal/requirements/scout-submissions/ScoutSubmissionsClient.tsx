@@ -55,7 +55,7 @@ export default function ScoutSubmissionsClient() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <Link href="/internal/requirements" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Site Requirements</Link>
-      <h1 className="font-serif text-2xl font-bold text-stone-900 mb-6">Scout Submissions</h1>
+      <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900 mb-6">Scout Submissions</h1>
 
       <div className="flex gap-2 mb-5">
         <button onClick={() => setFilter('pending')} className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${filter === 'pending' ? 'bg-orange-500 text-white border-orange-500' : 'border-stone-200 text-stone-500'}`}>
@@ -71,7 +71,7 @@ export default function ScoutSubmissionsClient() {
       ) : filtered.length > 0 ? (
         <div className="space-y-4">
           {filtered.map((s) => (
-            <div key={s.id} className="bg-white border border-stone-200 rounded-xl p-4">
+            <div key={s.id} className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
               {s.images.length > 0 && (
                 <div className="flex gap-2 mb-3 overflow-x-auto">
                   {s.images.map((img) => img.url && (

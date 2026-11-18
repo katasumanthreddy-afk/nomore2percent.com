@@ -120,7 +120,7 @@ export default function PropertyForm({ mode, propertyId, initialData, initialPho
   };
 
   return (
-    <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-6">
+    <div className="bg-white border border-stone-200/80 rounded-2xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-6 space-y-6">
       <div>
         <div className="text-sm font-bold text-stone-800 mb-3">Property Details</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

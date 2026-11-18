@@ -24,3 +24,9 @@ export async function getCached<T>(key: string, ttlMs: number, fetcher: () => Pr
 export function invalidateCache(key: string) {
   store.delete(key);
 }
+
+// Clear every cached entry whose key starts with the prefix, e.g. all
+// cached team-member lookups after someone is changed on the Team page.
+export function invalidatePrefix(prefix: string) {
+  for (const key of store.keys()) if (key.startsWith(prefix)) store.delete(key);
+}

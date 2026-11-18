@@ -60,7 +60,7 @@ export default function DealForm({ mode, dealId, initialData }: { mode: 'create'
   };
 
   return (
-    <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-4">
+    <div className="bg-white border border-stone-200/80 rounded-2xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-6 space-y-4">
       <div><label className={labelClass}>Deal Name *</label><input value={form.deal_name} onChange={(e) => set('deal_name', e.target.value)} className={inputClass} placeholder="e.g. HITEC City Office — Acme Corp Lease" /></div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

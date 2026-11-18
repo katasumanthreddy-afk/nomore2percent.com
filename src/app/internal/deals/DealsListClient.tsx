@@ -36,7 +36,7 @@ export default function DealsListClient() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">Deals</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">Deals</h1>
         <Link href="/internal/deals/new" className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 text-sm font-bold transition-colors">+ Add Deal</Link>
       </div>
 
@@ -57,7 +57,7 @@ export default function DealsListClient() {
             return (
               <div key={stage.v}>
                 <div className="text-xs font-bold uppercase tracking-wide text-stone-400 mb-2">{stage.label} ({inStage.length})</div>
-                <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+                <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
                   {inStage.map((d) => (
                     <Link key={d.id} href={`/internal/deals/${d.id}`} className="flex items-center justify-between px-4 py-3 hover:bg-stone-50 transition-colors">
                       <div>

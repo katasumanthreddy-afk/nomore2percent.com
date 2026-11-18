@@ -51,7 +51,7 @@ export default function ProjectsBoardClient({ myId, isOwner }: { myId: number; i
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
           <div>
-            <h1 className="font-serif text-2xl font-bold text-stone-900">Projects</h1>
+            <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">Projects</h1>
             <p className="text-sm text-stone-500 mt-1">Landowner + brand + site, from first interest to rent.</p>
           </div>
           <div className="flex gap-2">
@@ -61,9 +61,9 @@ export default function ProjectsBoardClient({ myId, isOwner }: { myId: number; i
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-5 max-w-2xl">
-          <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">In progress</div><div className="font-serif text-2xl font-bold text-stone-900">{live.filter((p) => p.stage !== 'rent_started').length}</div></div>
-          <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">Stuck &gt; {STUCK_AFTER_DAYS} days</div><div className={`font-serif text-2xl font-bold ${stuckCount ? 'text-red-600' : 'text-stone-900'}`}>{stuckCount}</div></div>
-          <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">Built-up in pipeline</div><div className="font-serif text-2xl font-bold text-stone-900">{liveSqft ? `${liveSqft.toLocaleString('en-IN')}` : '–'}<span className="text-xs font-sans text-stone-500"> sq ft</span></div></div>
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">In progress</div><div className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{live.filter((p) => p.stage !== 'rent_started').length}</div></div>
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">Stuck &gt; {STUCK_AFTER_DAYS} days</div><div className={`text-xl sm:text-2xl tracking-tight font-semibold ${stuckCount ? 'text-red-600' : 'text-stone-900'}`}>{stuckCount}</div></div>
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">Built-up in pipeline</div><div className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{liveSqft ? `${liveSqft.toLocaleString('en-IN')}` : '–'}<span className="text-xs font-sans text-stone-500"> sq ft</span></div></div>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-5">
@@ -82,7 +82,7 @@ export default function ProjectsBoardClient({ myId, isOwner }: { myId: number; i
       {loading ? (
         <div className="max-w-7xl mx-auto h-72 bg-stone-200 rounded-xl animate-pulse" />
       ) : showDropped ? (
-        <div className="max-w-3xl mx-auto bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+        <div className="max-w-3xl mx-auto bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
           {dropped.length === 0 ? <div className="p-8 text-center text-sm text-stone-400">No dropped projects.</div> : dropped.map((p) => (
             <Link key={p.id} href={`/internal/projects/${p.id}`} className="block px-4 py-3 hover:bg-stone-50">
               <div className="text-sm font-semibold text-stone-800">{p.name}</div>

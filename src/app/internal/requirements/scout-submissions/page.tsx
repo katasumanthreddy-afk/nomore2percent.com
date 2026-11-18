@@ -1,20 +1,11 @@
-import { redirect } from 'next/navigation';
-import { createInternalServerClient } from '@/lib/supabase-internal-server';
-import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
-import InternalHeader from '@/components/internal/InternalHeader';
+import { requireInternalMember } from '@/lib/require-internal-member';
 import ScoutSubmissionsClient from './ScoutSubmissionsClient';
 
 export default async function ScoutSubmissionsPage() {
-  const supabase = await createInternalServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/internal/login');
-
-  const member = await getRequestingTeamMember();
-  if (!member || member.status !== 'active') redirect('/internal');
+  await requireInternalMember('/internal/requirements/scout-submissions');
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <InternalHeader memberName={member.name} role={member.role} />
       <ScoutSubmissionsClient />
     </div>
   );

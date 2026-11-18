@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Deal name is required' }, { status: 400 });
   }
 
+  for (const k of ['id', 'created_at', 'updated_at']) delete body[k];
   const { data, error } = await supabaseInternalAdmin.from('deals').insert([body]).select().single();
   if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   return NextResponse.json({ success: true, deal: data });

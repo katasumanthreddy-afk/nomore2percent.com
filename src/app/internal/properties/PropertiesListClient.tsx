@@ -48,7 +48,7 @@ export default function PropertiesListClient() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">Commercial Properties</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">Commercial Properties</h1>
         <div className="flex gap-2">
           <Link href="/internal/properties/bulk-import" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">
             Bulk Import
@@ -89,7 +89,7 @@ export default function PropertiesListClient() {
           height="550px"
         />
       ) : filtered.length > 0 ? (
-        <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
           {filtered.map((p) => (
             <Link key={p.id} href={`/internal/properties/${p.id}`} className="flex items-center justify-between gap-3 px-4 py-3.5 hover:bg-stone-50 transition-colors">
               <div>

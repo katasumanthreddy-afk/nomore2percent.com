@@ -5,6 +5,7 @@ import LiveChatWidget from "@/components/LiveChatWidget";
 import Footer from "@/components/Footer";
 import InstallPWA from "@/components/InstallPWA";
 import MetaPixel from "@/components/MetaPixel";
+import PublicOnly from "@/components/PublicOnly";
 
 export const viewport: Viewport = {
   themeColor: '#fb923c',
@@ -55,7 +56,7 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased overflow-x-hidden">
       <body className="min-h-full flex flex-col font-sans overflow-x-hidden">
         {gaId && (
-          <>
+          <PublicOnly>
             {/* Google Analytics (gtag.js) — afterInteractive so it never
                 blocks the page from rendering/becoming interactive first. */}
             <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
@@ -67,17 +68,18 @@ export default function RootLayout({
                 gtag('config', '${gaId}');
               `}
             </Script>
-          </>
+          </PublicOnly>
         )}
         {/* Meta Pixel: public pages only, only when NEXT_PUBLIC_META_PIXEL_ID is set */}
         <MetaPixel />
         {children}
-        {/* Footer mounted globally so it appears on every page */}
-        <Footer />
-        {/* LiveChat mounted globally so the chat bubble follows visitors across every page */}
-        <LiveChatWidget />
-        {/* Install prompt: registers the service worker + shows a native/iOS install nudge */}
-        <InstallPWA />
+        {/* Public-site chrome: footer, visitor chat and install prompt. Hidden
+            inside the internal portal, which has its own app shell. */}
+        <PublicOnly>
+          <Footer />
+          <LiveChatWidget />
+          <InstallPWA />
+        </PublicOnly>
       </body>
     </html>
   );

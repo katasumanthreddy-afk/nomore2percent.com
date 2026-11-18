@@ -40,11 +40,11 @@ export default function NewProjectClient({ prefill, brands, requirements, team, 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <Link href="/internal/projects" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Projects</Link>
-      <h1 className="font-serif text-2xl font-bold text-stone-900 mb-1">New project</h1>
+      <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900 mb-1">New project</h1>
       <p className="text-sm text-stone-500 mb-6">Starts at &quot;Brand interested&quot; with the standard checklist for every stage.</p>
 
       <div className="space-y-5">
-        <div className="bg-white border border-stone-200 rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2"><label className={labelClass}>Project name *</label><input value={v.name} onChange={(e) => set('name', e.target.value)} className={inputClass} placeholder="e.g. Blinkit · Kompally 1200 sq yds" /></div>
           <div>
             <label className={labelClass}>Brand</label>
@@ -77,7 +77,7 @@ export default function NewProjectClient({ prefill, brands, requirements, team, 
           )}
         </div>
 
-        <div className="bg-white border border-stone-200 rounded-xl p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2 text-sm font-bold text-stone-800">Landowner & site</div>
           <div><label className={labelClass}>Landowner name</label><input value={v.landowner_name} onChange={(e) => set('landowner_name', e.target.value)} className={inputClass} /></div>
           <div><label className={labelClass}>Landowner phone</label><input inputMode="tel" value={v.landowner_phone} onChange={(e) => set('landowner_phone', e.target.value)} className={inputClass} /></div>
