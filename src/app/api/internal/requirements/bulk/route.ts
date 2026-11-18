@@ -66,3 +66,27 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ success: true, created, skipped });
 }
+
+// DELETE /api/internal/requirements/bulk  { ids: number[] }
+// Removes many site requirements at once (e.g. a bad bulk import). Their
+// assignments go with them; linked projects and land leads are kept and
+// simply lose the link.
+export async function DELETE(req: NextRequest) {
+  const member = await getRequestingTeamMember();
+  if (!member || member.status !== 'active') {
+    return NextResponse.json({ success: false, message: 'Not authorized' }, { status: 403 });
+  }
+  const body = await req.json().catch(() => ({}));
+  const ids = Array.isArray(body.ids) ? body.ids.map(Number).filter((n: number) => Number.isInteger(n) && n > 0) : [];
+  if (ids.length === 0) return NextResponse.json({ success: false, message: 'No sites selected' }, { status: 400 });
+  if (ids.length > MAX_ROWS) return NextResponse.json({ success: false, message: `Delete at most ${MAX_ROWS} at a time` }, { status: 400 });
+
+  await supabaseInternalAdmin.from('requirement_assignments').delete().in('requirement_id', ids);
+  const { data, error } = await supabaseInternalAdmin.from('site_requirements').delete().in('id', ids).select('id');
+  if (error) return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+
+  invalidateCache('internal:requirements:raw');
+  invalidateCache('internal:requirements:matches');
+  invalidateCache('internal:map:data');
+  return NextResponse.json({ success: true, deleted: data?.length ?? 0 });
+}

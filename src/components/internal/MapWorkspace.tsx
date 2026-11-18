@@ -9,7 +9,7 @@ import {
 import { MarkerClusterer, type Renderer } from '@googlemaps/markerclusterer';
 import {
   AlertTriangle, ArrowUpRight, Building2, Crosshair, Layers, LandPlot, Loader2, MapPin, Plus,
-  Satellite, Search, Target, X, Briefcase,
+  Satellite, Search, Target, Trash2, X, Briefcase,
 } from 'lucide-react';
 import PinActions from './PinActions';
 import { formatSize } from '@/lib/land-leads';
@@ -262,7 +262,21 @@ function Tag({ children, color }: { children: React.ReactNode; color?: string })
   return <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide rounded px-1.5 py-0.5 bg-stone-100 text-stone-600" style={color ? { background: `${color}14`, color } : undefined}>{children}</span>;
 }
 
-function SiteCard({ site, data, onPick }: { site: MapSite; data: MapData; onPick: (s: Selected, p: LatLng) => void }) {
+function SiteCard({ site, data, onPick, onDeleted }: { site: MapSite; data: MapData; onPick: (s: Selected, p: LatLng) => void; onDeleted: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [delError, setDelError] = useState('');
+  const remove = async () => {
+    setDeleting(true); setDelError('');
+    try {
+      const d = await fetch(`/api/internal/requirements/${site.id}`, { method: 'DELETE' }).then((r) => r.json());
+      if (d.success) onDeleted(); else setDelError(d.message || 'Could not delete.');
+    } catch {
+      setDelError('Could not delete. Check your connection.');
+    } finally {
+      setDeleting(false);
+    }
+  };
   const near = useMemo(() => [
     ...nearestWithin(site, site.radius_max_m, data.leads).map((x) => ({ kind: 'leads' as const, id: x.item.id, label: `${formatSize(x.item.size_sq_yds)} · ${x.item.locality}`, d: x.distance, p: x.item })),
     ...nearestWithin(site, site.radius_max_m, data.properties).map((x) => ({ kind: 'properties' as const, id: x.item.id, label: x.item.title, d: x.distance, p: x.item })),
@@ -298,7 +312,22 @@ function SiteCard({ site, data, onPick }: { site: MapSite; data: MapData; onPick
       <div className="flex items-center gap-1.5 mt-3">
         <Link href={`/internal/requirements/${site.id}`} className="inline-flex items-center gap-1 rounded-md bg-orange-500 hover:bg-orange-600 px-2.5 py-1 text-[11px] font-semibold text-white">Open <ArrowUpRight className="w-3 h-3" /></Link>
         <PinActions nowrap point={site} label={`Site: ${site.title}${site.brand_name ? ` (${site.brand_name})` : ''}`} />
+        {!confirming && (
+          <button onClick={() => setConfirming(true)} className="ml-auto w-7 h-7 flex-shrink-0 rounded-md border border-stone-200 hover:border-red-300 hover:bg-red-50 flex items-center justify-center" aria-label="Delete site" title="Delete site">
+            <Trash2 className="w-3.5 h-3.5 text-stone-500" />
+          </button>
+        )}
       </div>
+      {confirming && (
+        <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-2.5">
+          <p className="text-xs text-red-800">Delete <span className="font-semibold">{site.title}</span>? Its scout assignments go too. Linked projects and land leads are kept.</p>
+          {delError && <p className="text-xs text-red-700 mt-1 font-semibold">{delError}</p>}
+          <div className="flex gap-2 mt-2">
+            <button onClick={remove} disabled={deleting} className="rounded-md bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold px-3 py-1.5 disabled:opacity-60">{deleting ? 'Deleting…' : 'Delete site'}</button>
+            <button onClick={() => { setConfirming(false); setDelError(''); }} className="rounded-md border border-stone-200 bg-white text-[11px] font-semibold px-3 py-1.5 text-stone-600">Keep</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -705,7 +734,7 @@ export default function MapWorkspace({ initialSelect }: { initialSelect?: Select
           )}
           {data && !dropped && sel && selected && (
             <CardShell onClose={() => setSelected(null)}>
-              {selected.kind === 'sites' && <SiteCard site={sel as MapSite} data={data} onPick={pick} />}
+              {selected.kind === 'sites' && <SiteCard key={selected.id} site={sel as MapSite} data={data} onPick={pick} onDeleted={async () => { setSelected(null); await load(); }} />}
               {selected.kind === 'leads' && <LeadCard lead={sel as MapLead} />}
               {selected.kind === 'properties' && <PropertyCard property={sel as MapProperty} />}
               {selected.kind === 'projects' && <ProjectCard project={sel as MapProject} />}
