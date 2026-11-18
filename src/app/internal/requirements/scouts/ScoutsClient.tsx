@@ -70,7 +70,7 @@ export default function ScoutsClient() {
       <Link href="/internal/requirements" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Site Requirements</Link>
 
       <div className="flex items-center justify-between mb-2">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">External Scouts & Brokers</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">External Scouts & Brokers</h1>
         <button onClick={() => setShowForm((s) => !s)} className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 text-sm font-bold transition-colors">
           {showForm ? 'Cancel' : '+ Add Scout'}
         </button>
@@ -78,7 +78,7 @@ export default function ScoutsClient() {
       <p className="text-stone-500 text-sm mb-6">People outside your team who don&apos;t need a portal login — just a private link to see what they've been assigned to search for.</p>
 
       {showForm && (
-        <div className="bg-white border border-stone-200 rounded-xl p-5 mb-6">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className={inputClass} />
             <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone (optional)" className={inputClass} />
@@ -93,7 +93,7 @@ export default function ScoutsClient() {
       {loading ? (
         <div className="h-40 bg-stone-200 rounded-xl animate-pulse" />
       ) : (
-        <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
           {scouts.map((s) => (
             <div key={s.id} className="flex items-center justify-between gap-3 px-4 py-3.5">
               <div>

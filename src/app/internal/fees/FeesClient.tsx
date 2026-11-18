@@ -39,14 +39,14 @@ export default function FeesClient() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
       <Link href="/internal/projects" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Projects</Link>
-      <h1 className="font-serif text-2xl font-bold text-stone-900">Fees</h1>
+      <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">Fees</h1>
       <p className="text-sm text-stone-500 mt-1 mb-6">What nomore2percent earns across projects. Visible to owners only.</p>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">Received this quarter</div><div className="font-serif text-xl font-bold text-emerald-600">{inr(s.receivedThisQuarter)}</div></div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">Invoiced, awaiting payment</div><div className="font-serif text-xl font-bold text-stone-900">{inr(s.invoiced)}</div></div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">Expected (not yet invoiced)</div><div className="font-serif text-xl font-bold text-stone-900">{inr(s.expected)}</div></div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4"><div className="text-xs text-stone-500">Overdue</div><div className={`font-serif text-xl font-bold ${s.overdueCount ? 'text-red-600' : 'text-stone-900'}`}>{inr(s.overdue)}{s.overdueCount ? <span className="text-xs font-sans font-normal text-stone-500"> · {s.overdueCount}</span> : null}</div></div>
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">Received this quarter</div><div className="text-xl font-semibold text-emerald-600">{inr(s.receivedThisQuarter)}</div></div>
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">Invoiced, awaiting payment</div><div className="text-xl font-semibold text-stone-900">{inr(s.invoiced)}</div></div>
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">Expected (not yet invoiced)</div><div className="text-xl font-semibold text-stone-900">{inr(s.expected)}</div></div>
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4"><div className="text-xs text-stone-500">Overdue</div><div className={`text-xl font-semibold ${s.overdueCount ? 'text-red-600' : 'text-stone-900'}`}>{inr(s.overdue)}{s.overdueCount ? <span className="text-xs font-sans font-normal text-stone-500"> · {s.overdueCount}</span> : null}</div></div>
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -62,7 +62,7 @@ export default function FeesClient() {
       ) : shown.length === 0 ? (
         <div className="bg-white border border-dashed border-stone-300 rounded-xl p-10 text-center text-sm text-stone-400">Nothing here. Add fees from a project&apos;s page.</div>
       ) : (
-        <div className="bg-white border border-stone-200 rounded-xl overflow-x-auto">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-stone-500 border-b border-stone-200">

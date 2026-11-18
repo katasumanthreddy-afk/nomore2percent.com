@@ -40,12 +40,12 @@ export default function BulkImportClient() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <Link href="/internal/properties" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Properties</Link>
-      <h1 className="font-serif text-2xl font-bold text-stone-900 mb-1">Bulk Import from Coordinates</h1>
+      <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900 mb-1">Bulk Import from Coordinates</h1>
       <p className="text-stone-500 text-sm mb-6">
         Paste one location per line. Each property gets pinned on the map immediately — you can fill in type, price, and other details afterward from its own page.
       </p>
 
-      <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-4">
+      <div className="bg-white border border-stone-200/80 rounded-2xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-6 space-y-4">
         <div>
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Paste Your List</label>
           <textarea

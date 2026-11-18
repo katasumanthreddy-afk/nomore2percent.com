@@ -58,7 +58,7 @@ export default function MatchesClient() {
       <Link href="/internal/requirements" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Site Requirements</Link>
 
       <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">Requirement Matches</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">Requirement Matches</h1>
         {results.length > 0 && (
           <div className="flex border border-stone-200 rounded-lg overflow-hidden">
             <button onClick={() => setView('list')} className={`px-3 py-1.5 text-xs font-semibold ${view === 'list' ? 'bg-orange-500 text-white' : 'text-stone-500'}`}>List</button>
@@ -83,7 +83,7 @@ export default function MatchesClient() {
           ) : (
             <div className="space-y-4">
               {results.map((r) => (
-                <div key={r.id} className="bg-white border border-stone-200 rounded-xl overflow-hidden">
+                <div key={r.id} className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
                     <Link href={`/internal/requirements/${r.id}`} className="font-semibold text-stone-800 hover:text-orange-500">{r.title}</Link>
                     <div className="flex items-center gap-2">

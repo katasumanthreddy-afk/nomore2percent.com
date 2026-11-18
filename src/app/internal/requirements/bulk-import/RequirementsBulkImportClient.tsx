@@ -52,12 +52,12 @@ export default function RequirementsBulkImportClient() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <Link href="/internal/requirements" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Site Requirements</Link>
-      <h1 className="font-serif text-2xl font-bold text-stone-900 mb-1">Bulk Import Site Requirements</h1>
+      <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900 mb-1">Bulk Import Site Requirements</h1>
       <p className="text-stone-500 text-sm mb-6">
         Paste your list of target locations. Each becomes a search zone on the map — properties you add later are automatically flagged when they fall inside one.
       </p>
 
-      <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-4">
+      <div className="bg-white border border-stone-200/80 rounded-2xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-6 space-y-4">
         <div>
           <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Brand these locations are for</label>
           <select value={brandId} onChange={(e) => setBrandId(e.target.value)} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white">

@@ -157,7 +157,7 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
 
       <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-stone-900">{project.name}</h1>
+          <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{project.name}</h1>
           <p className="text-sm text-stone-500 mt-1">
             {project.brands ? <Link href={`/internal/brands/${project.brands.id}`} className="hover:text-orange-600 font-semibold">{project.brands.name}</Link> : 'No brand yet'}
             {project.locality ? ` · ${project.locality}` : ''}
@@ -173,7 +173,7 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
       </div>
 
       {/* Stage stepper */}
-      <div className="bg-white border border-stone-200 rounded-xl p-4 mb-5">
+      <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 mb-5">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div className="text-sm">
             {dropped ? (
@@ -217,7 +217,7 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
       <div className="grid lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
           {/* Checklist for the selected stage */}
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm font-bold text-stone-800">{stageLabel(viewStage)} checklist</div>
               {viewStage !== project.stage && !dropped && <span className="text-[11px] text-stone-400">{stageIndex(viewStage) < curIdx ? 'completed stage' : 'upcoming stage'}</span>}
@@ -243,7 +243,7 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
 
           {(stageIndex(project.stage) >= stageIndex('construction_contract') || project.builder_name || project.construction_progress > 0) && <ConstructionCard project={project} onSaved={patch} />}
 
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-3">Documents</div>
             <div className="divide-y divide-stone-100 mb-3">
               {docs.map((d) => (
@@ -269,14 +269,14 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
             </div>
           </div>
 
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-3">Activity</div>
             <NotesTimeline key={notesKey} projectId={project.id} />
           </div>
         </div>
 
         <div className="space-y-5">
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-2">Deal</div>
             {editing ? (
               <div className="space-y-2">
@@ -306,7 +306,7 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
 
           {isOwner && <FeesCard project={project} />}
 
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-2">Linked</div>
             {row('Brand', project.brands && <Link href={`/internal/brands/${project.brands.id}`} className="hover:text-orange-600">{project.brands.name}</Link>)}
             {row('Brand contact', project.brands?.contact_name)}

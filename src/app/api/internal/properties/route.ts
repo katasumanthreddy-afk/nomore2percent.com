@@ -3,7 +3,11 @@ import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
 import { getCached, invalidateCache } from '@/lib/simple-cache';
 
-export async function GET() {
+// GET /api/internal/properties            — full rows for the Properties page
+// GET /api/internal/properties?view=map   — just what map pins need
+const MAP_COLUMNS = 'id, title, area, lat, lng, status, deal_type, property_type, price_label, lease_rate_label';
+
+export async function GET(req: NextRequest) {
   const member = await getRequestingTeamMember();
   if (!member || member.status !== 'active') {
     return NextResponse.json({ success: false, message: 'Not authorized' }, { status: 403 });
@@ -22,6 +26,13 @@ export async function GET() {
     return data;
   });
 
+  if (new URL(req.url).searchParams.get('view') === 'map') {
+    const cols = MAP_COLUMNS.split(', ');
+    const slim = (properties || [])
+      .filter((p: Record<string, unknown>) => p.lat != null && p.lng != null)
+      .map((p: Record<string, unknown>) => Object.fromEntries(cols.map((c) => [c, p[c]])));
+    return NextResponse.json({ success: true, properties: slim });
+  }
   return NextResponse.json({ success: true, properties });
 }
 
@@ -36,6 +47,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Title is required' }, { status: 400 });
   }
 
+  for (const k of ['id', 'created_at', 'updated_at']) delete body[k];
   const { data, error } = await supabaseInternalAdmin
     .from('commercial_properties')
     .insert([{ ...body, created_by: member.id }])

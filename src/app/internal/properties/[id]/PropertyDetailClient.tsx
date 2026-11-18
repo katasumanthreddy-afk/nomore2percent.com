@@ -75,7 +75,7 @@ export default function PropertyDetailClient({ property, deals, documents, match
     return (
       <div className="max-w-2xl mx-auto px-6 py-8">
         <button onClick={() => setEditing(false)} className="text-xs text-stone-400 hover:text-stone-600 mb-4">← Cancel Editing</button>
-        <h1 className="font-serif text-2xl font-bold text-stone-900 mb-6">Edit Property</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900 mb-6">Edit Property</h1>
         <PropertyForm
           mode="edit"
           propertyId={property.id}
@@ -116,33 +116,33 @@ export default function PropertyDetailClient({ property, deals, documents, match
 
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-stone-900">{property.title}</h1>
+          <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{property.title}</h1>
           <p className="text-stone-500 text-sm capitalize">{property.area} · {property.property_type} · {property.deal_type}</p>
         </div>
         <button onClick={() => setEditing(true)} className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex-shrink-0">Edit</button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white border border-stone-200 rounded-xl p-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">{property.deal_type === 'lease' ? 'Lease Rate' : 'Price'}</div>
-          <div className="font-serif font-bold text-orange-500">{property.deal_type === 'lease' ? (property.lease_rate_label || '—') : (property.price_label || '—')}</div>
+          <div className="font-semibold text-orange-500">{property.deal_type === 'lease' ? (property.lease_rate_label || '—') : (property.price_label || '—')}</div>
         </div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">{property.property_type === 'land' ? 'Land' : 'Sqft'}</div>
-          <div className="font-serif font-bold text-stone-800">{property.property_type === 'land' ? (property.land_sq_yds ? formatSize(Number(property.land_sq_yds)) : property.sqft ? formatSize(Number(property.sqft) / 9) : '—') : (property.sqft || '—')}</div>
+          <div className="font-semibold text-stone-800">{property.property_type === 'land' ? (property.land_sq_yds ? formatSize(Number(property.land_sq_yds)) : property.sqft ? formatSize(Number(property.sqft) / 9) : '—') : (property.sqft || '—')}</div>
         </div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">Status</div>
           <span className={`text-[11px] font-bold uppercase px-2 py-1 rounded-full border ${STATUS_BADGE[property.status] || ''}`}>{property.status?.replace('_', ' ')}</span>
         </div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">{property.property_type === 'land' ? 'Road' : 'Zoning'}</div>
-          <div className="font-serif font-bold text-stone-800">{property.property_type === 'land' ? (property.road_width_ft ? `${property.road_width_ft} ft` : '—') : (property.zoning || '—')}</div>
+          <div className="font-semibold text-stone-800">{property.property_type === 'land' ? (property.road_width_ft ? `${property.road_width_ft} ft` : '—') : (property.zoning || '—')}</div>
         </div>
       </div>
 
       {property.property_type === 'land' && (
-        <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6 text-sm grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 mb-6 text-sm grid grid-cols-2 md:grid-cols-3 gap-3">
           <div><div className="text-xs text-stone-400">Land</div><div className="font-semibold text-stone-800">{property.land_sq_yds ? formatSize(Number(property.land_sq_yds)) : property.sqft ? formatSize(Number(property.sqft) / 9) : '—'}</div></div>
           <div><div className="text-xs text-stone-400">Approach road</div><div className="font-semibold text-stone-800">{property.road_width_ft ? `${property.road_width_ft} ft` : '—'}</div></div>
           <div><div className="text-xs text-stone-400">Frontage</div><div className="font-semibold text-stone-800">{property.frontage_ft ? `${property.frontage_ft} ft` : '—'}</div></div>
@@ -159,7 +159,7 @@ export default function PropertyDetailClient({ property, deals, documents, match
       )}
 
       {property.deal_type === 'lease' && (property.tenant_name || property.lease_expiry) && (
-        <div className="bg-white border border-stone-200 rounded-xl p-4 mb-6 text-sm">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 mb-6 text-sm">
           {property.tenant_name && <div><strong>Current Tenant:</strong> {property.tenant_name}</div>}
           {property.lease_expiry && <div className="mt-1"><strong>Lease Expiry:</strong> {new Date(property.lease_expiry).toLocaleDateString('en-IN')}</div>}
         </div>
@@ -168,7 +168,7 @@ export default function PropertyDetailClient({ property, deals, documents, match
       {property.notes && (
         <div className="mb-6">
           <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Overview</div>
-          <p className="text-sm text-stone-600 bg-white border border-stone-200 rounded-xl p-4">{property.notes}</p>
+          <p className="text-sm text-stone-600 bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">{property.notes}</p>
         </div>
       )}
 
@@ -196,7 +196,7 @@ export default function PropertyDetailClient({ property, deals, documents, match
           <Link href={`/internal/deals/new?property_id=${property.id}`} className="text-xs text-orange-500 font-semibold hover:underline">+ New Deal</Link>
         </div>
         {deals.length > 0 ? (
-          <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
             {deals.map((d) => (
               <Link key={d.id} href={`/internal/deals/${d.id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-stone-50 transition-colors text-sm">
                 <span className="font-medium text-stone-800">{d.deal_name}</span>
@@ -211,7 +211,7 @@ export default function PropertyDetailClient({ property, deals, documents, match
 
       <div>
         <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Documents</div>
-        <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100 mb-3">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100 mb-3">
           {docs.map((d) => (
             <div key={d.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
               <button onClick={() => viewDoc(d.id)} className="text-stone-700 hover:text-orange-500 font-medium text-left">{d.title}</button>

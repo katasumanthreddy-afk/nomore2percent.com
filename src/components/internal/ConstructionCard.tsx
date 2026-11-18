@@ -77,7 +77,7 @@ export default function ConstructionCard({ project, onSaved }: { project: any; o
   const date = (d?: string | null) => (d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null);
 
   return (
-    <div className="bg-white border border-stone-200 rounded-xl p-5">
+    <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="text-sm font-bold text-stone-800">Construction</div>
         <div className="flex items-center gap-2">

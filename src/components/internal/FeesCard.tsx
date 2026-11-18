@@ -69,7 +69,7 @@ export default function FeesCard({ project }: { project: any }) {
   const inputClass = 'w-full border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400 bg-white';
 
   return (
-    <div className="bg-white border border-stone-200 rounded-xl p-5">
+    <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
       <div className="flex items-center justify-between mb-1">
         <div className="text-sm font-bold text-stone-800">Our fees</div>
         <span className="text-[10px] font-semibold uppercase tracking-wide text-stone-400">owner only</span>

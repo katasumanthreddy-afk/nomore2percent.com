@@ -1,25 +1,20 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createInternalServerClient } from '@/lib/supabase-internal-server';
-import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
+import { getInternalSession } from '@/lib/get-internal-team-member';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
-import InternalHeader from '@/components/internal/InternalHeader';
 import { feeSummary, inr } from '@/lib/brands-projects';
 import { GROUP_LABEL, buildToday, requestTime, type Group } from '@/lib/today';
 
 export default async function InternalDashboard({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const supabase = await createInternalServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/internal/login');
-
-  const member = await getRequestingTeamMember();
+  const { email, member } = await getInternalSession();
+  if (!email) redirect('/internal/login');
   if (!member) {
     return (
       <div className="min-h-screen bg-stone-950 flex items-center justify-center px-6 text-center">
         <div>
           <div className="text-4xl mb-4">🔒</div>
-          <h1 className="font-serif text-xl font-bold text-white mb-2">Not Recognized</h1>
-          <p className="text-stone-400 text-sm">{user.email} isn&apos;t on the internal team list. Contact the account owner.</p>
+          <h1 className="text-xl font-semibold text-white mb-2">Not Recognized</h1>
+          <p className="text-stone-400 text-sm">{email} isn&apos;t on the internal team list. Contact the account owner.</p>
         </div>
       </div>
     );
@@ -29,7 +24,7 @@ export default async function InternalDashboard({ searchParams }: { searchParams
       <div className="min-h-screen bg-stone-950 flex items-center justify-center px-6 text-center">
         <div>
           <div className="text-4xl mb-4">⏸️</div>
-          <h1 className="font-serif text-xl font-bold text-white mb-2">Account Inactive</h1>
+          <h1 className="text-xl font-semibold text-white mb-2">Account Inactive</h1>
         </div>
       </div>
     );
@@ -90,11 +85,10 @@ export default async function InternalDashboard({ searchParams }: { searchParams
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <InternalHeader memberName={member.name} role={member.role} />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
           <div>
-            <h1 className="font-serif text-2xl font-bold text-stone-900">{greeting}, {member.name.split(' ')[0]}</h1>
+            <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{greeting}, {member.name.split(' ')[0]}</h1>
             <p className="text-stone-500 text-sm mt-1">
               {items.length === 0 ? 'Nothing needs you right now.' : `${items.length} thing${items.length > 1 ? 's' : ''} need${items.length > 1 ? '' : 's'} attention${urgentCount ? `, ${urgentCount} urgent` : ''}.`}
             </p>
@@ -106,26 +100,26 @@ export default async function InternalDashboard({ searchParams }: { searchParams
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          <Link href="/internal/land-leads" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
-            <div className={`font-serif text-2xl font-bold ${newLeads ? 'text-orange-500' : 'text-stone-900'}`}>{newLeads}</div>
+          <Link href="/internal/land-leads" className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 hover:border-orange-300 transition-colors">
+            <div className={`text-xl sm:text-2xl tracking-tight font-semibold ${newLeads ? 'text-orange-500' : 'text-stone-900'}`}>{newLeads}</div>
             <div className="text-xs text-stone-500 mt-0.5">New land leads</div>
           </Link>
-          <Link href="/internal/projects" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
-            <div className="font-serif text-2xl font-bold text-stone-900">{projects?.length ?? 0}</div>
+          <Link href="/internal/projects" className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 hover:border-orange-300 transition-colors">
+            <div className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{projects?.length ?? 0}</div>
             <div className="text-xs text-stone-500 mt-0.5">Live projects</div>
           </Link>
-          <Link href="/internal/requirements" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
-            <div className="font-serif text-2xl font-bold text-stone-900">{openReqCount ?? 0}</div>
+          <Link href="/internal/requirements" className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 hover:border-orange-300 transition-colors">
+            <div className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{openReqCount ?? 0}</div>
             <div className="text-xs text-stone-500 mt-0.5">Sites still searching</div>
           </Link>
           {isOwner && feeRows ? (
-            <Link href="/internal/fees" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
-              <div className="font-serif text-2xl font-bold text-emerald-600">{inr(fs.receivedThisQuarter)}</div>
+            <Link href="/internal/fees" className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 hover:border-orange-300 transition-colors">
+              <div className="text-xl sm:text-2xl tracking-tight font-semibold text-emerald-600">{inr(fs.receivedThisQuarter)}</div>
               <div className="text-xs text-stone-500 mt-0.5">Fees this quarter{fs.overdueCount ? <span className="text-red-600 font-semibold"> · {inr(fs.overdue)} overdue</span> : null}</div>
             </Link>
           ) : (
-            <Link href="/internal/properties" className="bg-white border border-stone-200 rounded-xl p-4 hover:border-orange-300 transition-colors">
-              <div className="font-serif text-2xl font-bold text-stone-900">{propCount ?? 0}</div>
+            <Link href="/internal/properties" className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4 hover:border-orange-300 transition-colors">
+              <div className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{propCount ?? 0}</div>
               <div className="text-xs text-stone-500 mt-0.5">Properties</div>
             </Link>
           )}
@@ -133,7 +127,7 @@ export default async function InternalDashboard({ searchParams }: { searchParams
 
         {groups.length === 0 ? (
           <div className="bg-white border border-dashed border-stone-300 rounded-xl p-10 text-center">
-            <div className="font-serif text-lg font-bold text-stone-800">All clear</div>
+            <div className="text-lg font-semibold text-stone-800">All clear</div>
             <p className="text-sm text-stone-500 mt-1">No calls waiting, no stuck projects, nothing overdue.{!showAll ? ' Switch to Everyone to see the whole team.' : ''}</p>
           </div>
         ) : (
@@ -141,7 +135,7 @@ export default async function InternalDashboard({ searchParams }: { searchParams
             {groups.map(({ g, rows }) => (
               <section key={g}>
                 <h2 className="text-xs font-bold uppercase tracking-wide text-stone-500 mb-2">{GROUP_LABEL[g]} <span className="text-stone-400">({rows.length})</span></h2>
-                <ul className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+                <ul className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
                   {rows.map((i) => (
                     <li key={i.key}>
                       <Link href={i.href} className="flex items-start gap-3 px-4 py-3 hover:bg-stone-50 transition-colors">
@@ -164,7 +158,7 @@ export default async function InternalDashboard({ searchParams }: { searchParams
         {expiringLeases && expiringLeases.length > 0 && (
           <section className="mt-6">
             <h2 className="text-xs font-bold uppercase tracking-wide text-stone-500 mb-2">Existing leases expiring within 90 days</h2>
-            <ul className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+            <ul className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
               {expiringLeases.map((p) => {
                 const isPast = new Date(p.lease_expiry).getTime() < now;
                 return (

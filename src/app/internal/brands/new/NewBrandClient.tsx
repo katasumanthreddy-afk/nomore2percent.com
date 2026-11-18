@@ -15,12 +15,12 @@ export default function NewBrandClient() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
       <Link href="/internal/brands" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Brands</Link>
-      <h1 className="font-serif text-2xl font-bold text-stone-900 mb-6">New brand</h1>
+      <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900 mb-6">New brand</h1>
 
       <BrandForm
         submitLabel={count ? `Create brand + ${count} site${count === 1 ? '' : 's'}` : 'Create brand'}
         extra={
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800">Site requirements (optional)</div>
             <p className="text-xs text-stone-500 mb-3 mt-0.5">Paste every location this brand wants. Each becomes a search zone on the map, linked to the brand and checked against its spec.</p>
             <BulkSitesInput onChange={onSites} />

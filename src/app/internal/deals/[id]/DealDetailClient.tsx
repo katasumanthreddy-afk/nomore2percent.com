@@ -61,7 +61,7 @@ export default function DealDetailClient({ deal, documents }: { deal: Deal; docu
     return (
       <div className="max-w-2xl mx-auto px-6 py-8">
         <button onClick={() => setEditing(false)} className="text-xs text-stone-400 hover:text-stone-600 mb-4">← Cancel Editing</button>
-        <h1 className="font-serif text-2xl font-bold text-stone-900 mb-6">Edit Deal</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900 mb-6">Edit Deal</h1>
         <DealForm
           mode="edit"
           dealId={deal.id}
@@ -82,27 +82,27 @@ export default function DealDetailClient({ deal, documents }: { deal: Deal; docu
 
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-stone-900">{deal.deal_name}</h1>
+          <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{deal.deal_name}</h1>
           <p className="text-stone-500 text-sm">{STAGE_LABEL[deal.stage]} {deal.commercial_properties && <>· <Link href={`/internal/properties/${deal.commercial_properties.id}`} className="text-orange-500 hover:underline">{deal.commercial_properties.title}</Link></>}</p>
         </div>
         <button onClick={() => setEditing(true)} className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex-shrink-0">Edit</button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-white border border-stone-200 rounded-xl p-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">Value</div>
-          <div className="font-serif font-bold text-orange-500">{deal.value ? `₹${Number(deal.value).toLocaleString('en-IN')}` : '—'}</div>
+          <div className="font-semibold text-orange-500">{deal.value ? `₹${Number(deal.value).toLocaleString('en-IN')}` : '—'}</div>
         </div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">Assigned To</div>
-          <div className="font-serif font-bold text-stone-800">{deal.team_members?.name || 'Unassigned'}</div>
+          <div className="font-semibold text-stone-800">{deal.team_members?.name || 'Unassigned'}</div>
         </div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">Client</div>
           <div className="text-sm font-semibold text-stone-800">{deal.client_name || '—'}</div>
           {deal.client_contact && <div className="text-xs text-stone-500">{deal.client_contact}</div>}
         </div>
-        <div className="bg-white border border-stone-200 rounded-xl p-4">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">Expected Close</div>
           <div className="text-sm font-semibold text-stone-800">{deal.expected_close_date ? new Date(deal.expected_close_date).toLocaleDateString('en-IN') : '—'}</div>
         </div>
@@ -111,7 +111,7 @@ export default function DealDetailClient({ deal, documents }: { deal: Deal; docu
       {deal.notes && (
         <div className="mb-6">
           <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Overview</div>
-          <p className="text-sm text-stone-600 bg-white border border-stone-200 rounded-xl p-4">{deal.notes}</p>
+          <p className="text-sm text-stone-600 bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">{deal.notes}</p>
         </div>
       )}
 
@@ -121,7 +121,7 @@ export default function DealDetailClient({ deal, documents }: { deal: Deal; docu
 
       <div>
         <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Documents</div>
-        <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100 mb-3">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100 mb-3">
           {docs.map((d) => (
             <div key={d.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
               <button onClick={() => viewDoc(d.id)} className="text-stone-700 hover:text-orange-500 font-medium text-left">{d.title}</button>

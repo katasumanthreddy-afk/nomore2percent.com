@@ -17,12 +17,17 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── Supabase auth session refresh (for the public site's sign-in) ──
+  // ── Supabase auth session refresh ──
+  // Internal portal pages use the separate internal project; everything
+  // else uses the public site's project. Refreshing here (not in a Server
+  // Component, which can't write cookies) is what keeps a rotated refresh
+  // token from being lost and signing people out.
+  const isInternal = pathname.startsWith('/internal');
   let response = NextResponse.next({ request: req });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    isInternal ? process.env.NEXT_PUBLIC_INTERNAL_SUPABASE_URL! : process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    isInternal ? process.env.NEXT_PUBLIC_INTERNAL_SUPABASE_ANON_KEY! : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -37,8 +42,9 @@ export async function proxy(req: NextRequest) {
     }
   );
 
-  // Touching getUser() is what actually triggers the token refresh when needed.
-  await supabase.auth.getUser();
+  // getClaims() refreshes an expiring session and, with asymmetric signing
+  // keys, verifies it without a round trip to the auth server.
+  await supabase.auth.getClaims();
 
   return response;
 }

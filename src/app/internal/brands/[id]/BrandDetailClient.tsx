@@ -74,7 +74,7 @@ export default function BrandDetailClient({ brandId, isOwner, sitesResult }: { b
   if (editing) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-        <h1 className="font-serif text-2xl font-bold text-stone-900 mb-6">Edit {brand.name}</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900 mb-6">Edit {brand.name}</h1>
         <BrandForm
           initial={brand}
           submitLabel="Save changes"
@@ -103,7 +103,7 @@ export default function BrandDetailClient({ brandId, isOwner, sitesResult }: { b
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="font-serif text-2xl font-bold text-stone-900">{brand.name}</h1>
+            <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{brand.name}</h1>
             {status && <span className={`text-[11px] font-semibold border rounded-full px-2 py-0.5 ${status.badge}`}>{status.label}</span>}
           </div>
           <p className="text-sm text-stone-500 mt-1">{BRAND_CATEGORIES.find((c) => c.value === brand.category)?.label}{specLine(brand) ? ` · ${specLine(brand)}` : ''}</p>
@@ -124,7 +124,7 @@ export default function BrandDetailClient({ brandId, isOwner, sitesResult }: { b
 
       <div className="grid lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm font-bold text-stone-800">Site requirements ({requirements.length})</div>
               {!adding && <button onClick={() => setAdding(true)} className="text-xs text-orange-500 font-semibold hover:underline">+ Add sites in bulk</button>}
@@ -156,7 +156,7 @@ export default function BrandDetailClient({ brandId, isOwner, sitesResult }: { b
             )}
           </div>
 
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm font-bold text-stone-800">Projects ({projects.length})</div>
               <Link href={`/internal/projects/new?brand_id=${brand.id}`} className="text-xs text-orange-500 font-semibold hover:underline">+ New project</Link>
@@ -182,7 +182,7 @@ export default function BrandDetailClient({ brandId, isOwner, sitesResult }: { b
           </div>
 
           {(brand.notes || brand.spec_notes) && (
-            <div className="bg-white border border-stone-200 rounded-xl p-5 space-y-3">
+            <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5 space-y-3">
               {brand.spec_notes && <div><div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">Spec notes</div><p className="text-sm text-stone-700 whitespace-pre-wrap">{brand.spec_notes}</p></div>}
               {brand.notes && <div><div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">Notes</div><p className="text-sm text-stone-700 whitespace-pre-wrap">{brand.notes}</p></div>}
             </div>
@@ -190,7 +190,7 @@ export default function BrandDetailClient({ brandId, isOwner, sitesResult }: { b
         </div>
 
         <div className="space-y-5">
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-2">Contact</div>
             {brand.contact_name || brand.contact_phone || brand.contact_email ? (
               <>
@@ -201,7 +201,7 @@ export default function BrandDetailClient({ brandId, isOwner, sitesResult }: { b
               </>
             ) : <p className="text-sm text-stone-400">No contact saved.</p>}
           </div>
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-2">Standard site spec</div>
             {row('Min land', n(brand.min_land_sq_yds, ' sq yds'))}
             {row('Built-up', brand.min_builtup_sqft || brand.max_builtup_sqft ? `${n(brand.min_builtup_sqft) ?? '?'} – ${n(brand.max_builtup_sqft) ?? '?'} sq ft` : null)}

@@ -29,6 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   const { id } = await params;
   const body = await req.json();
+  for (const k of ['id', 'created_at', 'created_by']) delete body[k];
 
   const { error } = await supabaseInternalAdmin
     .from('deals')

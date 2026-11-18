@@ -47,7 +47,7 @@ export default function BrandForm({ initial, submitLabel, onSubmit, onCancel, ex
 
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-stone-200 rounded-xl p-5">
+      <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
         <div className="text-sm font-bold text-stone-800 mb-3">Brand</div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div><label className={labelClass}>Name *</label><input value={v.name} onChange={(e) => set('name', e.target.value)} className={inputClass} placeholder="e.g. Blinkit" /></div>
@@ -66,7 +66,7 @@ export default function BrandForm({ initial, submitLabel, onSubmit, onCancel, ex
         </div>
       </div>
 
-      <div className="bg-white border border-stone-200 rounded-xl p-5">
+      <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
         <div className="text-sm font-bold text-stone-800 mb-3">Contact</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><label className={labelClass}>Name</label><input value={v.contact_name} onChange={(e) => set('contact_name', e.target.value)} className={inputClass} /></div>
@@ -76,7 +76,7 @@ export default function BrandForm({ initial, submitLabel, onSubmit, onCancel, ex
         </div>
       </div>
 
-      <div className="bg-white border border-stone-200 rounded-xl p-5">
+      <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
         <div className="text-sm font-bold text-stone-800">Standard site spec</div>
         <p className="text-xs text-stone-500 mb-4 mt-0.5">The brand&apos;s usual format. Each site requirement uses these unless it sets its own. Land size and road width are checked against land leads automatically.</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -94,7 +94,7 @@ export default function BrandForm({ initial, submitLabel, onSubmit, onCancel, ex
         <div className="mt-4"><label className={labelClass}>Other spec notes</label><textarea value={v.spec_notes} onChange={(e) => set('spec_notes', e.target.value)} className={inputClass + ' h-20 resize-none'} placeholder="e.g. Ground floor only, rolling shutters, parking for 30 two-wheelers" /></div>
       </div>
 
-      <div className="bg-white border border-stone-200 rounded-xl p-5">
+      <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
         <label className={labelClass}>Notes</label>
         <textarea value={v.notes} onChange={(e) => set('notes', e.target.value)} className={inputClass + ' h-24 resize-none'} placeholder="Relationship history, decision process, who signs" />
       </div>

@@ -56,7 +56,7 @@ export default function RequirementsListClient() {
   useEffect(() => {
     fetch('/api/internal/team').then((r) => r.json()).then((d) => d.success && setTeam(d.members.filter((m: TeamMember) => m.status === 'active')));
     fetch('/api/internal/scouts').then((r) => r.json()).then((d) => d.success && setScouts(d.scouts));
-    fetch('/api/internal/properties').then((r) => r.json()).then((d) => d.success && setProperties(d.properties.filter((p: any) => p.lat != null && p.lng != null)));
+    fetch('/api/internal/properties?view=map').then((r) => r.json()).then((d) => d.success && setProperties(d.properties)).catch(() => {});
   }, []);
 
   const filtered = requirements
@@ -109,7 +109,7 @@ export default function RequirementsListClient() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">Site Requirements</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">Site Requirements</h1>
         <div className="flex gap-2">
           <Link href="/internal/requirements/matches" className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 text-sm font-bold transition-colors">
             View Matches
@@ -205,7 +205,7 @@ export default function RequirementsListClient() {
       ) : view === 'map' ? (
         <SiteMap requirements={filtered} properties={properties} showAllRadiusCircles={!selectMode} selectionMode={selectMode} selectedIds={selectedIds} onToggleSelect={toggleSelect} height="600px" />
       ) : filtered.length > 0 ? (
-        <div className="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+        <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] divide-y divide-stone-100">
           {filtered.map((r) => (
             <div key={r.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-stone-50 transition-colors">
               {selectMode && (

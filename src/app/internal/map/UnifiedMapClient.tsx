@@ -28,7 +28,7 @@ export default function UnifiedMapClient() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/internal/properties').then((r) => r.json()),
+      fetch('/api/internal/properties?view=map').then((r) => r.json()),
       fetch('/api/internal/requirements').then((r) => r.json()),
     ]).then(([p, r]) => {
       if (p.success) setProperties(p.properties.filter((x: Property) => x.lat != null && x.lng != null));
@@ -56,7 +56,7 @@ export default function UnifiedMapClient() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">Map Overview</h1>
+        <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">Map Overview</h1>
         <div className="flex gap-2">
           <Link href="/internal/properties" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">Properties</Link>
           <Link href="/internal/requirements" className="border border-stone-200 hover:border-stone-300 text-stone-600 rounded-lg px-4 py-2 text-sm font-semibold transition-colors">Requirements</Link>
@@ -82,7 +82,7 @@ export default function UnifiedMapClient() {
         </div>
 
         <div className="space-y-4">
-          <div className="bg-white border border-stone-200 rounded-xl p-4">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
             <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Show Properties</div>
             <select value={dealTypeFilter} onChange={(e) => setDealTypeFilter(e.target.value as 'lease' | 'all')} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm">
               <option value="lease">For Lease Only</option>
@@ -90,7 +90,7 @@ export default function UnifiedMapClient() {
             </select>
           </div>
 
-          <div className="bg-white border border-stone-200 rounded-xl p-4">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
             <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Search Radius: {radiusMeters}m</div>
             <input
               type="range" min="100" max="2000" step="50"
@@ -137,7 +137,7 @@ function NearbyPanel({ requirement, properties, radiusMeters }: { requirement: R
   }, [requirement, properties, radiusMeters]);
 
   return (
-    <div className="bg-white border border-stone-200 rounded-xl p-4">
+    <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
       <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">{requirement.title}</div>
       <div className="text-xs text-orange-500 font-semibold mb-3">{nearby.length} propert{nearby.length === 1 ? 'y' : 'ies'} within {radiusMeters}m</div>
       {nearby.length > 0 ? (

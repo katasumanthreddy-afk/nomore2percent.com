@@ -74,7 +74,7 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
 
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-stone-900">{formatSize(Number(lead.size_sq_yds))} · {lead.locality}</h1>
+          <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{formatSize(Number(lead.size_sq_yds))} · {lead.locality}</h1>
           <p className="text-sm text-stone-500 mt-1">
             Lead #{lead.id} · {new Date(lead.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
             {lead.utm_source && ` · via ${lead.utm_source}${lead.utm_content ? ` / ${lead.utm_content}` : ''}`}
@@ -100,7 +100,7 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
             </div>
           )}
 
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-2">Land</div>
             {row('Size', `${Number(lead.size_value).toLocaleString('en-IN')} ${lead.size_unit.replace('_', ' ')} (${Math.round(Number(lead.size_sq_yds)).toLocaleString('en-IN')} sq yds)`)}
             {row('Locality', lead.locality)}
@@ -116,7 +116,7 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
             {lead.notes && <div className="mt-3 text-sm text-stone-700 bg-stone-50 rounded-lg p-3 whitespace-pre-wrap">{lead.notes}</div>}
           </div>
 
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-2">Owner</div>
             {row('Name', lead.owner_name)}
             {row('Phone', lead.phone)}
@@ -124,14 +124,14 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
             {row('Form language', lead.form_language === 'te' ? 'Telugu' : 'English')}
           </div>
 
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-3">Activity</div>
             <NotesTimeline key={notesKey} landLeadId={lead.id} />
           </div>
         </div>
 
         <div className="space-y-5">
-          <div className="bg-white border border-stone-200 rounded-xl p-5 space-y-4">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5 space-y-4">
             <div>
               <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5 block">Status</label>
               <div className="grid grid-cols-2 gap-1.5">
@@ -160,7 +160,7 @@ export default function LandLeadDetailClient({ lead: initial, photos, team, near
             )}
           </div>
 
-          <div className="bg-white border border-stone-200 rounded-xl p-5">
+          <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-3">Site requirements within 3 km</div>
             {lead.lat == null ? (
               <p className="text-xs text-stone-500">Needs a map pin to match.</p>
