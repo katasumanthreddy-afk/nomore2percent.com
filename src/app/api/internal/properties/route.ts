@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
   // the cache window.
   invalidateCache('internal:properties');
   invalidateCache('internal:requirements:matches');
+  invalidateCache('internal:map:data');
 
   return NextResponse.json({ success: true, property: data });
 }

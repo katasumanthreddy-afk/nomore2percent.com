@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import LocationStrip from '@/components/internal/LocationStrip';
 import Link from 'next/link';
 import { titleCase } from '@/types/property';
 import { CONSTRUCTION_INTEREST, LEAD_STATUSES, formatSize } from '@/lib/land-leads';
@@ -142,7 +143,8 @@ export default function RequirementDetailClient({ requirementId }: { requirement
         <h1 className="text-xl sm:text-2xl tracking-tight font-semibold text-stone-900">{requirement.title}</h1>
         <button onClick={remove} className="text-xs text-red-500 hover:text-red-600 flex-shrink-0">Delete</button>
       </div>
-      <p className="text-stone-500 text-sm mb-6">Search radius: {requirement.radius_min_m}m – {requirement.radius_max_m}m</p>
+      <p className="text-stone-500 text-sm mb-3">Search radius: {requirement.radius_min_m}m – {requirement.radius_max_m}m</p>
+      <LocationStrip lat={requirement.lat} lng={requirement.lng} kind="sites" id={requirement.id} label={`Site: ${requirement.title}`} className="mb-6" />
 
       <div className="flex gap-2 mb-6">
         {['searching', 'found', 'closed'].map((s) => (

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { APIProvider, Map, AdvancedMarker } from '@vis.gl/react-google-maps';
+import { APIProvider, Map, AdvancedMarker, Circle } from '@vis.gl/react-google-maps';
+import PinActions from './PinActions';
 import Link from 'next/link';
 
 export interface SiteMapProperty {
@@ -24,16 +25,8 @@ const REQ_STATUS_COLOR: Record<string, string> = {
   closed: '#78716c',
 };
 
-function RadiusCircle({ map, center, radius, color }: { map: google.maps.Map; center: { lat: number; lng: number }; radius: number; color: string }) {
-  const [circle] = useState(() => new google.maps.Circle({
-    center, radius, map,
-    strokeColor: color, strokeOpacity: 0.5, strokeWeight: 1.5,
-    fillColor: color, fillOpacity: 0.08,
-  }));
-  circle.setCenter(center);
-  circle.setRadius(radius);
-  circle.setMap(map);
-  return null;
+function RadiusCircle({ center, radius, color }: { center: { lat: number; lng: number }; radius: number; color: string }) {
+  return <Circle center={center} radius={radius} clickable={false} strokeColor={color} strokeOpacity={0.5} strokeWeight={1.5} fillColor={color} fillOpacity={0.08} />;
 }
 
 /**
@@ -79,7 +72,6 @@ export default function SiteMap({
   requirementHref?: (id: number) => string;
 }) {
   const [activeMarker, setActiveMarker] = useState<{ type: 'req' | 'prop'; id: number } | null>(null);
-  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_ID;
 
@@ -133,7 +125,7 @@ export default function SiteMap({
           </div>
         )}
 
-        <Map defaultCenter={center} defaultZoom={11} mapId={mapId} disableDefaultUI={false} gestureHandling="greedy" onIdle={(e) => setMapInstance(e.map)}>
+        <Map defaultCenter={center} defaultZoom={11} mapId={mapId} disableDefaultUI={false} gestureHandling="greedy">
           {requirements.map((r) => {
             const isSelected = selectionMode ? selectedIds?.has(r.id) : r.id === selectedRequirementId;
             return (
@@ -161,36 +153,42 @@ export default function SiteMap({
             );
           })}
 
-          {mapInstance && showAllRadiusCircles && requirements.map((r) => (
-            <RadiusCircle key={`circle-${r.id}`} map={mapInstance} center={{ lat: r.lat, lng: r.lng }} radius={r.radius_max_m} color={REQ_STATUS_COLOR[r.status] || '#f97316'} />
+          {showAllRadiusCircles && requirements.map((r) => (
+            <RadiusCircle key={`circle-${r.id}`} center={{ lat: r.lat, lng: r.lng }} radius={r.radius_max_m} color={REQ_STATUS_COLOR[r.status] || '#f97316'} />
           ))}
-          {mapInstance && !showAllRadiusCircles && selectedReq && (
-            <RadiusCircle map={mapInstance} center={{ lat: selectedReq.lat, lng: selectedReq.lng }} radius={adjustableRadiusM ?? selectedReq.radius_max_m} color="#f97316" />
+          {!showAllRadiusCircles && selectedReq && (
+            <RadiusCircle center={{ lat: selectedReq.lat, lng: selectedReq.lng }} radius={adjustableRadiusM ?? selectedReq.radius_max_m} color="#f97316" />
           )}
         </Map>
 
         {!selectionMode && activeReq && (
-          <Link href={requirementHref(activeReq.id)} className="absolute bottom-4 left-4 z-20 w-64 bg-white rounded-xl shadow-xl border border-stone-200 p-3 hover:border-orange-300 transition-colors">
-            <div className="text-sm font-bold text-stone-900">{activeReq.title}</div>
-            <div className="text-xs text-stone-500 capitalize">{activeReq.status} · up to {activeReq.radius_max_m}m radius</div>
-            {activeReq.nearby_count != null && <div className="text-xs font-semibold text-orange-500">{activeReq.nearby_count} nearby</div>}
-          </Link>
+          <div className="absolute bottom-4 left-4 right-4 sm:right-auto z-20 sm:w-72 bg-white rounded-xl shadow-xl border border-stone-200 p-3">
+            <Link href={requirementHref(activeReq.id)} className="block hover:text-orange-600">
+              <div className="text-sm font-bold text-stone-900">{activeReq.title}</div>
+              <div className="text-xs text-stone-500 capitalize">{activeReq.status} · up to {activeReq.radius_max_m}m radius</div>
+              {activeReq.nearby_count != null && <div className="text-xs font-semibold text-orange-500">{activeReq.nearby_count} nearby</div>}
+            </Link>
+            <PinActions point={activeReq} label={`Site: ${activeReq.title}`} className="mt-2" />
+          </div>
         )}
         {!selectionMode && activeProp && (
-          <Link href={propertyHref(activeProp.id)} className="absolute bottom-4 left-4 z-20 w-64 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden hover:border-emerald-300 transition-colors">
-            {activePhoto && (
-              <div className="relative h-32 bg-stone-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={activePhoto} alt="" className="w-full h-full object-cover" />
-                {activePhotoCount != null && activePhotoCount > 1 && <span className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] font-semibold rounded px-1.5 py-0.5">{activePhotoCount} photos</span>}
+          <div className="absolute bottom-4 left-4 right-4 sm:right-auto z-20 sm:w-72 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden">
+            <Link href={propertyHref(activeProp.id)} className="block hover:bg-stone-50">
+              {activePhoto && (
+                <div className="relative h-32 bg-stone-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={activePhoto} alt="" className="w-full h-full object-cover" />
+                  {activePhotoCount != null && activePhotoCount > 1 && <span className="absolute bottom-1.5 right-1.5 bg-black/60 text-white text-[10px] font-semibold rounded px-1.5 py-0.5">{activePhotoCount} photos</span>}
+                </div>
+              )}
+              <div className="px-3 pt-3">
+                <div className="text-sm font-bold text-stone-900">{activeProp.title}</div>
+                <div className="text-xs text-stone-500 capitalize mb-1">{activeProp.area} {activeProp.deal_type && `· ${activeProp.deal_type}`}</div>
+                <div className="text-xs font-semibold text-orange-500">{activeProp.deal_type === 'lease' ? activeProp.lease_rate_label : activeProp.price_label}</div>
               </div>
-            )}
-            <div className="p-3">
-            <div className="text-sm font-bold text-stone-900">{activeProp.title}</div>
-            <div className="text-xs text-stone-500 capitalize mb-1">{activeProp.area} {activeProp.deal_type && `· ${activeProp.deal_type}`}</div>
-            <div className="text-xs font-semibold text-orange-500">{activeProp.deal_type === 'lease' ? activeProp.lease_rate_label : activeProp.price_label}</div>
-            </div>
-          </Link>
+            </Link>
+            <PinActions point={activeProp} label={activeProp.title} className="p-3 pt-2" />
+          </div>
         )}
       </div>
     </APIProvider>

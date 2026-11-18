@@ -75,6 +75,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
   invalidateCache('internal:properties');
   invalidateCache('internal:requirements:matches');
+  invalidateCache('internal:map:data');
   invalidateCache('internal:requirements:raw');
 
   return NextResponse.json({ success: true, propertyId: property.id });
