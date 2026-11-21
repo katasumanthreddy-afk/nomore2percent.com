@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import ShareListingLink from '@/components/internal/ShareListingLink';
 
 const SiteMap = dynamic(() => import('@/components/internal/SiteMap'), {
   ssr: false,
@@ -18,6 +19,7 @@ interface Property {
 interface Requirement { id: number; title: string; lat: number; lng: number; radius_max_m: number; status: string; nearby_count?: number }
 
 const STATUS_BADGE: Record<string, string> = {
+  submitted: 'bg-violet-50 text-violet-700 border-violet-200',
   available: 'bg-emerald-50 text-emerald-600 border-emerald-200',
   under_negotiation: 'bg-amber-50 text-amber-600 border-amber-200',
   closed: 'bg-stone-100 text-stone-500 border-stone-200',
@@ -36,6 +38,8 @@ export default function PropertiesListClient() {
     fetch('/api/internal/properties').then((r) => r.json()).then((d) => { if (d.success) setProperties(d.properties); }).finally(() => setLoading(false));
     fetch('/api/internal/requirements').then((r) => r.json()).then((d) => { if (d.success) setRequirements(d.requirements); });
   }, []);
+
+  const submittedCount = properties.filter((p) => p.status === 'submitted').length;
 
   const filtered = properties
     .filter((p) => statusFilter === 'all' || p.status === statusFilter)
@@ -59,6 +63,15 @@ export default function PropertiesListClient() {
         </div>
       </div>
 
+      <ShareListingLink />
+
+      {submittedCount > 0 && statusFilter !== 'submitted' && (
+        <button onClick={() => setStatusFilter('submitted')} className="w-full text-left mb-4 flex items-center justify-between gap-3 bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 hover:border-violet-300">
+          <span className="text-sm text-violet-900"><span className="font-semibold">{submittedCount} new submission{submittedCount === 1 ? '' : 's'}</span> from the link to review</span>
+          <span className="text-xs font-semibold text-violet-700">Review →</span>
+        </button>
+      )}
+
       <div className="flex items-center gap-2 mb-5 flex-wrap">
         <input
           value={search}
@@ -68,6 +81,7 @@ export default function PropertiesListClient() {
         />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-1.5 text-xs">
           <option value="all">All Status</option>
+          <option value="submitted">New submissions</option>
           <option value="available">Available</option>
           <option value="under_negotiation">Under Negotiation</option>
           <option value="closed">Closed</option>
@@ -98,7 +112,7 @@ export default function PropertiesListClient() {
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
                 <span className="text-sm font-bold text-orange-500">{p.deal_type === 'lease' ? p.lease_rate_label : p.price_label}</span>
-                <span className={`text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border ${STATUS_BADGE[p.status] || ''}`}>{p.status?.replace('_', ' ')}</span>
+                <span className={`text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border ${STATUS_BADGE[p.status] || ''}`}>{p.status === 'submitted' ? 'new submission' : p.status?.replace('_', ' ')}</span>
               </div>
             </Link>
           ))}

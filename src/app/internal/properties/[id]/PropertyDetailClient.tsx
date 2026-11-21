@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import LocationStrip from '@/components/internal/LocationStrip';
+import SubmissionReview from '@/components/internal/SubmissionReview';
 import Link from 'next/link';
 import PropertyForm from '@/components/internal/PropertyForm';
 import NotesTimeline from '@/components/internal/NotesTimeline';
@@ -23,6 +24,7 @@ interface Doc { id: number; title: string; document_type: string; created_at: st
 interface Photo { id: number; url: string | null; is_primary: boolean }
 
 const STATUS_BADGE: Record<string, string> = {
+  submitted: 'bg-violet-50 text-violet-700 border-violet-200',
   available: 'bg-emerald-50 text-emerald-600 border-emerald-200',
   under_negotiation: 'bg-amber-50 text-amber-600 border-amber-200',
   closed: 'bg-stone-100 text-stone-500 border-stone-200',
@@ -106,6 +108,8 @@ export default function PropertyDetailClient({ property, deals, documents, match
     <div className="max-w-3xl mx-auto px-6 py-8">
       <Link href="/internal/properties" className="text-xs text-stone-400 hover:text-stone-600 mb-4 inline-block">← Back to Properties</Link>
 
+      {property.status === 'submitted' && <SubmissionReview propertyId={property.id} ownerName={property.owner_name} ownerPhone={property.owner_phone} />}
+
       {photos && photos.length > 0 && (
         <div className="grid grid-cols-4 gap-2 mb-6">
           {photos.map((p) => p.url && (
@@ -135,7 +139,7 @@ export default function PropertyDetailClient({ property, deals, documents, match
         </div>
         <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">Status</div>
-          <span className={`text-[11px] font-bold uppercase px-2 py-1 rounded-full border ${STATUS_BADGE[property.status] || ''}`}>{property.status?.replace('_', ' ')}</span>
+          <span className={`text-[11px] font-bold uppercase px-2 py-1 rounded-full border ${STATUS_BADGE[property.status] || ''}`}>{property.status === 'submitted' ? 'new submission' : property.status?.replace('_', ' ')}</span>
         </div>
         <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">
           <div className="text-xs text-stone-400 uppercase tracking-wide mb-1">{property.property_type === 'land' ? 'Road' : 'Zoning'}</div>
@@ -170,7 +174,7 @@ export default function PropertyDetailClient({ property, deals, documents, match
       {property.notes && (
         <div className="mb-6">
           <div className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">Overview</div>
-          <p className="text-sm text-stone-600 bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">{property.notes}</p>
+          <p className="text-sm text-stone-600 whitespace-pre-line bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-4">{property.notes}</p>
         </div>
       )}
 

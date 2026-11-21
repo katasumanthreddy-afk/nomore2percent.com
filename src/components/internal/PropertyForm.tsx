@@ -212,6 +212,7 @@ export default function PropertyForm({ mode, propertyId, initialData, initialPho
           <div>
             <label className={labelClass}>Status</label>
             <select value={form.status} onChange={(e) => set('status', e.target.value)} className={inputClass}>
+              <option value="submitted">New submission (review)</option>
               <option value="available">Available</option>
               <option value="under_negotiation">Under Negotiation</option>
               <option value="closed">Closed</option>
