@@ -11,7 +11,8 @@
 // - Page navigations — network-first, falling back to a cached copy of the
 //   same page if offline, and finally to the offline fallback page.
 
-const CACHE_NAME = 'n2p-shell-v1';
+// Bump the version to wipe every visitor's old cache on their next visit.
+const CACHE_NAME = 'n2p-shell-v2';
 const PRECACHE_URLS = [
   '/offline.html',
   '/manifest.webmanifest',
@@ -42,8 +43,9 @@ self.addEventListener('fetch', (event) => {
   // Only handle same-origin GET requests — everything else passes through untouched.
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
-  // Never cache API routes or the admin panel — always hit the network.
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/admin')) {
+  // Never cache API routes, the admin panel or the internal portal (private,
+  // signed-in pages) — always hit the network.
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/admin') || url.pathname.startsWith('/internal') || url.pathname.startsWith('/auth')) {
     return;
   }
 
@@ -53,8 +55,11 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          // Only keep good pages; never store errors or redirects.
+          if (response.ok && response.type === 'basic') {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
           return response;
         })
         .catch(() =>
@@ -75,8 +80,13 @@ self.addEventListener('fetch', (event) => {
         (cached) =>
           cached ||
           fetch(request).then((response) => {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            // Only cache successful files. Caching a failed CSS/JS download
+            // (e.g. a 404 during a deploy) would break styling until the
+            // cache was cleared.
+            if (response.ok) {
+              const copy = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            }
             return response;
           })
       )
