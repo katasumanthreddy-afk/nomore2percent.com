@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseInternalAdmin } from '@/lib/supabase-internal-admin';
 import { getRequestingTeamMember } from '@/lib/get-internal-team-member';
+import { cleanCostBody } from '@/lib/construction-costs';
 
 const MAX_PHOTOS = 6;
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024; // browser compresses first
@@ -29,9 +30,16 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     (data || []).forEach((d) => { if (d.path && d.signedUrl) signed[d.path] = d.signedUrl; });
   }
 
+  // Expenses logged with an update (optional: table may not exist yet).
+  const ids = (updates || []).map((u) => u.id);
+  const { data: exp } = ids.length
+    ? await supabaseInternalAdmin.from('construction_expenses').select('id, update_id, category, description, vendor, amount, payment_status').in('update_id', ids)
+    : { data: [] };
+
   const result = (updates || []).map(({ construction_update_photos, ...u }) => ({
     ...u,
     photos: (construction_update_photos || []).map((p) => ({ id: p.id, url: signed[p.storage_path] || null })),
+    expenses: (exp || []).filter((e) => e.update_id === u.id),
   }));
   return NextResponse.json({ success: true, updates: result });
 }
@@ -53,8 +61,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const note = typeof fd.get('note') === 'string' ? String(fd.get('note')).trim().slice(0, 2000) : '';
   const files = (fd.getAll('photos') as File[]).filter((f) => f && typeof f !== 'string' && f.size > 0).slice(0, MAX_PHOTOS);
 
-  if (progress == null && !note && files.length === 0) {
-    return NextResponse.json({ success: false, message: 'Add a progress figure, a note or a photo.' }, { status: 400 });
+  // Optional spend logged with the update ("exp_*" fields).
+  const expBody: Record<string, unknown> = {};
+  fd.forEach((v, k) => { if (k.startsWith('exp_') && typeof v === 'string') expBody[k.slice(4)] = v; });
+  const hasExpense = expBody.amount != null && String(expBody.amount).trim() !== '';
+  const expense = hasExpense ? cleanCostBody(expBody, 'expense') : null;
+  if (expense?.error) return NextResponse.json({ success: false, message: `Spend: ${expense.error}` }, { status: 400 });
+
+  if (progress == null && !note && files.length === 0 && !expense) {
+    return NextResponse.json({ success: false, message: 'Add a progress figure, a note, a photo or a spend.' }, { status: 400 });
   }
 
   const { data: update, error } = await supabaseInternalAdmin
@@ -79,11 +94,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
   }
 
+  let expenseSaved: boolean | undefined;
+  if (expense) {
+    const { error: expErr } = await supabaseInternalAdmin.from('construction_expenses')
+      .insert([{ ...expense.row, project_id: Number(id), update_id: update.id, created_by: member.id }]);
+    expenseSaved = !expErr;
+  }
+
   const projectPatch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (progress != null) projectPatch.construction_progress = progress;
   await supabaseInternalAdmin.from('projects').update(projectPatch).eq('id', id);
 
-  return NextResponse.json({ success: true, photosUploaded: uploaded, photosSkipped: files.length - uploaded });
+  return NextResponse.json({ success: true, photosUploaded: uploaded, photosSkipped: files.length - uploaded, expenseSaved });
 }
 
 // DELETE ?update_id=X — remove a mistaken update and its photos.

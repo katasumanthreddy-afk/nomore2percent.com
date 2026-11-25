@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, KanbanSquare, Sprout, Target, Building2, Map, Store, Users,
+  LayoutDashboard, KanbanSquare, HardHat, Sprout, Target, Building2, Map, Store, Users,
   IndianRupee, Handshake, ShieldCheck, LogOut, Menu, X,
 } from 'lucide-react';
 import { createInternalBrowserClient } from '@/lib/supabase-internal-browser';
@@ -17,6 +17,7 @@ const GROUPS: { label: string; items: Item[] }[] = [
     label: 'Pipeline',
     items: [
       { href: '/internal/projects', label: 'Projects', icon: KanbanSquare },
+      { href: '/internal/construction', label: 'Construction', icon: HardHat },
       { href: '/internal/land-leads', label: 'Land Leads', icon: Sprout },
       { href: '/internal/requirements', label: 'Requirements', icon: Target },
     ],
