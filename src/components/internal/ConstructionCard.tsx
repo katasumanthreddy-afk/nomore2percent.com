@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { FUNDED_BY, inr, scheduleStatus } from '@/lib/brands-projects';
+import { COST_CATEGORIES, categoryLabel } from '@/lib/construction-costs';
 import { compressImage } from '@/lib/compress-image';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -9,6 +10,7 @@ interface Update {
   id: number; progress: number | null; note: string | null; created_at: string;
   team_members: { id: number; name: string } | null;
   photos: { id: number; url: string | null }[];
+  expenses?: { id: number; category: string; description: string | null; vendor: string | null; amount: number; payment_status: string }[];
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -26,6 +28,8 @@ export default function ConstructionCard({ project, onSaved }: { project: any; o
   const [progress, setProgress] = useState('');
   const [note, setNote] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
+  const [spend, setSpend] = useState({ amount: '', category: 'labour', description: '', vendor: '', payment_status: 'paid' });
+  const [showSpend, setShowSpend] = useState(false);
   const [posting, setPosting] = useState(false);
 
   const load = () => {
@@ -52,11 +56,13 @@ export default function ConstructionCard({ project, onSaved }: { project: any; o
       if (progress.trim()) fd.append('progress', progress);
       if (note.trim()) fd.append('note', note);
       for (const f of photos) fd.append('photos', await compressImage(f));
+      if (spend.amount.trim()) Object.entries(spend).forEach(([k, v]) => fd.append(`exp_${k}`, v));
       const res = await fetch(`/api/internal/projects/${project.id}/construction`, { method: 'POST', body: fd });
       const d = await res.json();
       if (!d.success) { alert(d.message); return; }
       if (d.photosSkipped) alert(`${d.photosSkipped} photo(s) could not be uploaded.`);
-      setProgress(''); setNote(''); setPhotos([]);
+      if (d.expenseSaved === false) alert('Update posted, but the spend could not be saved. Budget & expenses may not be set up yet.');
+      setProgress(''); setNote(''); setPhotos([]); setSpend((x) => ({ ...x, amount: '', description: '', vendor: '' })); setShowSpend(false);
       load();
       await onSaved({}); // refresh project (progress figure)
     } finally {
@@ -135,12 +141,25 @@ export default function ConstructionCard({ project, onSaved }: { project: any; o
           <input inputMode="numeric" value={progress} onChange={(e) => setProgress(e.target.value.replace(/[^\d]/g, '').slice(0, 3))} placeholder={`% done (now ${pct})`} className={inputClass + ' max-w-[9rem]'} />
           <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="What happened? e.g. Roof slab cast" className={inputClass} />
         </div>
+        {showSpend && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <input inputMode="decimal" value={spend.amount} onChange={(e) => setSpend((x) => ({ ...x, amount: e.target.value.replace(/[^\d.]/g, '') }))} placeholder="Spent ₹" className={inputClass} aria-label="Amount spent" />
+            <select value={spend.category} onChange={(e) => setSpend((x) => ({ ...x, category: e.target.value }))} className={inputClass} aria-label="Spend category">
+              {COST_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+            <input value={spend.vendor} onChange={(e) => setSpend((x) => ({ ...x, vendor: e.target.value }))} placeholder="Paid to" className={inputClass} aria-label="Paid to" />
+            <select value={spend.payment_status} onChange={(e) => setSpend((x) => ({ ...x, payment_status: e.target.value }))} className={inputClass} aria-label="Payment status">
+              <option value="paid">Paid</option><option value="due">Due</option>
+            </select>
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2">
+          {!showSpend && <button type="button" onClick={() => setShowSpend(true)} className="text-xs border border-stone-300 bg-white rounded-lg px-3 py-1.5 font-semibold text-stone-600">+ Spend</button>}
           <label className="text-xs border border-stone-300 bg-white rounded-lg px-3 py-1.5 cursor-pointer font-semibold text-stone-600">
             {photos.length ? `${photos.length} photo${photos.length > 1 ? 's' : ''}` : 'Add photos'}
             <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { setPhotos(Array.from(e.target.files || []).slice(0, 6)); e.target.value = ''; }} />
           </label>
-          <button onClick={post} disabled={posting || (!progress && !note.trim() && photos.length === 0)} className="text-xs bg-stone-900 text-white rounded-lg px-4 py-1.5 font-semibold disabled:opacity-40">{posting ? 'Posting…' : 'Post update'}</button>
+          <button onClick={post} disabled={posting || (!progress && !note.trim() && photos.length === 0 && !spend.amount.trim())} className="text-xs bg-stone-900 text-white rounded-lg px-4 py-1.5 font-semibold disabled:opacity-40">{posting ? 'Posting…' : 'Post update'}</button>
         </div>
       </div>
 
@@ -157,6 +176,15 @@ export default function ConstructionCard({ project, onSaved }: { project: any; o
                 <button onClick={() => removeUpdate(u.id)} className="text-xs text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100" aria-label="Delete update">✕</button>
               </div>
               {u.note && <div className="text-sm text-stone-800 mt-0.5">{u.note}</div>}
+              {u.expenses && u.expenses.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {u.expenses.map((e) => (
+                    <span key={e.id} className={`text-[11px] font-semibold rounded-md px-2 py-0.5 border ${e.payment_status === 'due' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-stone-50 text-stone-700 border-stone-200'}`}>
+                      ₹{Number(e.amount).toLocaleString('en-IN')} · {e.description || categoryLabel(e.category)}{e.vendor ? ` · ${e.vendor}` : ''}{e.payment_status === 'due' ? ' · due' : ''}
+                    </span>
+                  ))}
+                </div>
+              )}
               {u.photos.length > 0 && (
                 <div className="flex gap-2 mt-2 overflow-x-auto">
                   {u.photos.map((p) => p.url && (

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import NotesTimeline from '@/components/internal/NotesTimeline';
 import ConstructionCard from '@/components/internal/ConstructionCard';
 import FeesCard from '@/components/internal/FeesCard';
+import CostsCard from '@/components/internal/CostsCard';
 import { PROJECT_STAGES, STUCK_AFTER_DAYS, daysSince, stageIndex, stageLabel } from '@/lib/brands-projects';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -214,7 +215,7 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
         </ol>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 [&>*]:min-w-0">
         <div className="lg:col-span-2 space-y-5">
           {/* Checklist for the selected stage */}
           <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
@@ -241,7 +242,12 @@ export default function ProjectDetailClient({ projectId, isOwner }: { projectId:
             </div>
           </div>
 
-          {(stageIndex(project.stage) >= stageIndex('construction_contract') || project.builder_name || project.construction_progress > 0) && <ConstructionCard project={project} onSaved={patch} />}
+          {(stageIndex(project.stage) >= stageIndex('construction_contract') || project.builder_name || project.construction_progress > 0) && (
+            <>
+              <ConstructionCard project={project} onSaved={patch} />
+              <CostsCard project={project} />
+            </>
+          )}
 
           <div className="bg-white border border-stone-200/80 rounded-xl shadow-[0_1px_2px_rgba(28,25,23,0.04)] p-5">
             <div className="text-sm font-bold text-stone-800 mb-3">Documents</div>
